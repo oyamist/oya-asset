@@ -9,6 +9,7 @@
                 writable: true,
             });
             Object.defineProperty(this, "name", {
+                enumerable: true,
                 get() {
                     return this._name 
                         || this.id && `${this.type}_${this.id}`
@@ -54,7 +55,9 @@
             }
             this.id = opts.id || this.id;
             this.guid = opts.guid || this.guid || uuidv4();
-            this.events = opts.events || this.events || [];
+            this.events = (opts.events || this.events || []).map(evt =>
+                (evt instanceof Event ? evt : new Event(evt)));
+            this._name = opts.name || this._name;
         }
 
         addEvent(event) {

@@ -34,6 +34,9 @@
 
         update(opts={}) {
             this.t = opts.t || this.t || new Date();
+            if (!(this.t instanceof Date)) {
+                this.t = new Date(this.t);
+            }
             if (opts.hasOwnProperty('type')) {
                 if (Event.eventTypes().indexOf(opts.type) < 0) {
                     throw new Error(`Invalid type:${opts.type}`);
@@ -42,6 +45,7 @@
             } else {
                 this.type = this.type || Event.T_BEGIN;
             }
+            this.text = opts.text || this.text;
         }
     }
 

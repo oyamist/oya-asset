@@ -2,7 +2,6 @@
     const winston = require('winston');
     const should = require("should");
     const {
-        AssetDefs,
         Event,
     } = require("../index");
 
@@ -15,9 +14,11 @@
         var evt2 = new Event({
             t: date,
             type: Event.T_GERMINATING,
+            text: 'asdf',
         });
         should.deepEqual(evt2.t, date);
         should(evt2.type).equal('germinating');
+        should(evt2.text).equal('asdf');
     });
     it("eventTypes returns event types", function() {
         should.deepEqual(Event.eventTypes(), [
@@ -32,6 +33,17 @@
             'harvested',
             "end",
         ]);
+    });
+    it("Events are serializable", function() {
+        var date = new Date(2018,2,10,7,30,10);
+        var event1 = new Event({
+            type: Event.T_POLLINATED,
+            text: 'asdf',
+            t: date,
+        });
+        var json = JSON.stringify(event1);
+        var event2 = new Event(JSON.parse(json));
+        should.deepEqual(event2, event1);
     });
 
 })

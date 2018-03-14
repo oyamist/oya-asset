@@ -1,5 +1,4 @@
 (function(exports) {
-    const uuidv4 = require("uuid/v4");
     const Asset = require('./asset');
 
     class Plant extends Asset {

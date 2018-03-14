@@ -58,5 +58,28 @@
             "tent",
         ]);
     });
+    it("Asset is erializable", function() {
+        var asset = new Asset({
+            type: Asset.T_PLANT,
+            id: 'A0001',
+            name: 'tomatoA',
+        });
+        var json = JSON.stringify(asset);
+        var asset2 = new Asset(JSON.parse(json));
+        should.deepEqual(asset2, asset);
+
+        asset.addEvent({
+            type: Event.T_BEGIN,
+            text: '1',
+        });
+        asset.addEvent({
+            type: Event.T_GERMINATING,
+            text: '2',
+        });
+        var json = JSON.stringify(asset);
+        var asset2 = new Asset(JSON.parse(json));
+        should.deepEqual(asset2, asset);
+        should(asset2.name).equal('tomatoA');
+    });
 
 })
