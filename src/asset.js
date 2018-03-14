@@ -80,34 +80,33 @@
             this.tvalues.push(tvalue);
         }
 
-        get(valueType, date = new Date()) {
-            var evt =  this.tvalues.reduce((acc,evt) => {    
+        getTValue(valueType, date = new Date()) {
+            return this.tvalues.reduce((acc,evt) => {    
                 if (evt.type === valueType) {
                    return evt.t<=date && (!acc || evt.t >= acc.t) ? evt : acc;
                 }
                 return acc;
             }, null);
-            return evt ? evt.value : null;
+        }
+
+        get(valueType, date = new Date()) {
+            var tvalue =  this.getTValue(valueType, date);
+            return tvalue ? tvalue.value : null;
         }
 
         location(date = new Date()) {
             return this.get(TValue.T_LOCATION, date);
         }
 
-        firstTValue(eventType = TValue.T_BEGIN) {
-            return this.tvalues.reduce((acc,evt) => 
-                (acc || evt.type === eventType && evt || acc), null);
-        }
-
-        eventElapsed(targetType, startType = TValue.T_BEGIN) {
-            var eStart = this.firstTValue(startType);
+        valueElapsed(targetType, startType = TValue.T_BEGIN) {
+            var eStart = this.getTValue(startType);
             if (eStart == null) {
                 throw new Error(`${this.name} has no tvalue:${startType}`);
             }
             if (!(eStart.t instanceof Date)) {
                 throw new Error(`${this.name} has no timestamp for start tvalue:${startType}`);
             }
-            var eTarget = this.firstTValue(targetType);
+            var eTarget = this.getTValue(targetType);
             if (eTarget == null) {
                 return null; // hasn't happened yet
             }
@@ -122,21 +121,17 @@
         }
 
         age() {
-            var eStart = this.firstTValue(TValue.T_BEGIN);
+            var eStart = this.getTValue(TValue.T_BEGIN);
             if (eStart == null) {
                 throw new Error(`${this.name} has no tvalue:${startType}`);
             }
-            var eEnd = this.firstTValue(TValue.T_END);
-            if (eEnd) {
-                var elapsed = eEnd.t - eStart.t;
-            } else {
-                var elapsed = Date.now() - eStart.t;
-            }
+            var eEnd = this.getTValue(TValue.T_END);
+            var elapsed = (eEnd ? eEnd.t : Date.now()) - eStart.t;
             return this.ageElapsed(elapsed);
         }
 
         ageAt(targetType, startType = TValue.T_BEGIN) {
-            var elapsed = this.eventElapsed(targetType, startType);
+            var elapsed = this.valueElapsed(targetType, startType);
             return typeof elapsed === 'number' ?  this.ageElapsed(elapsed) : elapsed;
         }
 
