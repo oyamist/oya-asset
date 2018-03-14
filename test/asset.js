@@ -23,16 +23,43 @@
         var asset2 = new Asset();
         should(asset.guid).not.equal(asset2.guid);
 
+        // ctor options can set asset properties
         asset = new Asset({
             name: 'TomatoA',
             id: 'A0001',
+            begin,
         });
         should.deepEqual(asset.name, `TomatoA`);
         should.deepEqual(asset.id, `A0001`);
 
+        // the "begin" option sets temporal property TValue.T_BEGINVALUE
+        var begin = new Date(2018,1,10);
+        var tvExpected = new TValue({
+            type: TValue.T_BEGIN,
+            t: begin,
+            value: true,
+        });
+        asset = new Asset({
+            begin, // Date
+        });
+        var tvBegin = asset.getTValue(TValue.T_BEGIN);
+        should.deepEqual(tvBegin, tvExpected);
+        asset = new Asset({
+            begin: begin.toISOString(), // Date string
+        });
+        var tvBegin = asset.getTValue(TValue.T_BEGIN);
+        should.deepEqual(tvBegin, tvExpected);
+        asset = new Asset({
+            begin: begin.toString(), // Date string
+        });
+        var tvBegin = asset.getTValue(TValue.T_BEGIN);
+        should.deepEqual(tvBegin, tvExpected);
+
+        // copy constructor
         var assetCopy = new Asset(asset);
         should.deepEqual(assetCopy, asset);
 
+        // error handling
         should.throws(() => {
             new Asset({
                 type: 'bad type',

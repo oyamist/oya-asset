@@ -17,6 +17,9 @@
         static get T_RIPENING() { return "ripening"; } // multiple for perennials
         static get T_HARVESTED() { return "harvested"; } // multiple
 
+        static get P_TOMATO() { return "tomato"; }
+        static get C_CHOCOLATE_STRIPES() { return "chocolate_stripes"; }
+
         static valueTypes() {
             return [
                 TValue.T_GERMINATING,

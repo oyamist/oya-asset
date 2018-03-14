@@ -59,6 +59,10 @@
             this.tvalues = (opts.tvalues || this.tvalues || []).map(evt =>
                 (evt instanceof TValue ? evt : new TValue(evt)));
             this._name = opts.name || this._name;
+            if (opts.begin) {
+                var t = opts.begin instanceof Date ? opts.begin : new Date(opts.begin);
+                this.set(TValue.T_BEGIN, true, t);
+            }
         }
 
         set(...args) {
