@@ -21,25 +21,25 @@
             this.update(opts);
         }
 
-        static get A_ACTUATOR() { return "actuator"; }
-        static get A_LIGHT() { return "light"; }
-        static get A_MCU() { return "mcu"; }
-        static get A_PLANT() { return "plant"; }
-        static get A_PUMP() { return "pump"; }
-        static get A_RESERVOIR() { return "reservoir"; }
-        static get A_SENSOR() { return "sensor"; }
-        static get A_TENT() { return "tent"; }
+        static get T_ACTUATOR() { return "actuator"; }
+        static get T_LIGHT() { return "light"; }
+        static get T_MCU() { return "mcu"; }
+        static get T_PLANT() { return "plant"; }
+        static get T_PUMP() { return "pump"; }
+        static get T_RESERVOIR() { return "reservoir"; }
+        static get T_SENSOR() { return "sensor"; }
+        static get T_TENT() { return "tent"; }
 
         static assetTypes() {
             return [
-                Asset.A_ACTUATOR,
-                Asset.A_LIGHT,
-                Asset.A_MCU,
-                Asset.A_PLANT,
-                Asset.A_PUMP,
-                Asset.A_RESERVOIR,
-                Asset.A_SENSOR,
-                Asset.A_TENT,
+                Asset.T_ACTUATOR,
+                Asset.T_LIGHT,
+                Asset.T_MCU,
+                Asset.T_PLANT,
+                Asset.T_PUMP,
+                Asset.T_RESERVOIR,
+                Asset.T_SENSOR,
+                Asset.T_TENT,
 
             ];
         }
@@ -50,7 +50,7 @@
                 }
                 this.type = opts.type;
             } else {
-                this.type = this.type || Asset.A_PLANT;
+                this.type = this.type || Asset.T_PLANT;
             }
             this.id = opts.id || this.id;
             this.guid = opts.guid || this.guid || uuidv4();
@@ -67,12 +67,12 @@
             this.events.push(event);
         }
 
-        firstEvent(eventType = Event.E_BEGIN) {
+        firstEvent(eventType = Event.T_BEGIN) {
             return this.events.reduce((acc,evt) => 
                 (acc || evt.type === eventType && evt || acc), null);
         }
 
-        eventElapsed(targetType, startType = Event.E_BEGIN) {
+        eventElapsed(targetType, startType = Event.T_BEGIN) {
             var eStart = this.firstEvent(startType);
             if (eStart == null) {
                 throw new Error(`${this.name} has no event:${startType}`);
@@ -95,11 +95,11 @@
         }
 
         age() {
-            var eStart = this.firstEvent(Event.E_BEGIN);
+            var eStart = this.firstEvent(Event.T_BEGIN);
             if (eStart == null) {
                 throw new Error(`${this.name} has no event:${startType}`);
             }
-            var eEnd = this.firstEvent(Event.E_END);
+            var eEnd = this.firstEvent(Event.T_END);
             if (eEnd) {
                 var elapsed = eEnd.t - eStart.t;
             } else {
@@ -108,7 +108,7 @@
             return this.ageElapsed(elapsed);
         }
 
-        ageAt(targetType, startType = Event.E_BEGIN) {
+        ageAt(targetType, startType = Event.T_BEGIN) {
             var elapsed = this.eventElapsed(targetType, startType);
             return typeof elapsed === 'number' ?  this.ageElapsed(elapsed) : elapsed;
         }

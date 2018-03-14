@@ -14,7 +14,7 @@
         var date = new Date(2018, 3, 11);
         var evt2 = new Event({
             t: date,
-            type: Event.E_GERMINATING,
+            type: Event.T_GERMINATING,
         });
         should.deepEqual(evt2.t, date);
         should(evt2.type).equal('germinating');

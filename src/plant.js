@@ -5,7 +5,7 @@
     class Plant extends Asset {
         constructor(opts={}) {
             super(Object.assign({
-                type: Asset.A_PLANT,
+                type: Asset.T_PLANT,
             }, opts));
         }
 
