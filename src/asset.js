@@ -44,6 +44,7 @@
 
             ];
         }
+
         update(opts={}) {
             if (opts.hasOwnProperty('type')) {
                 if (Asset.assetTypes().indexOf(opts.type) < 0) {
@@ -68,6 +69,17 @@
                 event = new Event(event);
             }
             this.events.push(event);
+        }
+
+        eventValue(eventType, date = new Date()) {
+            var evt =  this.events.reduce((acc,evt) => {    
+               return evt.type === eventType && evt.t<=date ? evt : acc;
+            }, null);
+            return evt ? evt.value : null;
+        }
+
+        location(date = new Date()) {
+            return this.eventValue(Event.T_LOCATION, date);
         }
 
         firstEvent(eventType = Event.T_BEGIN) {

@@ -16,6 +16,7 @@
         static get T_RIPENING() { return "ripening"; } // multiple for perennials
         static get T_HARVESTED() { return "harvested"; } // multiple
         static get T_END() { return "end"; } // singular
+        static get T_LOCATION() { return "end"; } // multiple
 
         static eventTypes() {
             return [
@@ -46,6 +47,7 @@
                 this.type = this.type || Event.T_BEGIN;
             }
             this.text = opts.text || this.text;
+            this.value = opts.value || this.value;
         }
     }
 

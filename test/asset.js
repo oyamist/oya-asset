@@ -27,13 +27,11 @@
             name: 'TomatoA',
             id: 'A0001',
         });
-        asset.name = 'TomatoA';
         should.deepEqual(asset.name, `TomatoA`);
         should.deepEqual(asset.id, `A0001`);
+
         var assetCopy = new Asset(asset);
-        should(assetCopy.guid).equal(asset.guid);
-        should(assetCopy.id).equal(asset.id);
-        should(assetCopy.type).equal(asset.type);
+        should.deepEqual(assetCopy, asset);
 
         should.throws(() => {
             new Asset({
@@ -58,7 +56,7 @@
             "tent",
         ]);
     });
-    it("Asset is erializable", function() {
+    it("Asset is serializable", function() {
         var asset = new Asset({
             type: Asset.T_PLANT,
             id: 'A0001',
@@ -71,6 +69,11 @@
         asset.addEvent({
             type: Event.T_BEGIN,
             text: '1',
+            value: {
+                size: 'large',
+                color: 'blue',
+                qty: 3,
+            },
         });
         asset.addEvent({
             type: Event.T_GERMINATING,
@@ -80,6 +83,56 @@
         var asset2 = new Asset(JSON.parse(json));
         should.deepEqual(asset2, asset);
         should(asset2.name).equal('tomatoA');
+    });
+    it("eventValue(eventType,date) returns event value for date", function() {
+        var asset = new Asset();
+        asset.addEvent({
+            type: Event.T_POLLINATED,
+            value: {
+                size: 'small',
+                qty: 2,
+            },
+        });
+        asset.addEvent({
+            type: Event.T_POLLINATED,
+            value: {
+                size: 'large',
+            },
+        });
+        var asset = new Asset(JSON.parse(JSON.stringify(asset))); // is serializable
+        should.deepEqual(asset.eventValue(Event.T_POLLINATED), {
+            size: 'large',
+        });
+    });
+    it("location(date) returns asset location for date", function() {
+        var asset = new Asset();
+        var t0 = new Date(2018,0,1);
+        var t1 = new Date(2018,1,1);
+        var t2 = new Date(2018,1,2);
+        var t3 = new Date(2018,1,3);
+        asset.addEvent({
+            type: Event.T_LOCATION,
+            t:t1,
+            value: 'SFO',
+        });
+        asset.addEvent({
+            type: Event.T_LOCATION,
+            t:t2,
+            value: 'LAX',
+        });
+        asset.addEvent({
+            type: Event.T_LOCATION,
+            t:t3,
+            value: 'PIT',
+        });
+        var asset = new Asset(JSON.parse(JSON.stringify(asset))); // is serializable
+        should(asset.location()).equal('PIT');
+        should(asset.location(t0)).equal(null);
+        should(asset.location(t1)).equal('SFO');
+        should(asset.location(new Date(t2.getTime()-1))).equal('SFO');
+        should(asset.location(t2)).equal('LAX');
+        should(asset.location(new Date(t2.getTime()+1))).equal('LAX');
+        should(asset.location(t3)).equal('PIT');
     });
 
 })

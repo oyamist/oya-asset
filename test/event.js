@@ -15,10 +15,12 @@
             t: date,
             type: Event.T_GERMINATING,
             text: 'asdf',
+            value: 'purple',
         });
         should.deepEqual(evt2.t, date);
         should(evt2.type).equal('germinating');
         should(evt2.text).equal('asdf');
+        should(evt2.value).equal('purple');
     });
     it("eventTypes returns event types", function() {
         should.deepEqual(Event.eventTypes(), [
@@ -40,6 +42,7 @@
             type: Event.T_POLLINATED,
             text: 'asdf',
             t: date,
+            value: 'purple',
         });
         var json = JSON.stringify(event1);
         var event2 = new Event(JSON.parse(json));
