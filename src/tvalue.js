@@ -6,6 +6,7 @@
             this.update(opts);
         }
 
+        static get T_NONE() { return "(none)"; } // singular
         static get T_BEGIN() { return "begin"; } // singular
         static get T_END() { return "end"; } // singular
         static get T_LOCATION() { return "location"; } // multiple
@@ -14,9 +15,11 @@
         static valueTypes() {
             return [
                 TValue.T_BEGIN,
+                TValue.T_DIMENSIONS,
                 TValue.T_END,
                 TValue.T_LOCATION,
-                TValue.T_DIMENSIONS,
+                TValue.T_NONE,
+
             ];
         }
 
@@ -31,7 +34,7 @@
                 }
                 this.type = opts.type;
             } else {
-                this.type = this.type || TValue.T_BEGIN;
+                this.type = this.type || TValue.T_NONE;
             }
             this.value = opts.value || this.value;
             this.text = opts.text || this.text;

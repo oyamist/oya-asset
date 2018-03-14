@@ -9,7 +9,7 @@
     it("TValue(opts) creates an temporal value", function() {
         var evt = new TValue();
         should(evt.t).instanceOf(Date);
-        should(evt.type).equal('begin');
+        should(evt.type).equal(TValue.T_NONE);
 
         var date = new Date(2018, 3, 11);
         var evt2 = new TValue({
@@ -26,9 +26,11 @@
     it("valueTypes returns tvalue types", function() {
         should.deepEqual(TValue.valueTypes(), [
             "begin",
+            "dimensions",
             "end",
             "location",
-            "dimensions",
+            "(none)",
+
         ]);
     });
     it("TValues are serializable", function() {
