@@ -77,7 +77,7 @@
         should.deepEqual(asset2, asset);
         should(asset2.name).equal('tomatoA');
     });
-    it("set(valueType, value, date) sets asset tvalue", function() {
+    it("set(valueType, value, date) sets asset temporal value", function() {
         var asset = new Asset();
 
         // set(valueType, value)
@@ -108,7 +108,7 @@
         should(asset.get(TValue.T_LOCATION,t1)).equal('NYC');
         should(asset.get(TValue.T_LOCATION)).equal('PIT');
     });
-    it("get(valueType,date) returns tvalue for date", function() {
+    it("get(valueType,date) returns temporal value for date", function() {
         var asset = new Asset();
         asset.set(TValue.T_DIMENSIONS, {
             size: 'small',

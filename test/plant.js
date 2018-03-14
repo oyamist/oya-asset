@@ -10,9 +10,13 @@
     it("Plant(opts) creates a plant asset", function() {
         var plant = new Plant({
             id: 'A0002',
+            plant: 'tomato',
+            cultivar: 'Chocolate Stripes',
         });
         should(plant.id).equal('A0002');
         should(plant.type).equal('plant');
+        should(plant.plant).equal('tomato');
+        should(plant.cultivar).equal('Chocolate Stripes');
     });
     it("ageAt(targetType, startType) return elapsed days for given event", function() {
         var plant = new Plant();

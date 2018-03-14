@@ -30,6 +30,12 @@
             ];
         }
 
+        update(opts={}) {
+            super.update(opts);
+            this.cultivar = opts.cultivar || this.cultivar;
+            this.plant = opts.plant || this.plant;
+        }
+
     }
 
     module.exports = exports.Plant = Plant;
