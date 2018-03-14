@@ -32,7 +32,7 @@ A `Plant` is an `Asset`.
 A `TValue` is a <i>temporal value</i>, which has properties:
 
 * **type** a string such as "location" (i.e., TValue.LOCATION)
-* **value** a value (default is true)
+* **value** arbitrary value (default is true)
 * **t** a timestamp (default is now)
 * **text** end-user annotation
 
