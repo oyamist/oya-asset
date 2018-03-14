@@ -3,8 +3,8 @@ OyaMist assets for crop and garden management.
 
 ### Asset
 Each `Asset` instance is uniquely identified by guid. 
-Assets have properties with temporal values (i.e, `TValue`),
-which can be read/written on a timeline.
+Assets can have normal properties (e.g., 'guid'),
+but can also have temporal properties with temporal values (i.e, `TValue`):
 
 ```JS
     var asset = new Asset();
