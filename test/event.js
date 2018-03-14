@@ -14,13 +14,13 @@
         var date = new Date(2018, 3, 11);
         var evt2 = new Event({
             t: date,
-            type: AssetDefs.EVENT_GERMINATING,
+            type: Event.E_GERMINATING,
         });
         should.deepEqual(evt2.t, date);
         should(evt2.type).equal('germinating');
     });
     it("eventTypes returns event types", function() {
-        should.deepEqual(AssetDefs.eventTypes(), [
+        should.deepEqual(Event.eventTypes(), [
             "begin",
             'germinating',
             'sprouted',

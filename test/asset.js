@@ -9,7 +9,7 @@
 
     it("Asset(opts) creates an asset", function() {
         var asset = new Asset();
-        should(asset.type).equal(AssetDefs.ASSET_PLANT);
+        should(asset.type).equal(Asset.A_PLANT);
         should(asset.id).equal(undefined);
         should.deepEqual(asset.events, []);
 
@@ -47,7 +47,7 @@
         });
     });
     it("assetTypes returns asset types", function() {
-        should.deepEqual(AssetDefs.assetTypes(), [
+        should.deepEqual(Asset.assetTypes(), [
             "actuator",
             "light",
             "mcu",

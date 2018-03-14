@@ -17,24 +17,24 @@
     it("ageAt(targetType, startType) return elapsed days for given event", function() {
         var plant = new Plant();
         plant.addEvent(new Event({
-            type: AssetDefs.EVENT_BEGIN,
+            type: Event.E_BEGIN,
             desc: 'seed paper towel in plastic wrap',
             t: new Date(2018,1,1,7,30),
         }));
         plant.addEvent(new Event({
-            type: AssetDefs.EVENT_GERMINATING,
+            type: Event.E_GERMINATING,
             desc: 'seed paper towel in plastic wrap',
             t: new Date(2018,1,5,8,30),
         }));
         plant.addEvent(new Event({
-            type: AssetDefs.EVENT_SPROUTED,
+            type: Event.E_SPROUTED,
             desc: 'seed paper towel in plastic wrap',
             t: new Date(2018,1,10,9,30),
         }));
-        should(plant.ageAt(AssetDefs.EVENT_GERMINATING)).equal(4);
-        should(plant.ageAt(AssetDefs.EVENT_SPROUTED)).equal(9);
-        should(plant.ageAt(AssetDefs.EVENT_SPROUTED, AssetDefs.EVENT_GERMINATING)).equal(5);
-        should(plant.ageAt(AssetDefs.EVENT_POLLINATED)).equal(null);
+        should(plant.ageAt(Event.E_GERMINATING)).equal(4);
+        should(plant.ageAt(Event.E_SPROUTED)).equal(9);
+        should(plant.ageAt(Event.E_SPROUTED, Event.E_GERMINATING)).equal(5);
+        should(plant.ageAt(Event.E_POLLINATED)).equal(null);
     });
     it("age() returns asset age in days", function() {
         var now = new Date();
@@ -42,14 +42,14 @@
         var lastWeek = new Date(now.getTime() - 7*24*3600*1000);
         var plant = new Plant();
         plant.addEvent({
-            type: AssetDefs.EVENT_BEGIN,
+            type: Event.E_BEGIN,
             t: lastWeek,
         });
         should(plant.age()).equal(7);
 
         // age is capped at end event
         plant.addEvent({
-            type: AssetDefs.EVENT_END,
+            type: Event.E_END,
             t: yesterday,
         });
         should(plant.age()).equal(6);
