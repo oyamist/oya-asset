@@ -1,6 +1,6 @@
 module.exports = {
     Asset: require("./src/asset"),
-    Event: require("./src/event"),
+    TValue: require("./src/tvalue"),
     Inventory: require("./src/inventory"),
     Plant: require("./src/plant"),
 };

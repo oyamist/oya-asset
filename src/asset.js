@@ -1,6 +1,6 @@
 (function(exports) {
     const uuidv4 = require("uuid/v4");
-    const Event = require('./event');
+    const TValue = require('./tvalue');
     const MSDAYS = 24*3600*1000;
 
     class Asset {
@@ -56,51 +56,63 @@
             }
             this.id = opts.id || this.id;
             this.guid = opts.guid || this.guid || uuidv4();
-            this.events = (opts.events || this.events || []).map(evt =>
-                (evt instanceof Event ? evt : new Event(evt)));
+            this.tvalues = (opts.tvalues || this.tvalues || []).map(evt =>
+                (evt instanceof TValue ? evt : new TValue(evt)));
             this._name = opts.name || this._name;
         }
 
-        addEvent(event) {
-            if (event == null) {
-                throw new Error('Asset.addEvent() event is required');
+        set(...args) {
+            if (typeof args[0] === 'string') { // set(type,value,date)
+                var tvalue = {
+                    type: args[0],
+                    value: args[1] === undefined ? true : args[1],
+                    t: args[2] || new Date(),
+                };
+            } else { // set(tvalue)
+                var tvalue = args[0];
             }
-            if (!(event instanceof Event)) {
-                event = new Event(event);
+            if (tvalue == null) {
+                throw new Error('Asset.set(tvalue) tvalue is required');
             }
-            this.events.push(event);
+            if (!(tvalue instanceof TValue)) {
+                tvalue = new TValue(tvalue);
+            }
+            this.tvalues.push(tvalue);
         }
 
-        eventValue(eventType, date = new Date()) {
-            var evt =  this.events.reduce((acc,evt) => {    
-               return evt.type === eventType && evt.t<=date ? evt : acc;
+        get(valueType, date = new Date()) {
+            var evt =  this.tvalues.reduce((acc,evt) => {    
+                if (evt.type === valueType) {
+                   return evt.t<=date && (!acc || evt.t >= acc.t) ? evt : acc;
+                }
+                return acc;
             }, null);
             return evt ? evt.value : null;
         }
 
         location(date = new Date()) {
-            return this.eventValue(Event.T_LOCATION, date);
+            return this.get(TValue.T_LOCATION, date);
         }
 
-        firstEvent(eventType = Event.T_BEGIN) {
-            return this.events.reduce((acc,evt) => 
+        firstTValue(eventType = TValue.T_BEGIN) {
+            return this.tvalues.reduce((acc,evt) => 
                 (acc || evt.type === eventType && evt || acc), null);
         }
 
-        eventElapsed(targetType, startType = Event.T_BEGIN) {
-            var eStart = this.firstEvent(startType);
+        eventElapsed(targetType, startType = TValue.T_BEGIN) {
+            var eStart = this.firstTValue(startType);
             if (eStart == null) {
-                throw new Error(`${this.name} has no event:${startType}`);
+                throw new Error(`${this.name} has no tvalue:${startType}`);
             }
             if (!(eStart.t instanceof Date)) {
-                throw new Error(`${this.name} has no timestamp for start event:${startType}`);
+                throw new Error(`${this.name} has no timestamp for start tvalue:${startType}`);
             }
-            var eTarget = this.firstEvent(targetType);
+            var eTarget = this.firstTValue(targetType);
             if (eTarget == null) {
                 return null; // hasn't happened yet
             }
             if (!(eTarget.t instanceof Date)) {
-                throw new Error(`${this.name} has no timestamp for target event:${targetType}`);
+                throw new Error(`${this.name} has no timestamp for target tvalue:${targetType}`);
             }
             return eTarget.t-eStart.t;
         }
@@ -110,11 +122,11 @@
         }
 
         age() {
-            var eStart = this.firstEvent(Event.T_BEGIN);
+            var eStart = this.firstTValue(TValue.T_BEGIN);
             if (eStart == null) {
-                throw new Error(`${this.name} has no event:${startType}`);
+                throw new Error(`${this.name} has no tvalue:${startType}`);
             }
-            var eEnd = this.firstEvent(Event.T_END);
+            var eEnd = this.firstTValue(TValue.T_END);
             if (eEnd) {
                 var elapsed = eEnd.t - eStart.t;
             } else {
@@ -123,7 +135,7 @@
             return this.ageElapsed(elapsed);
         }
 
-        ageAt(targetType, startType = Event.T_BEGIN) {
+        ageAt(targetType, startType = TValue.T_BEGIN) {
             var elapsed = this.eventElapsed(targetType, startType);
             return typeof elapsed === 'number' ?  this.ageElapsed(elapsed) : elapsed;
         }

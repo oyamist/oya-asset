@@ -4,14 +4,14 @@
     const {
         Asset,
         AssetDefs,
-        Event,
+        TValue,
     } = require("../index");
 
     it("Asset(opts) creates an asset", function() {
         var asset = new Asset();
         should(asset.type).equal(Asset.T_PLANT);
         should(asset.id).equal(undefined);
-        should.deepEqual(asset.events, []);
+        should.deepEqual(asset.tvalues, []);
 
         // Asset name is generated if not provided
         should.deepEqual(asset.name, `plant_${asset.guid.substr(0,6)}`); 
@@ -66,41 +66,59 @@
         var asset2 = new Asset(JSON.parse(json));
         should.deepEqual(asset2, asset);
 
-        asset.addEvent({
-            type: Event.T_BEGIN,
-            text: '1',
-            value: {
-                size: 'large',
-                color: 'blue',
-                qty: 3,
-            },
+        asset.set(TValue.T_BEGIN, {
+            size: 'large',
+            color: 'blue',
+            qty: 3,
         });
-        asset.addEvent({
-            type: Event.T_GERMINATING,
-            text: '2',
-        });
+        asset.set(TValue.T_DIMENSIONS);
         var json = JSON.stringify(asset);
         var asset2 = new Asset(JSON.parse(json));
         should.deepEqual(asset2, asset);
         should(asset2.name).equal('tomatoA');
     });
-    it("eventValue(eventType,date) returns event value for date", function() {
+    it("set(valueType, value, date) sets asset tvalue", function() {
         var asset = new Asset();
-        asset.addEvent({
-            type: Event.T_POLLINATED,
-            value: {
-                size: 'small',
-                qty: 2,
-            },
+
+        // set(valueType, value)
+        asset.set(TValue.T_LOCATION, 'SFO');
+        should(asset.get(TValue.T_LOCATION)).equal('SFO');
+        asset.set(TValue.T_LOCATION, 'LAX');
+        should(asset.get(TValue.T_LOCATION)).equal('LAX');
+
+        // set(tvalue)
+        asset.set(new TValue({
+            type: TValue.T_LOCATION, 
+            value: 'ATL',
+        }));
+        should(asset.get(TValue.T_LOCATION)).equal('ATL');
+        asset.set({
+            type: TValue.T_LOCATION, 
+            value: 'PIT',
         });
-        asset.addEvent({
-            type: Event.T_POLLINATED,
-            value: {
-                size: 'large',
-            },
+        should(asset.get(TValue.T_LOCATION)).equal('PIT');
+
+        // set prior value
+        var t1 = new Date(2018,1,10);
+        asset.set({
+            type: TValue.T_LOCATION, 
+            value: 'NYC',
+            t: t1,
+        });
+        should(asset.get(TValue.T_LOCATION,t1)).equal('NYC');
+        should(asset.get(TValue.T_LOCATION)).equal('PIT');
+    });
+    it("get(valueType,date) returns tvalue for date", function() {
+        var asset = new Asset();
+        asset.set(TValue.T_DIMENSIONS, {
+            size: 'small',
+            qty: 2,
+        });
+        asset.set(TValue.T_DIMENSIONS, { 
+            size: 'large', 
         });
         var asset = new Asset(JSON.parse(JSON.stringify(asset))); // is serializable
-        should.deepEqual(asset.eventValue(Event.T_POLLINATED), {
+        should.deepEqual(asset.get(TValue.T_DIMENSIONS), {
             size: 'large',
         });
     });
@@ -110,21 +128,9 @@
         var t1 = new Date(2018,1,1);
         var t2 = new Date(2018,1,2);
         var t3 = new Date(2018,1,3);
-        asset.addEvent({
-            type: Event.T_LOCATION,
-            t:t1,
-            value: 'SFO',
-        });
-        asset.addEvent({
-            type: Event.T_LOCATION,
-            t:t2,
-            value: 'LAX',
-        });
-        asset.addEvent({
-            type: Event.T_LOCATION,
-            t:t3,
-            value: 'PIT',
-        });
+        asset.set(TValue.T_LOCATION, 'SFO', t1);
+        asset.set(TValue.T_LOCATION, 'LAX', t2);
+        asset.set(TValue.T_LOCATION, 'PIT', t3);
         var asset = new Asset(JSON.parse(JSON.stringify(asset))); // is serializable
         should(asset.location()).equal('PIT');
         should(asset.location(t0)).equal(null);

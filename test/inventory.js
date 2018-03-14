@@ -1,9 +1,9 @@
-(typeof describe === 'function') && describe("Event", function() {
+(typeof describe === 'function') && describe("Inventory", function() {
     const winston = require('winston');
     const should = require("should");
     const {
         Asset,
-        Event,
+        TValue,
         Inventory,
         Plant,
     } = require("../index");
