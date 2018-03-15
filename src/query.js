@@ -31,31 +31,20 @@
             throw new Error(`Query.assetGuids() expected asset or collection of assets`);
         }
 
-        neighbors(set,valueType,t=new Date()) {
-            var guidMap = {};
-            var result = [];
-            this.assetGuids(set).forEach(guid=>{
-                var srcAsset = this.inventory.assetOfGuid(guid);
-                var value = srcAsset && srcAsset.get(valueType,t);
-                if (value && !guidMap[value]) {
-                    var dstAsset = this.inventory.assetOfGuid(value);
-                    if (dstAsset) { // value is an asset guid
-                        guidMap[value] = true;
-                        result.push(dstAsset);
-                    }
-                }
-            });
-            return result.sort(guidAscending);
+        parents(set,valueType,t=new Date()) {
+            return this.ancestors(set, valueType, t, 1);
         }
 
-        parents(set,valueType,t=new Date()) {
+        ancestors(set,valueType,t,n=0) {
+            t = t == null ? new Date() : t;
             var guidMap = {};
             var srcGuids = this.assetGuids(set);
             var result = [];
             srcGuids.forEach(guid=>{
                 var srcAsset = this.inventory.assetOfGuid(guid);
                 var value = srcAsset && srcAsset.get(valueType,t);
-                if (value && !guidMap[value]) {
+                var steps = 0;
+                while (value && !guidMap[value] && (n===0 || steps++<n)) {
                     var dstAsset = this.inventory.assetOfGuid(value);
                     if (dstAsset) { // value is an asset guid
                         guidMap[value] = true;
