@@ -19,11 +19,6 @@
             new Date(2018, 1, 3),
             new Date(2018, 1, 4),
             new Date(2018, 1, 5),
-            new Date(2018, 1, 6),
-            new Date(2018, 1, 7),
-            new Date(2018, 1, 8),
-            new Date(2018, 1, 9),
-            new Date(2018, 1, 10),
         ];
         var tomato1 = new Plant({
             plant: Plant.P_TOMATO,
@@ -233,5 +228,69 @@
         ].sort());
 
     });
+    it("descendants(set,valueType,date,n) returns assets with given ancestors", function() {
+        var td = testData();
+        var query = new Query({
+            inventory: td.inventory
+        });
+
+        // bucket1 has tomato1
+        should.deepEqual(query.descendants(td.bucket1, TValue.T_LOCATION).map(a=>a.name), [
+            'plant_P0001',
+        ]);
+
+        // tent1 has bucket1 and tomato1
+        should.deepEqual(query.descendants(td.tent1, TValue.T_LOCATION).map(a=>a.name).sort(), [
+            'plant_P0001',
+            'reservoir_B0001',
+        ]);
+
+        // tent1 had all buckets and tomatoes at t[0]
+        should.deepEqual(query.descendants(td.tent1, TValue.T_LOCATION, td.t[0]).map(a=>a.name).sort(), [
+            'plant_P0001',
+            'plant_P0002',
+            'reservoir_B0001',
+            'reservoir_B0002',
+        ]);
+
+        // tent2 had nothing at t[0]
+        should.deepEqual(query.descendants(td.tent2, TValue.T_LOCATION, td.t[0]).map(a=>a.name), []);
+
+        // tent2 currently has bucket2 and tomato2
+        should.deepEqual(query.descendants(td.tent2, TValue.T_LOCATION).map(a=>a.name).sort(), [
+            'plant_P0002',
+            'reservoir_B0002',
+        ]);
+
+        // at t[0], tent1 children were all buckets 
+        should.deepEqual(query.descendants(td.tent1, TValue.T_LOCATION, td.t[0], 1).map(a=>a.name).sort(), [
+            'reservoir_B0001',
+            'reservoir_B0002',
+        ]);
+
+        // at t[0], tent1 children and grandchildren were all buckets and plants
+        should.deepEqual(query.descendants(td.tent1, TValue.T_LOCATION, td.t[0], 2).map(a=>a.name).sort(), [
+            'plant_P0001',
+            'plant_P0002',
+            'reservoir_B0001',
+            'reservoir_B0002',
+        ]);
+
+        // tents are orphans
+        should.deepEqual(query.descendants(null, TValue.T_LOCATION, new Date(), 1).map(a=>a.name).sort(), [
+            'tent_T0001',
+            'tent_T0002',
+        ]);
+
+        // orphans and their children
+        should.deepEqual(query.descendants(null, TValue.T_LOCATION, new Date(), 2).map(a=>a.name).sort(), [
+            'reservoir_B0001',
+            'reservoir_B0002',
+            'tent_T0001',
+            'tent_T0002',
+        ]);
+
+    });
+
 
 })
