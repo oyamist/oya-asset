@@ -10,8 +10,8 @@
 
     it("Inventory(opts) creates an asset inventory", function() {
         var iv = new Inventory();
-        should(typeof iv.assets).equal('object');
-        should(Object.keys(iv.assets).length).equal(0);
+        should(typeof iv.assetMap).equal('object');
+        should(Object.keys(iv.assetMap).length).equal(0);
     });
     it("addAsset(asset) adds asset to inventory", function() {
         var iv = new Inventory();

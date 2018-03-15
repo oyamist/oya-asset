@@ -14,16 +14,21 @@
         }
 
         neighbors(set,valueType,t=new Date()) {
-            var startGuids = Object.keys(set,t);
-            var neighbors = {};
+            if (set instanceof Array) {
+                var startGuids = set.map(elt=>(typeof elt === 'string' ? elt : elt.guid));
+            } else {
+                var startGuids = Object.keys(set,t);
+            }
+            var guidMap = {};
             startGuids.forEach(guid=>{
                 var asset = this.inventory.assetOfGuid(guid);
                 if (asset) {
                     var value = asset.get(valueType,t);
-                    value != null && (neighbors[value] = true);
+                    value != null && (guidMap[value] = true);
                 }
             });
-            return neighbors;
+            var targetGuids = Object.keys(guidMap).sort();
+            return targetGuids.map(guid=>this.inventory.assetOfGuid(guid));
         }
     }
 

@@ -19,21 +19,27 @@
         }
 
         update(opts={}) {
-            this.assets = opts.assets || this.assets || {};
-            var keys = Object.keys(this.assets);
+            this.assetMap = opts.assetMap || this.assetMap || {};
+            var keys = Object.keys(this.assetMap);
             for (var i = 0; i < keys.length; i++) {
                 var key = keys[i];
-                var asset = this.assets[key];
+                var asset = this.assetMap[key];
                 if (asset == null) {
-                    delete this.assets[key];
+                    delete this.assetMap[key];
                 } else {
-                    this.assets[key] = this.assetOf(asset);
+                    this.assetMap[key] = this.assetOf(asset);
                 }
             }
         }
 
         assetOfGuid(guid) {
-            return this.assets[guid];
+            return this.assetMap[guid];
+        }
+
+        assets(filter) {
+            var guids = Object.keys(this.assetMap).sort();
+            var assets =  guids.map(guid=>this.assetMap[guid]);
+            return filter ? assets.filter(a=>filter.matches(a)) : assets;
         }
 
         addAsset(asset) {
@@ -43,7 +49,7 @@
             if (Asset.assetTypes().indexOf(asset.type) < 0) {
                 throw new Error(`Inventory.addAsset() invalid asset type:${asset.type}`);
             }
-            this.assets[asset.guid] = this.assetOf(asset);
+            this.assetMap[asset.guid] = this.assetOf(asset);
         }
     }
 

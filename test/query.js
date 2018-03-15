@@ -66,6 +66,14 @@
         inventory.addAsset(bucket2);
         inventory.addAsset(tent1);
         inventory.addAsset(tent2);
+        var assets = [
+            tomato1,
+            tomato2,
+            bucket1,
+            bucket2,
+            tent1,
+            tent2,
+        ].sort((a,b) => a.guid < b.guid ? -1 : (a.guid === b.guid ? 0 : 1));
 
         return {
             inventory,
@@ -76,6 +84,7 @@
             tent1,
             tent2,
             t,
+            assets,
         };
     }
 
@@ -113,29 +122,57 @@
             inventory: td.inventory
         });
     });
-    it("neighbors(set,valueType,date) returns set of immediate neigbors of set", function() {
+    it("neighbors(set,valueType,date) returns immediate neighbor set", function() {
         var td = testData();
         var query = new Query({
             inventory: td.inventory
         });
-        var bucketSet = {
-            [td.bucket1.guid]: true,
-            [td.bucket2.guid]: true,
-        };
-        var tentSet = query.neighbors(bucketSet, TValue.T_LOCATION, td.t[0]);
-        var tentGuids = Object.keys(tentSet).sort();
-        var expected = [
-            td.tent1.guid,
-        ].sort();
+
+        // at t[0] all buckets are in tent1
+        var buckets = [ td.bucket1, td.bucket2, ];
+        var tents = query.neighbors(buckets, TValue.T_LOCATION, td.t[0]);
+        var tentGuids = tents.map(tent=>tent.guid);
+        var expected = [ td.tent1.guid, ]; // no duplicates
         should.deepEqual(tentGuids, expected);
 
-        var tentSet = query.neighbors(bucketSet, TValue.T_LOCATION, td.t[1]);
-        var tentGuids = Object.keys(tentSet).sort();
-        var expected = [
-            td.tent1.guid,
-            td.tent2.guid,
-        ].sort();
+        // at t[1] one bucket is in each tent
+        var tents = query.neighbors(buckets, TValue.T_LOCATION, td.t[1]);
+        var tentGuids = tents.map(tent=>tent.guid); // ordered by guid
+        var expected = [ td.tent1.guid, td.tent2.guid, ].sort();
         should.deepEqual(tentGuids, expected);
+    });
+    it("assets(filter) returns assets matching filter", function() {
+        var td = testData();
+        var query = new Query({
+            inventory: td.inventory
+        });
+
+        // By default, return all assets, ordered by guid, ascending
+        var assets = td.inventory.assets();
+        should.deepEqual(assets.map(a=>a.guid), td.assets.map(a=>a.guid));
+        for (var i = 0; i< assets.length-1; i++) {
+            should(assets[i].guid).below(assets[i+1].guid);
+        }
+
+        // currently, only bucket1 is in tent1 
+        var tent1Filter = new Filter.TValueFilter(Filter.OP_EQ, {
+            type: TValue.T_LOCATION,
+            value: td.tent1.guid,
+        });
+        var assets = td.inventory.assets(tent1Filter);
+        should.deepEqual(assets.map(a=>a.guid), [td.bucket1.guid]);
+
+        // at t[0], both buckets were in tent1 
+        var tent1Filter = new Filter.TValueFilter(Filter.OP_EQ, {
+            type: TValue.T_LOCATION,
+            value: td.tent1.guid,
+            t: td.t[0],
+        });
+        var assets = td.inventory.assets(tent1Filter);
+        should.deepEqual(assets.map(a=>a.guid), [
+            td.bucket1.guid,
+            td.bucket2.guid,
+        ].sort());
     });
 
 })

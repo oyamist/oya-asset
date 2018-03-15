@@ -20,10 +20,10 @@
         }
 
         matches(asset) {
-            return false;
+            return true; // match all
         }
 
-    }
+    } // Filter
 
     class TValueFilter extends Filter {
         constructor(op=Filter.OP_EQ, tvalue, opts={}){
@@ -38,14 +38,15 @@
             super.update();
             this.tvalue = opts.tvalue || this.tvalue || new TValue();
             this.op = opts.op || this.op;
+            if (this.op && "!==>=<=".indexOf(this.op) < 0) {
+                throw new Error(`TValueFilter.update() invalid op:${this.op}`);
+            }
         }
 
         matchRelational(assetValue, op, tvalue) {
             if (typeof assetValue === 'string' || typeof assetValue === 'number') {
                 if (op === Filter.OP_EQ) {
-                    if (assetValue === tvalue.value) {
-                        return true;
-                    }
+                    return  (assetValue === tvalue.value);
                 } else if (op === Filter.OP_NE) {
                     return !this.matchRelational(assetValue, Filter.OP_EQ, tvalue);
                 } else if (op === Filter.OP_LT) {
@@ -53,25 +54,25 @@
                 } else if (op === Filter.OP_LE) {
                     return !this.matchRelational(assetValue, Filter.OP_GT, tvalue);
                 } else if (op === Filter.OP_GT) {
-                    if (assetValue > tvalue.value) {
-                        return true;
-                    }
+                    return (assetValue > tvalue.value);
                 } else if (op === Filter.OP_GE) {
-                    if (assetValue >= tvalue.value ) {
-                        return true;
-                    }
+                    return (assetValue >= tvalue.value );
                 }
             } else {
-                throw new Error(`TValueFilter.matchRelational() not implemented for value type:${typeof assetValue}`);
+                if (op === Filter.OP_EQ) {
+                    return assetValue === tvalue.value;
+                } else if (op === Filter.OP_NE) {
+                    return !this.matchRelational(assetValue, Filter.OP_EQ, tvalue);
+                }
             }
-            return false;
+            throw new Error(`TValueFilter.matchRelational() not implemented for op:${op} value:${JSON.stringify(assetValue)}`);
         }
 
         matches(asset) {
             var assetValue = asset.get(this.tvalue.type, this.tvalue.t);
             return this.matchRelational(assetValue, this.op, this.tvalue);
         }
-    }
+    } // class TValueFilterk
 
 
     module.exports = exports.Filter = Filter;
