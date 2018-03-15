@@ -4,6 +4,10 @@
     const Plant = require('./plant');
     const TValue = require('./tvalue');
 
+    function guidAscending(a,b) {
+        return a.guid < b.guid ? -1 : (a.guid === b.guid ? 0 : 1);
+    }
+
     class Query {
         constructor(opts={}) {
             this.update(opts);
@@ -13,22 +17,54 @@
             this.inventory = opts.inventory || this.inventory;
         }
 
-        neighbors(set,valueType,t=new Date()) {
-            if (set instanceof Array) {
-                var startGuids = set.map(elt=>(typeof elt === 'string' ? elt : elt.guid));
-            } else {
-                var startGuids = Object.keys(set,t);
+        assetGuids(assets) {
+            if (assets == null) {
+                return [];
+            } else if (assets instanceof Asset) {
+                return [assets.guid];
+            } else if (assets instanceof Array) {
+                return assets.map(elt=>(typeof elt === 'string' ? elt : elt.guid));
+            } else if (typeof assets === 'string') {
+                var asset = this.inventory.assetOfGuid(assets);
+                return asset ? [asset.guid] : [];
             }
+            throw new Error(`Query.assetGuids() expected asset or collection of assets`);
+        }
+
+        neighbors(set,valueType,t=new Date()) {
             var guidMap = {};
-            startGuids.forEach(guid=>{
-                var asset = this.inventory.assetOfGuid(guid);
-                if (asset) {
-                    var value = asset.get(valueType,t);
-                    value != null && (guidMap[value] = true);
+            var result = [];
+            this.assetGuids(set).forEach(guid=>{
+                var srcAsset = this.inventory.assetOfGuid(guid);
+                var value = srcAsset && srcAsset.get(valueType,t);
+                if (value && !guidMap[value]) {
+                    var dstAsset = this.inventory.assetOfGuid(value);
+                    if (dstAsset) { // value is an asset guid
+                        guidMap[value] = true;
+                        result.push(dstAsset);
+                    }
                 }
             });
-            var targetGuids = Object.keys(guidMap).sort();
-            return targetGuids.map(guid=>this.inventory.assetOfGuid(guid));
+            return result.sort(guidAscending);
+        }
+
+        parents(set,valueType,t=new Date()) {
+            var guidMap = {};
+            var srcGuids = this.assetGuids(set);
+            var result = [];
+            srcGuids.forEach(guid=>{
+                var srcAsset = this.inventory.assetOfGuid(guid);
+                var value = srcAsset && srcAsset.get(valueType,t);
+                if (value && !guidMap[value]) {
+                    var dstAsset = this.inventory.assetOfGuid(value);
+                    if (dstAsset) { // value is an asset guid
+                        guidMap[value] = true;
+                        result.push(dstAsset);
+                        value = dstAsset.get(valueType,t);
+                    }
+                }
+            });
+            return result.sort(guidAscending);
         }
     }
 

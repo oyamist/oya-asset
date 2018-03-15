@@ -140,6 +140,24 @@
         var tentGuids = tents.map(tent=>tent.guid); // ordered by guid
         var expected = [ td.tent1.guid, td.tent2.guid, ].sort();
         should.deepEqual(tentGuids, expected);
+
+        // no inputs
+        should.deepEqual(query.neighbors(undefined, TValue.T_LOCATION), []);
+        should.deepEqual(query.neighbors(null, TValue.T_LOCATION), []);
+        should.deepEqual(query.neighbors([], TValue.T_LOCATION), []);
+
+        // alternate form: neighbors(asset)
+        var tents = query.neighbors(td.bucket1, TValue.T_LOCATION);
+        should.deepEqual(tents.map(tent=>tent.guid), [ td.tent1.guid ]);
+
+        // alternate form: neighbors([assetGuid])
+        var tents = query.neighbors([td.bucket1.guid], TValue.T_LOCATION);
+        should.deepEqual(tents.map(tent=>tent.guid), [ td.tent1.guid ]);
+
+        // alternate form: neighbors(assetGuid)
+        var tents = query.neighbors(td.bucket1.guid, TValue.T_LOCATION);
+        should.deepEqual(tents.map(tent=>tent.guid), [ td.tent1.guid ]);
+
     });
     it("assets(filter) returns assets matching filter", function() {
         var td = testData();
@@ -173,6 +191,25 @@
             td.bucket1.guid,
             td.bucket2.guid,
         ].sort());
+    });
+    it("parents(set,valueType,date) returns parent assets", function() {
+        var td = testData();
+        var query = new Query({
+            inventory: td.inventory
+        });
+
+        // at t[0] all buckets are in tent1
+        var buckets = [ td.bucket1, td.bucket2, ];
+        var tents = query.neighbors(buckets, TValue.T_LOCATION, td.t[0]);
+        var tentGuids = tents.map(tent=>tent.guid);
+        var expected = [ td.tent1.guid, ]; // no duplicates
+        should.deepEqual(tentGuids, expected);
+
+        // at t[1] one bucket is in each tent
+        var tents = query.neighbors(buckets, TValue.T_LOCATION, td.t[1]);
+        var tentGuids = tents.map(tent=>tent.guid); // ordered by guid
+        var expected = [ td.tent1.guid, td.tent2.guid, ].sort();
+        should.deepEqual(tentGuids, expected);
     });
 
 })
