@@ -2,11 +2,13 @@
     const winston = require('winston');
     const should = require("should");
     const {
+        Asset,
+        Filter,
+        Inventory,
+        Plant,
         Query,
         TValue,
-        Plant,
-        Asset,
-        Inventory
+
     } = require("../index");
     
     function testData() {
@@ -102,7 +104,7 @@
         // bucket2 moved to tent2 on t[1]
         should(td.bucket2.get(TValue.T_LOCATION, td.t[1])).equal(td.tent2.guid);  
     });
-    it("Query(opts) createa a query", function() {
+    it("Query(opts) create a query", function() {
         var td = testData();
         var query = new Query({
             inventory: td.inventory
@@ -110,6 +112,30 @@
         should(query).properties({
             inventory: td.inventory
         });
+    });
+    it("neighbors(set,valueType,date) returns set of immediate neigbors of set", function() {
+        var td = testData();
+        var query = new Query({
+            inventory: td.inventory
+        });
+        var bucketSet = {
+            [td.bucket1.guid]: true,
+            [td.bucket2.guid]: true,
+        };
+        var tentSet = query.neighbors(bucketSet, TValue.T_LOCATION, td.t[0]);
+        var tentGuids = Object.keys(tentSet).sort();
+        var expected = [
+            td.tent1.guid,
+        ].sort();
+        should.deepEqual(tentGuids, expected);
+
+        var tentSet = query.neighbors(bucketSet, TValue.T_LOCATION, td.t[1]);
+        var tentGuids = Object.keys(tentSet).sort();
+        var expected = [
+            td.tent1.guid,
+            td.tent2.guid,
+        ].sort();
+        should.deepEqual(tentGuids, expected);
     });
 
 })
