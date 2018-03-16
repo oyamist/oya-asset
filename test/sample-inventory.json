@@ -1,0 +1,46 @@
+{
+    "type": "Inventory",
+    "assetMap": {
+        "GUID001": {
+            "type": "plant",
+            "guid":"GUID001",
+            "name": "Tomato1",
+            "id": "A0001",
+            "tvalues":[{
+                "type": "location",
+                "t": "2018-03-12T00:00:00Z",
+                "value":"GUID003"
+            }]
+        },
+        "GUID002": {
+            "type": "plant",
+            "guid":"GUID002",
+            "name": "Tomato2",
+            "id": "A0002",
+            "tvalues":[{
+                "type": "location",
+                "t": "2018-03-12T00:00:00Z",
+                "value":"GUID003"
+            },{
+                "type": "location",
+                "t": "2018-03-13T00:00:00Z",
+                "value":"GUID004"
+            }]
+        },
+        "GUID003": {
+            "type": "reservoir",
+            "guid":"GUID003",
+            "name": "Bucket1",
+            "id": "A0003",
+            "tvalues":[]
+        },
+        "GUID004": {
+            "type": "reservoir",
+            "guid":"GUID004",
+            "name": "Bucket2",
+            "id": "A0004",
+            "tvalues":[]
+        }
+        
+    }
+}

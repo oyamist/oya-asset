@@ -1,5 +1,6 @@
 (function(exports) {
     const winston = require('winston');
+    const Inventory = require('./inventory');
     const EventEmitter = require("events");
     const srcPkg = require("../package.json");
     const fs = require('fs');
@@ -9,19 +10,7 @@
         RbHash,
         RbSingleton,
     } = require("rest-bundle");
-    //const DiffUpsert = require('diff-upsert').DiffUpsert;
     const exec = require('child_process').exec;
-    /*
-    const memwatch = require('memwatch-next');
-    memwatch.on('leak', (info) => {
-        winston.warn('memwatch() => leak', JSON.stringify(info));
-    });
-    const SENSOR_EVENTS = {
-        tempInternal: OyaMist.SENSE_TEMP_INTERNAL,
-        humidityInternal: OyaMist.SENSE_HUMIDITY_INTERNAL,
-        ecInternal: OyaMist.SENSE_EC_INTERNAL,
-    };
-    */
 
     class RbAsset extends RestBundle {
         constructor(name = "test", opts = {}) {
@@ -29,32 +18,23 @@
                 srcPkg,
             }, opts));
 
+            this.update(opts);
+
             winston.info(`RbAsset.ctor(${name})`);
             Object.defineProperty(this, "handlers", {
                 value: super.handlers.concat([
-                    /*
-                    this.resourceMethod("get", "mcu/hats", this.getMcuHats),
-                    this.resourceMethod("get", "net/hosts", this.getNetHosts),
-                    this.resourceMethod("get", "net/hosts/:service", this.getNetHosts),
-                    this.resourceMethod("get", "oya-conf", this.getOyaConf),
-                    this.resourceMethod("get", "sensor/data-by-hour/:field", this.getSensorDataByHour),
-                    this.resourceMethod("get", "sensor/data-by-hour/:field/:days/:endDate", this.getSensorDataByHour),
-                    this.resourceMethod("get", "sensor/locations", this.getSensorLocations),
-                    this.resourceMethod("get", "sensor/types", this.getSensorTypes),
-                    this.resourceMethod("post", "actuator", this.postActuator),
-                    this.resourceMethod("post", "app/restart", this.postAppRestart),
-                    this.resourceMethod("post", "app/update", this.postAppUpdate),
-                    this.resourceMethod("post", "reactor", this.postReactor),
-                    this.resourceMethod("post", "sensor", this.postSensor),
-                    this.resourceMethod("post", "sensor/calibrate", this.postSensorCalibrate),
-                    this.resourceMethod("put", "oya-conf", this.putOyaConf),
-                    */
+                    this.resourceMethod("get", "assets/:date", this.getAssets),
                 ]),
             });
         }
 
+        update(opts={}) {
+            this.inventoryPath = opts.inventoryPath || path.join(global.__appdir, 'inventory.json');
+        }
+
         initialize() {
             var promise = super.initialize();
+            var that = this;
             return new Promise((resolve,reject) => {
                 var async = function*() {
                     try {
@@ -62,7 +42,14 @@
                             winston.error(e.stack);
                             reject(e);
                         });
-                        winston.info(`RbAsset.initialize()`);
+                        if (fs.existsSync(that.inventoryPath)) {
+                            winston.info(`RbAsset.initialize() loading: ${that.inventoryPath}`);
+                            var json = JSON.parse(fs.readFileSync(that.inventoryPath));
+                            that.inventory = new Inventory(json);
+                        } else {
+                            winston.info(`RbAsset.initialize() using default inventory`);
+                            that.inventory = new Inventory();
+                        }
                         resolve();
                     } catch (e) {
                         winston.error(e.stack);
@@ -71,6 +58,15 @@
                 }();
                 async.next();
             });
+        }
+
+        getAssets(req, res, next) {
+            var date = new Date(req.params.date);
+            var assets = this.inventory.assets().map(asset=>asset.snapshot(date));
+            return {
+                date,
+                assets: this.inventory.assets().map(asset=>asset.snapshot(date)),
+            };
         }
 
 

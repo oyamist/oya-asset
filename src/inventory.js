@@ -5,6 +5,7 @@
     class Inventory {
         constructor(opts={}) {
             this.update(opts);
+            this.type = 'Inventory';
         }
 
         assetOf(asset) {

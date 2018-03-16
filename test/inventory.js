@@ -41,8 +41,28 @@
         should(iv2.assetOfGuid(tent1.guid).name).equal('tent1');
         
     });
-    it("Inventory is serializable", function() {
+    it("TESTTESTInventory is serializable", function() {
         var iv = new Inventory();
+        var plant1 = new Plant({
+            name: 'plant1',
+            plant: Plant.P_TOMATO,
+            cultivar: Plant.C_CHOCOLATE_STRIPES,
+        });
+        var plant2 = new Plant({
+            name: 'plant2',
+        });
+        var tent1 = new Asset({
+            name: 'tent1',
+            type: Asset.T_TENT,
+        });
+        iv.addAsset(plant1);
+        iv.addAsset(plant2);
+        iv.addAsset(tent1);
+        should(iv.assetMap[plant1.guid]).equal(plant1);
+
+        var ivcopy = new Inventory(JSON.parse(JSON.stringify(iv)));
+        should.deepEqual(ivcopy, iv);
+        should(ivcopy.assetMap[plant1.guid]).instanceOf(Plant);
     });
 
 })

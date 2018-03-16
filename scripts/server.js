@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+const fs = require('fs');
 const path = require("path");
 const winston = require("winston");
 const compression = require("compression");
@@ -41,9 +42,17 @@ let async = function*() {
             return acc==null && i>1 && arg[0]!=='-' ? arg : acc;
         }, null) || 'test';
         winston.info(`server.js setting up ${serviceName}`);
+        var inventoryPath;
+        if (serviceName === 'test') {
+            var json = fs.readFileSync(path.join(__dirname, '..', 'test', 'sample-inventory.json'));
+            inventoryPath = '/tmp/inventory.json';
+            fs.writeFileSync(inventoryPath, json);
+        }
+
 
         var rbasset = new RbAsset(serviceName, {
             emitter: oyaEmitter,
+            inventoryPath,
         });
         yield rbasset.initialize().then(r=>async.next(r)).catch(e=>async.throw(e));
         restBundles.push(rbasset);
