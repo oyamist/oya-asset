@@ -84,6 +84,25 @@
             this.tvalues.push(tvalue);
         }
 
+        snapshot(t=new Date()) {
+            var snapshot = {
+                guid: this.guid,
+                name: this.name,
+                id: this.id,
+                type: this.type,
+            }
+            var typeMap = {};
+            return this.tvalues.reduce((snapshot,evt) => {    
+                var valueType = evt.type;
+                var tv = typeMap[valueType];
+                if (!tv && evt.t <= t || tv && tv.t <= evt.t && evt.t <= t) {
+                    snapshot[valueType] = evt.value;
+                    typeMap[valueType] = evt;
+                }
+                return snapshot;
+            }, snapshot);
+        }
+
         getTValue(valueType, date = new Date()) {
             return this.tvalues.reduce((acc,evt) => {    
                 if (evt.type === valueType) {

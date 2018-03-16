@@ -167,5 +167,66 @@
         should(asset.location(new Date(t2.getTime()+1))).equal('LAX');
         should(asset.location(t3)).equal('PIT');
     });
+    it("TESTTESTsnapshot(date) returns asset properties for date", function() {
+        var asset = new Asset({
+            type: Asset.T_PUMP,
+            id: "A0001",
+        });
+        should.deepEqual(asset.snapshot(), {
+            type: Asset.T_PUMP,
+            id: 'A0001',
+            name: 'pump_A0001',
+            guid: asset.guid,
+        });
+        var t0 = new Date(2018,0,1);
+        var t1 = new Date(2018,1,1);
+        var t2 = new Date(2018,1,2);
+        var t3 = new Date(2018,1,3);
+        asset.set(TValue.T_LOCATION, 'SFO', t1);
+        asset.set(TValue.T_LOCATION, 'LAX', t2);
+        asset.set(TValue.T_LOCATION, 'PIT', t3);
+        should.deepEqual(asset.snapshot(), {
+            type: Asset.T_PUMP,
+            id: 'A0001',
+            name: 'pump_A0001',
+            guid: asset.guid,
+            location: 'PIT',
+        });
+        should.deepEqual(asset.snapshot(new Date(t1.getTime()-1)), {
+            type: Asset.T_PUMP,
+            id: 'A0001',
+            name: 'pump_A0001',
+            guid: asset.guid,
+            // no location
+        });
+        should.deepEqual(asset.snapshot(t1), {
+            type: Asset.T_PUMP,
+            id: 'A0001',
+            name: 'pump_A0001',
+            guid: asset.guid,
+            location: 'SFO',
+        });
+        should.deepEqual(asset.snapshot(new Date(t2.getTime()-1)), {
+            type: Asset.T_PUMP,
+            id: 'A0001',
+            name: 'pump_A0001',
+            guid: asset.guid,
+            location: 'SFO',
+        });
+        should.deepEqual(asset.snapshot(t2), {
+            type: Asset.T_PUMP,
+            id: 'A0001',
+            name: 'pump_A0001',
+            guid: asset.guid,
+            location: 'LAX',
+        });
+        should.deepEqual(asset.snapshot(t3), {
+            type: Asset.T_PUMP,
+            id: 'A0001',
+            name: 'pump_A0001',
+            guid: asset.guid,
+            location: 'PIT',
+        });
+    });
 
 })
