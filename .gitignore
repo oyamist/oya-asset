@@ -2,7 +2,7 @@
 dist
 .motion
 api-model/
-oyamist*.db
+oya-assets*.db
 unit-test*.db
 
 # Logs
