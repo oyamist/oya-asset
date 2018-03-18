@@ -41,15 +41,16 @@ let async = function*() {
         var serviceName = argv.reduce((acc, arg, i) =>  {
             return acc==null && i>1 && arg[0]!=='-' ? arg : acc;
         }, null) || 'test';
-        winston.info(`server.js setting up ${serviceName}`);
         var inventoryPath;
         if (serviceName === 'test') {
             var json = fs.readFileSync(path.join(__dirname, '..', 'test', 'sample-inventory.json'));
             inventoryPath = '/tmp/inventory.json';
             fs.writeFileSync(inventoryPath, json);
+        } else {
+            inventoryPath = path.join(__dirname, '..', 'inventory.json');
         }
 
-
+        winston.info(`server.js RbAsset(${serviceName}) ${inventoryPath}`);
         var rbasset = new RbAsset(serviceName, {
             emitter: oyaEmitter,
             inventoryPath,

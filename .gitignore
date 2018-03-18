@@ -1,6 +1,6 @@
 # OyaMist
 dist
-.motion
+inventory.json
 api-model/
 oya-assets*.db
 unit-test*.db

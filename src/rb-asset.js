@@ -24,6 +24,7 @@
             Object.defineProperty(this, "handlers", {
                 value: super.handlers.concat([
                     this.resourceMethod("get", "assets/:date", this.getAssets),
+                    this.resourceMethod("get", "assets", this.getAssets),
                 ]),
             });
         }
@@ -61,7 +62,7 @@
         }
 
         getAssets(req, res, next) {
-            var date = new Date(req.params.date);
+            var date = req.params.date ? new Date(req.params.date) : new Date();
             var assets = this.inventory.assets().map(asset=>asset.snapshot(date));
             return {
                 date,
