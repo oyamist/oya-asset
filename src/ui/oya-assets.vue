@@ -6,30 +6,43 @@
         <p> Display network informationprogress
         </p>
         <rb-about-item name="about" value="false" slot="prop">Show this descriptive text</rb-about-item>
-        <rb-about-item name="service" value="oya-assets" slot="prop">RestBundle name</rb-about-item>
-        <rb-about-item name="queryService" value="(service)" slot="prop">Service name to query</rb-about-item>
+        <rb-about-item name="service" value="oya-asset" slot="prop">RestBundle name</rb-about-item>
     </rb-about>
 
     <v-card>
         <v-card-title primary-title>
-            <h3> Network hosts: {{service}}</h3>
+            <h3> Assets: {{service}}</h3>
+            <v-spacer/>
+            <v-text-field append-icon="search" label="Search" single-line clearable
+                :change="searchChanged()" hide-details v-model="search" ></v-text-field>
         </v-card-title>
-        <v-data-table v-bind:headers="headers" :items="hosts" hide-actions class="elevation-1" >
-            <template slot="items" slot-scope="hosts">
-                <td class="text-xs-left" >
-                    <a :href="link(hosts.item)" > {{ hosts.item.vessel }} </a>
-                </td>
-                <td class="text-xs-left">
-                    <a :href="link(hosts.item)" > {{ hosts.item.version }} </a>
-                </td>
-                <td class="text-xs-left">
-                    <a :href="link(hosts.item)" slot="activator"> {{ hosts.item.hostname }} </a>
-                </td>
-                <td class="text-xs-left">
-                    <a :href="link(hosts.item)" > {{ hosts.item.ip }} </a>
-                </td>
+        <v-data-table v-bind:headers="headers" :items="assets" hide-actions 
+            :pagination.sync="pagination"
+            :input="dataInput()"
+            v-bind:search="search" class="elevation-1" >
+            <template slot="items" slot-scope="asset">
+                <tr @click="asset.expanded = !asset.expanded" >
+                    <td class="text-xs-left oya-asset-cell"> {{ asset.item.type }} </td>
+                    <td class="text-xs-left oya-asset-cell"> {{ asset.item.name }} </td>
+                    <td class="text-xs-left oya-asset-cell"> {{ asset.item.id }} </td>
+                    <td class="text-xs-left oya-asset-cell"> {{ asset.item.guid }} </td>
+                </tr>
+            </template>
+            <template slot="expand" slot-scope="asset">
+                <v-container fluid class="oya-asset-expand">
+                    <v-layout row v-for="key in Object.keys(asset.item).sort()" :key="key"
+                        class="pl-5">
+                        <v-flex xs2 class='body-2'>{{key}}</v-flex>
+                        <v-flex >{{assetValue(key, asset.item)}}</v-flex>
+                    </v-layout>
+                </v-container>
             </template>
         </v-data-table>
+        <div class="text-xs-center pt-3">
+            <v-pagination circle :length="Math.round(0.5+assets.length/itemsPerPage)" 
+                v-model="pagination.page" 
+                :total-visible="assets.length"></v-pagination>
+        </div>
     </v-card>
 </div>
 
@@ -45,30 +58,51 @@ export default {
         rbvue.mixins.RbServiceMixin,
     ],
     props: {
-        queryService: {
-            default: null,
-        },
         service: {
-            default: 'oya-assets',
+            default: 'oya-asset',
+        },
+        itemsPerPage: {
+            default: 3,
         },
     },
     data: function() {
         return {
-            hosts: [{
-                name: 'oya-assets',
-            }],
+            assets: [],
+            assetMap: {},
+            page: 1,
+            search: "",
+            pagination: { 
+                page: 1, 
+                rowsPerPage: 2, 
+                descending: false, 
+                totalItems: 0,
+            },
         }
     },
     methods: {
+        assetValue(key, item) {
+            var value = item[key]
+            var asset = key !== 'guid' && this.assetMap[value];
+            return asset ? `${asset.name} \u2022 ${asset.id} \u2022 ${asset.type}` : value;
+        },
         refresh(opts={}) {
-            console.log('refreshing', this.queryService);
-            var url = [this.restOrigin(), this.service, 'net', 'hosts', 
-                this.queryService || this.service].join('/');
+            var url = [this.restOrigin(), this.service, 'assets'].join('/');
+            console.log(`refreshing ${url}`);
             this.$http.get(url).then(res=>{
-                this.hosts = res.data;
+                this.assets = res.data.assets || [];
+                this.assetMap = {};
+                this.assets.forEach(asset=>this.assetMap[asset.guid] = asset);
+                this.pagination.totalItems = this.assets.length;
+                this.pagination.rowsPerPage = this.itemsPerPage;
             }).catch(e=>{
                 console.error(e);
             });
+        },
+        dataInput(values) {
+            console.log(`data input ${values}`);
+        },
+        searchChanged() {
+            console.log(`search change ${this.search}`);
         },
         link(host) {
             if (host.hostname === 'localhost') {
@@ -81,11 +115,10 @@ export default {
     computed: {
         headers() {
             return [
-                { text: 'Vessel', align: 'left', value: 'vessel' },
-                { text: 'Status', align: 'left', value: 'health' },
-                { text: 'Version', align: 'left', value: 'version' },
-                { text: 'Host', align: 'left', value: 'hostname' },
-                { text: 'Address', align: 'left', value: 'ip' },
+                { text: 'Type', align: 'left', value: 'type' },
+                { text: 'Name', align: 'left', value: 'name' },
+                { text: 'Id', align: 'left', value: 'id' },
+                { text: 'GUID', align: 'left', value: 'guid' },
             ];
         },
     },
@@ -96,4 +129,10 @@ export default {
 
 </script>
 <style> 
+.oya-asset-cell {
+    width: 25%;
+}
+.oya-asset-expand {
+    background:#eee;
+}
 </style>

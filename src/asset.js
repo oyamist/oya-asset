@@ -85,12 +85,8 @@
         }
 
         snapshot(t=new Date()) {
-            var snapshot = {
-                guid: this.guid,
-                name: this.name,
-                id: this.id,
-                type: this.type,
-            }
+            var snapshot = Object.assign({}, this);
+            delete snapshot.tvalues;
             var typeMap = {};
             return this.tvalues.reduce((snapshot,evt) => {    
                 var valueType = evt.type;

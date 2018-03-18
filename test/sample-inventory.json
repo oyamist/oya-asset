@@ -3,6 +3,8 @@
     "assetMap": {
         "GUID001": {
             "type": "plant",
+            "plant": "tomato",
+            "cultivar": "Chocolate Stripes",
             "guid":"GUID001",
             "name": "Tomato1",
             "id": "A0001",
