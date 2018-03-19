@@ -3,7 +3,7 @@
     <v-expansion-panel>
         <v-expansion-panel-content>
             <div slot="header">Assets</div>
-            <oya-assets />
+            <oya-inventory />
         </v-expansion-panel-content>
         <v-expansion-panel-content>
             <div slot="header">Developer</div>

@@ -1,7 +1,7 @@
-import OyaAssets from "./src/ui/oya-assets.vue";
+import OyaInventory from "./src/ui/oya-inventory.vue";
 
 var components = {
-    OyaAssets,
+    OyaInventory,
 
 }
 function plugin(Vue, options) {
