@@ -9,10 +9,11 @@
         static get T_NONE() { return "(none)"; } // singular
         static get T_BEGIN() { return "begin"; } // singular
         static get T_END() { return "end"; } // singular
-        static get T_ID() { return "id"; } // singular
-        static get T_SIZE() { return "size"; } // singular
-        static get T_DIMENSIONS() { return "dimensions"; } // singular
-        static get T_LOCATION() { return "location"; } // multiple
+        static get T_ID() { return "id"; } 
+        static get T_NAME() { return "name"; } 
+        static get T_SIZE() { return "size"; } 
+        static get T_DIMENSIONS() { return "dimensions"; } 
+        static get T_LOCATION() { return "location"; } 
 
         static get TIME_RESOLUTION_MS() { return 1; }
 
@@ -25,6 +26,7 @@
                 TValue.T_END,
                 TValue.T_ID,
                 TValue.T_LOCATION,
+                TValue.T_NAME,
                 TValue.T_SIZE,
 
             ];

@@ -32,6 +32,7 @@
             "end",
             "id",
             "location",
+            "name",
             "size",
 
         ]);
