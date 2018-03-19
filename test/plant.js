@@ -7,7 +7,7 @@
         Plant,
     } = require("../index");
 
-    it("Plant(opts) creates a plant asset", function() {
+    it("TESTTESTPlant(opts) creates a plant asset", function() {
         var plant = new Plant({
             id: 'A0002',
             plant: 'tomato',
@@ -17,6 +17,38 @@
         should(plant.type).equal('plant');
         should(plant.plant).equal('tomato');
         should(plant.cultivar).equal('Chocolate Stripes');
+        should(plant.name).equal(`Chocolate Stripes tomato_A0002`);
+
+        var plant = new Plant({
+            cultivar: 'Cherokee Purple',
+        });
+        var idExpected = plant.guid.substr(0,7);
+        should(plant.id).equal(idExpected);
+        should(plant.type).equal('plant');
+        should(plant.plant).equal(null);
+        should(plant.cultivar).equal('Cherokee Purple');
+        should(plant.name).equal(`Cherokee Purple plant_${idExpected}`);
+
+        var plant = new Plant({
+            plant: 'corn',
+        });
+        var idExpected = plant.guid.substr(0,7);
+        should(plant.id).equal(idExpected);
+        should(plant.type).equal('plant');
+        should(plant.plant).equal('corn');
+        should(plant.cultivar).equal(null);
+        should(plant.name).equal(`corn_${idExpected}`);
+
+        var plant = new Plant({
+            plant: 'corn',
+            cultivar: '',
+        });
+        var idExpected = plant.guid.substr(0,7);
+        should(plant.id).equal(idExpected);
+        should(plant.type).equal('plant');
+        should(plant.plant).equal('corn');
+        should(plant.cultivar).equal('');
+        should(plant.name).equal(`corn_${idExpected}`);
     });
     it("ageAt(targetType, startType) return elapsed days for given event", function() {
         var plant = new Plant();

@@ -31,7 +31,7 @@
         }();
         async.next();
     });
-    it("TESTTESTRbAsset(name,opts) creates an asset RestBundle", function(done){
+    it("RbAsset(name,opts) creates an asset RestBundle", function(done){
         var async = function*() {
             try {
                 // default ctor

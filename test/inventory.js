@@ -60,7 +60,8 @@
         iv.addAsset(tent1);
         should(iv.assetMap[plant1.guid]).equal(plant1);
 
-        var ivcopy = new Inventory(JSON.parse(JSON.stringify(iv)));
+        var json = JSON.parse(JSON.stringify(iv));
+        var ivcopy = new Inventory(json);
         should.deepEqual(ivcopy, iv);
         should(ivcopy.assetMap[plant1.guid]).instanceOf(Plant);
     });

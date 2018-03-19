@@ -3,7 +3,22 @@
 
     class TValue {
         constructor(opts={}) {
-            this.update(opts);
+            this.t = opts.t || new Date();
+            if (!(this.t instanceof Date)) {
+                this.t = new Date(this.t);
+            }
+            if (opts.hasOwnProperty('type')) {
+                if (typeof opts.type !== 'string') {
+                    throw new Error(`Invalid type:${opts.type}`);
+                }
+                this.type = opts.type;
+            } else {
+                this.type = TValue.T_NONE;
+            }
+            this.value = opts.value;
+            if (opts.text != null) {
+                this.text = opts.text;
+            }
         }
 
         static get T_NONE() { return "(none)"; } // singular
@@ -16,6 +31,7 @@
         static get T_LOCATION() { return "location"; } 
 
         static get TIME_RESOLUTION_MS() { return 1; }
+        static get RETROACTIVE() { return new Date(0); }
 
         static valueTypes() {
             return [
@@ -32,24 +48,6 @@
             ];
         }
 
-        update(opts={}) {
-            this.t = opts.t || this.t || new Date();
-            if (!(this.t instanceof Date)) {
-                this.t = new Date(this.t);
-            }
-            if (opts.hasOwnProperty('type')) {
-                if (typeof opts.type !== 'string') {
-                    throw new Error(`Invalid type:${opts.type}`);
-                }
-                this.type = opts.type;
-            } else {
-                this.type = this.type || TValue.T_NONE;
-            }
-            this.value = opts.value || this.value;
-            if (opts.text != null) {
-                this.text = opts.text;
-            }
-        }
     }
 
     module.exports = exports.TValue = TValue;

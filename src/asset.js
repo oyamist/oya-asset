@@ -2,7 +2,6 @@
     const uuidv4 = require("uuid/v4");
     const TValue = require('./tvalue');
     const MSDAYS = 24*3600*1000;
-    const RETROACTIVE = new Date(0); // January 1, 1970 UTC (just because)
     const SHORT_GUID_DIGITS = 7; // same as git default
 
     class Asset {
@@ -20,36 +19,24 @@
             this.tvalues = (opts.tvalues || []).map(evt =>
                 (evt instanceof TValue ? evt : new TValue(evt)));
 
-            // id appears on the asset tag, which can be lost and replaced
-            // id is therefore a temporal value 
+            // Asset id is retroactive temporal value initializable with ctor options
             if (opts.hasOwnProperty('id')) {
-                // in common usage, the initial setting of an id is retroactive
-                this.set(TValue.T_ID, opts.id, RETROACTIVE);
+                this.set(TValue.T_ID, opts.id, TValue.RETROACTIVE);
             } else if (opts.tvalues) {
                 // id is in the tvalues
             } else {
-                this.set(TValue.T_ID, this.guid.substr(0,SHORT_GUID_DIGITS), RETROACTIVE);
+                this.set(TValue.T_ID, this.guid.substr(0,SHORT_GUID_DIGITS), TValue.RETROACTIVE);
             }
 
-            Object.defineProperty(this, "_name", {
-                writable: true,
-            });
-            Object.defineProperty(this, "name", {
-                enumerable: true,
-                get() {
-                    if (this._name){
-                        return this._name;
-                    }
-                    var id = this.get(TValue.T_ID);
-                    return id && `${this.type}_${id}`
-                        || `${this.type}_${this.guid.substr(0,6)}`;
-                },
-                set(value) {
-                    this._name = value;
-                },
-            });
-
-            this._name = opts.name || this._name;
+            // Asset name is retroactive temporal value initializable with ctor options
+            if (opts.hasOwnProperty('name')) {
+                this.set(TValue.T_NAME, opts.name, TValue.RETROACTIVE);
+            } else if (opts.tvalues) {
+                // name is in tvalues
+            } else {
+                var name = `${this.namePrefix(opts)}${this.id}`;
+                this.set(TValue.T_NAME, name, TValue.RETROACTIVE);
+            }
             if (opts.begin) {
                 var t = opts.begin instanceof Date ? opts.begin : new Date(opts.begin);
                 this.set(TValue.T_BEGIN, true, t);
@@ -79,8 +66,15 @@
             ];
         }
 
+        namePrefix(opts={}) {
+            return `${this.type}_`;
+        }
+
         get id() { return this.get(TValue.T_ID); }
         set id(value) { this.set(TValue.T_ID, value); }
+
+        get name() { return this.get(TValue.T_NAME); }
+        set name(value) { this.set(TValue.T_NAME, value); }
 
         set(...args) {
             if (typeof args[0] === 'string') { // set(type,value,date)
@@ -104,13 +98,14 @@
         snapshot(t=new Date()) {
             var snapshot = Object.assign({}, this);
             delete snapshot.tvalues;
+            delete snapshot.name;
             var typeMap = {};
-            return this.tvalues.reduce((snapshot,evt) => {    
-                var valueType = evt.type;
+            return this.tvalues.reduce((snapshot,tvalue) => {    
+                var valueType = tvalue.type;
                 var tv = typeMap[valueType];
-                if (!tv && evt.t <= t || tv && tv.t <= evt.t && evt.t <= t) {
-                    snapshot[valueType] = evt.value;
-                    typeMap[valueType] = evt;
+                if (!tv && tvalue.t <= t || tv && tv.t <= tvalue.t && tvalue.t <= t) {
+                    snapshot[valueType] = tvalue.value;
+                    typeMap[valueType] = tvalue;
                 }
                 return snapshot;
             }, snapshot);

@@ -236,21 +236,21 @@
 
         // bucket1 has tomato1
         should.deepEqual(query.descendants(td.bucket1, TValue.T_LOCATION).map(a=>a.name), [
-            'plant_P0001',
+            'tomato_P0001',
         ]);
 
         // tent1 has bucket1 and tomato1
         should.deepEqual(query.descendants(td.tent1, TValue.T_LOCATION).map(a=>a.name).sort(), [
-            'plant_P0001',
+            'tomato_P0001',
             'reservoir_B0001',
-        ]);
+        ].sort());
 
         // tent1 had all buckets and tomatoes at t[0]
         should.deepEqual(query.descendants(td.tent1, TValue.T_LOCATION, td.t[0]).map(a=>a.name).sort(), [
-            'plant_P0001',
-            'plant_P0002',
             'reservoir_B0001',
             'reservoir_B0002',
+            'tomato_P0001',
+            'tomato_P0002',
         ]);
 
         // tent2 had nothing at t[0]
@@ -258,8 +258,8 @@
 
         // tent2 currently has bucket2 and tomato2
         should.deepEqual(query.descendants(td.tent2, TValue.T_LOCATION).map(a=>a.name).sort(), [
-            'plant_P0002',
             'reservoir_B0002',
+            'tomato_P0002',
         ]);
 
         // at t[0], tent1 children were all buckets 
@@ -270,11 +270,11 @@
 
         // at t[0], tent1 children and grandchildren were all buckets and plants
         should.deepEqual(query.descendants(td.tent1, TValue.T_LOCATION, td.t[0], 2).map(a=>a.name).sort(), [
-            'plant_P0001',
-            'plant_P0002',
+            'tomato_P0001',
+            'tomato_P0002',
             'reservoir_B0001',
             'reservoir_B0002',
-        ]);
+        ].sort());
 
         // tents are orphans
         should.deepEqual(query.descendants(null, TValue.T_LOCATION, new Date(), 1).map(a=>a.name).sort(), [
@@ -288,7 +288,7 @@
             'reservoir_B0002',
             'tent_T0001',
             'tent_T0002',
-        ]);
+        ].sort());
 
     });
 

@@ -1,15 +1,23 @@
 (function(exports) {
     const Asset = require('./asset');
+    const TValue = require('./tvalue');
 
     class Plant extends Asset {
         constructor(opts={}) {
             super(Object.assign({
                 type: Asset.T_PLANT,
             }, opts));
-            this.cultivar = opts.cultivar || this.cultivar;
-            this.plant = opts.plant || this.plant;
+            
+            if (opts.hasOwnProperty(Plant.T_PLANT)) {
+                this.set(Plant.T_PLANT, opts.plant, TValue.RETROACTIVE);
+            }
+            if (opts.hasOwnProperty(Plant.T_CULTIVAR)) {
+                this.set(Plant.T_CULTIVAR, opts.cultivar, TValue.RETROACTIVE);
+            }
         }
 
+        static get T_CULTIVAR() { return "cultivar"; } // singular
+        static get T_PLANT() { return "plant"; } // singular
         static get T_GERMINATING() { return "germinating"; } // singular
         static get T_SPROUTED() { return "sprouted"; } // singular
         static get T_BUDDING() { return "budding"; } // multiple for perennials 
@@ -24,15 +32,38 @@
 
         static valueTypes() {
             return [
-                TValue.T_GERMINATING,
-                TValue.T_SPROUTED,
                 TValue.T_BUDDING,
+                TValue.T_CULTIVAR,
                 TValue.T_FLOWERING,
-                TValue.T_POLLINATED,
                 TValue.T_FRUITING,
-                TValue.T_RIPENING,
+                TValue.T_GERMINATING,
                 TValue.T_HARVESTED,
+                TValue.T_PLANT,
+                TValue.T_POLLINATED,
+                TValue.T_RIPENING,
+                TValue.T_SPROUTED,
+
             ];
+        }
+
+        namePrefix(opts={}) {
+            var plant = opts.plant || this.type;
+            var cultivar = opts.cultivar && `${opts.cultivar} ` || '';
+            return `${cultivar}${plant}_`;
+        }
+
+        get plant() {
+            return this.get(Plant.T_PLANT);
+        }
+        set plant(value) {
+            this.set(Plant.T_PLANT, value);
+        }
+
+        get cultivar() {
+            return this.get(Plant.T_CULTIVAR);
+        }
+        set cultivar(value) {
+            this.set(Plant.T_CULTIVAR, value);
         }
 
     }

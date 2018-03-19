@@ -10,17 +10,28 @@
     it("TESTTESTAsset(opts) creates an asset", function() {
         // Default ctor
         var asset = new Asset();
-        should(asset.type).equal(Asset.T_PLANT);
-        should(asset.id).equal(asset.guid.substr(0,7)); // Default id is short guid
-        should.deepEqual(asset.tvalues, [new TValue({
-            t: new Date(0), // id's are retroactive to 1/1/1970
-            type: 'id',
-            value: asset.guid.substr(0,7),
-        })]);
+        should(asset.type).equal(Asset.T_PLANT); // Default type
+        should(asset.id).equal(asset.guid.substr(0,7)); // Default id 
+        should(asset.get(TValue.T_NAME)).equal(`plant_${asset.guid.substr(0,7)}`); // Default name
+        should.deepEqual(asset.tvalues, [
+            new TValue({
+                t: new Date(0), // retroactive to 1/1/1970
+                type: 'id',
+                value: asset.guid.substr(0,7),
+            }),
+            new TValue({
+                t: new Date(0), // retroactive to 1/1/1970
+                type: 'name',
+                value: `plant_${asset.guid.substr(0,7)}`,
+            }),
+        ]);
 
         // Asset name is generated if not provided
         should.deepEqual(asset.name, `plant_${asset.guid.substr(0,7)}`); 
-        asset.id = 'A0001';
+
+        var asset = new Asset({
+            id: 'A0001',
+        });
         should.deepEqual(asset.name, `plant_A0001`); 
         asset.name = 'asdf';
         should.deepEqual(asset.name, `asdf`); 
@@ -98,12 +109,15 @@
         var json = JSON.parse(JSON.stringify(asset));
         should.deepEqual(json, {
             type: 'plant',
-            name: 'tomatoA',
             guid: asset.guid,
             tvalues:[{
                 t: new Date(0).toJSON(),
                 type: 'id',
                 value: 'A0001',
+            },{
+                t: new Date(0).toJSON(),
+                type: 'name',
+                value: 'tomatoA',
             }]
         });
         var asset2 = new Asset(json);
