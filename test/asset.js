@@ -281,5 +281,50 @@
         }();
         async.next();
     });
+    it("TESTTESTupdateSnapshot(snapBase,snapNew,date,text) updates properties", function(done) {
+        var async = function*() {
+            var t0 = new Date();
+            var asset = new Asset();
+            var assetOld = new Asset(asset);
+            var snapBase = asset.snapshot();
+            yield setTimeout(() => (async.next()), 1);
+            var t1 = new Date();
+            asset.updateSnapshot({
+                id: 'A0001',
+            }, t1, 'update1');
+            should(asset.id).equal('A0001');
+            should(asset.get('id', t0)).equal(assetOld.id);
+            should.deepEqual(asset.tvalues.length, 3);
+            should.deepEqual(asset.valueHistory('id'), [
+                new TValue({
+                    t:new Date(0),
+                    type: 'id',
+                    value: `${asset.guid.substr(0,7)}`,
+                }), 
+                new TValue({
+                    t:t1,
+                    text: 'update1',
+                    type: 'id',
+                    value: 'A0001',
+                }),
+            ]);
+            done();
+        }();
+        async.next();
+    });
+    it("TESTTESTvalueHistory(type) returns array of TValues of type", function() {
+        var asset = new Asset();
+        var t1 = new Date(2018,1,1);
+        var t2 = new Date(2018,1,2);
+        var t3 = new Date(2018,1,3);
+        asset.set('color', 'blue', t3, 'C');
+        asset.set('color', 'red', t1, 'A',);
+        asset.set('color', 'green', t2, 'B');
+        var history = asset.valueHistory('color');
+        should.deepEqual(history.map(tv=>tv.value), ['red','green', 'blue']);
+        should.deepEqual(history.map(tv=>tv.t), [t1,t2,t3]);
+        should.deepEqual(history.map(tv=>tv.type), ['color','color','color']);
+        should.deepEqual(history.map(tv=>tv.text), ['A','B','C']);
+    });
 
 })

@@ -48,6 +48,13 @@
             ];
         }
 
+        static compareTime(a,b) {
+            if (a.t < b.t) {
+                return -1;
+            }
+            return  (a.t === b.t) ? 0 : 1;
+        }
+
     }
 
     module.exports = exports.TValue = TValue;

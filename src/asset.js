@@ -83,6 +83,7 @@
                     value: args[1] === undefined ? true : args[1],
                     t: args[2] || new Date(),
                 };
+                args[3] && (tvalue.text = args[3]+'');
             } else { // set(tvalue)
                 var tvalue = args[0];
             }
@@ -168,6 +169,29 @@
 
         toJSON() {
             return this;
+        }
+
+        valueHistory(type) {
+            return this.tvalues.filter(tv => tv.type === type).sort(TValue.compareTime);
+        }
+
+        updateSnapshot(snapNew, t = new Date(), text, snapBase=this.snapshot()) {
+            Object.keys(snapNew).forEach(key => {
+                var newValue = snapNew[key];
+                var oldValue = snapBase[key];
+                if (key === 'guid' || key === 'type') {
+                    // skip
+                } else if (newValue !== oldValue) {
+                    this.set(new TValue({
+                        t,
+                        type: key,
+                        value: newValue,
+                        text,
+                    }));
+                } else {
+                    // no change
+                }
+            })
         }
 
     } //// class Asset
