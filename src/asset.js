@@ -8,11 +8,22 @@
             Object.defineProperty(this, "_name", {
                 writable: true,
             });
+            Object.defineProperty(this, "id", {
+                get() {
+                    return this.get(TValue.T_ID);
+                },
+                set(value) {
+                    this.set(TValue.T_ID, value);
+                },
+            });
             Object.defineProperty(this, "name", {
                 enumerable: true,
                 get() {
-                    return this._name 
-                        || this.id && `${this.type}_${this.id}`
+                    if (this._name){
+                        return this._name;
+                    }
+                    var id = this.get(TValue.T_ID);
+                    return id && `${this.type}_${id}`
                         || `${this.type}_${this.guid.substr(0,6)}`;
                 },
                 set(value) {
@@ -54,7 +65,6 @@
             } else {
                 this.type = this.type || Asset.T_PLANT;
             }
-            this.id = opts.id || this.id;
             this.guid = opts.guid || this.guid || uuidv4();
             this.tvalues = (opts.tvalues || this.tvalues || []).map(evt =>
                 (evt instanceof TValue ? evt : new TValue(evt)));
@@ -62,6 +72,11 @@
             if (opts.begin) {
                 var t = opts.begin instanceof Date ? opts.begin : new Date(opts.begin);
                 this.set(TValue.T_BEGIN, true, t);
+            }
+            if (opts.id) {
+                // in common usage, the initial setting of an id is retroactive
+                var retroactive = new Date(0); // January 1, 1970 UTC (just because)
+                this.set(TValue.T_ID, opts.id, retroactive);
             }
         }
 

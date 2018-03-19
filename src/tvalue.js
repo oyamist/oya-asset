@@ -9,16 +9,23 @@
         static get T_NONE() { return "(none)"; } // singular
         static get T_BEGIN() { return "begin"; } // singular
         static get T_END() { return "end"; } // singular
+        static get T_ID() { return "id"; } // singular
+        static get T_SIZE() { return "size"; } // singular
+        static get T_DIMENSIONS() { return "dimensions"; } // singular
         static get T_LOCATION() { return "location"; } // multiple
-        static get T_DIMENSIONS() { return "dimensions"; } // multiple
+
+        static get TIME_RESOLUTION_MS() { return 1; }
 
         static valueTypes() {
             return [
+                TValue.T_NONE,
+
                 TValue.T_BEGIN,
                 TValue.T_DIMENSIONS,
                 TValue.T_END,
+                TValue.T_ID,
                 TValue.T_LOCATION,
-                TValue.T_NONE,
+                TValue.T_SIZE,
 
             ];
         }
@@ -37,7 +44,9 @@
                 this.type = this.type || TValue.T_NONE;
             }
             this.value = opts.value || this.value;
-            this.text = opts.text || this.text;
+            if (opts.text != null) {
+                this.text = opts.text;
+            }
         }
     }
 

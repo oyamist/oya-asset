@@ -23,6 +23,7 @@
             winston.info(`RbAsset.ctor(${name})`);
             Object.defineProperty(this, "handlers", {
                 value: super.handlers.concat([
+                    this.resourceMethod("get", "asset/:id", this.getAsset),
                     this.resourceMethod("get", "assets/:date", this.getAssets),
                     this.resourceMethod("get", "assets", this.getAssets),
                 ]),
@@ -59,6 +60,16 @@
                 }();
                 async.next();
             });
+        }
+
+        getAsset(req, res, next) {
+            var id = req.params.id;
+            if (id == null) {
+                var err = new Error("RbAsset.getAsset() id is required");
+                winston.warn(err.message);
+                return Promise.reject(err);
+            }
+            return "TBD";
         }
 
         getAssets(req, res, next) {

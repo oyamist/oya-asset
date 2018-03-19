@@ -25,11 +25,14 @@
     });
     it("valueTypes returns tvalue types", function() {
         should.deepEqual(TValue.valueTypes(), [
+            "(none)",
+
             "begin",
             "dimensions",
             "end",
+            "id",
             "location",
-            "(none)",
+            "size",
 
         ]);
     });
@@ -40,8 +43,14 @@
             t: date,
             value: 'purple',
         });
-        var json = JSON.stringify(tv1);
-        var tv2 = new TValue(JSON.parse(json));
+        var json = JSON.parse(JSON.stringify(tv1));
+        should.deepEqual(json, {
+            t: date.toJSON(),
+            type: 'pollinated',
+            value: 'purple',
+        });
+
+        var tv2 = new TValue(json);
         should.deepEqual(tv2, tv1);
     });
 

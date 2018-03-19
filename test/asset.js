@@ -10,7 +10,7 @@
     it("Asset(opts) creates an asset", function() {
         var asset = new Asset();
         should(asset.type).equal(Asset.T_PLANT);
-        should(asset.id).equal(undefined);
+        should(asset.id).equal(null);
         should.deepEqual(asset.tvalues, []);
 
         // Asset name is generated if not provided
@@ -83,7 +83,7 @@
             "tent",
         ]);
     });
-    it("Asset is serializable", function() {
+    it("TESTTESTAsset is serializable", function() {
         var asset = new Asset({
             type: Asset.T_PLANT,
             id: 'A0001',
@@ -167,7 +167,11 @@
         should(asset.location(new Date(t2.getTime()+1))).equal('LAX');
         should(asset.location(t3)).equal('PIT');
     });
-    it("TESTTESTsnapshot(date) returns asset properties for date", function() {
+    it("snapshot(date) returns asset properties for date", function() {
+        var t0 = new Date(2018,0,1);
+        var t1 = new Date(2018,1,1);
+        var t2 = new Date(2018,1,2);
+        var t3 = new Date(2018,1,3);
         var asset = new Asset({
             type: Asset.T_PUMP,
             id: "A0001",
@@ -178,10 +182,6 @@
             name: 'pump_A0001',
             guid: asset.guid,
         });
-        var t0 = new Date(2018,0,1);
-        var t1 = new Date(2018,1,1);
-        var t2 = new Date(2018,1,2);
-        var t3 = new Date(2018,1,3);
         asset.set(TValue.T_LOCATION, 'SFO', t1);
         asset.set(TValue.T_LOCATION, 'LAX', t2);
         asset.set(TValue.T_LOCATION, 'PIT', t3);
@@ -227,6 +227,29 @@
             guid: asset.guid,
             location: 'PIT',
         });
+    });
+    it("id is a temporal value retroactive to 1/1/1970", function() {
+        var async = function *() {
+            var asset = new Asset({
+                type: Asset.T_PLANT,
+                id: 'A0001',
+            });
+            var t0 = new Date(0);
+            var t1 = new Date();
+            should(asset.id).equal('A0001');
+            should(asset.get(TValue.T_ID, t0)).equal('A0001'); // retroactive
+            yield setTimeout(()=>async.next(), TValue.TIME_RESOLUTION_MS);
+            var t2 = new Date();
+            should(t1.getTime()).below(t2.getTime());
+
+            // sometimes asset tags get lost and need to be changed
+            asset.id = 'A0002';
+            should(asset.id).equal('A0002');
+
+            // but we still remember the legacy tag
+            should(asset.get(TValue.T_ID, t1)).equal('A0001');
+        }();
+        async.next();
     });
 
 })
