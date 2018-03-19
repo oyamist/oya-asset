@@ -41,7 +41,7 @@
         should(iv2.assetOfGuid(tent1.guid).name).equal('tent1');
         
     });
-    it("TESTTESTInventory is serializable", function() {
+    it("Inventory is serializable", function() {
         var iv = new Inventory();
         var plant1 = new Plant({
             name: 'plant1',

@@ -2,6 +2,8 @@
     const uuidv4 = require("uuid/v4");
     const TValue = require('./tvalue');
     const MSDAYS = 24*3600*1000;
+    const RETROACTIVE = new Date(0); // January 1, 1970 UTC (just because)
+    const SHORT_GUID_DIGITS = 7; // same as git default
 
     class Asset {
         constructor(opts = {}) {
@@ -20,19 +22,14 @@
 
             // id appears on the asset tag, which can be lost and replaced
             // id is therefore a temporal value 
-            if (opts.id) {
+            if (opts.hasOwnProperty('id')) {
                 // in common usage, the initial setting of an id is retroactive
-                var retroactive = new Date(0); // January 1, 1970 UTC (just because)
-                this.set(TValue.T_ID, opts.id, retroactive);
+                this.set(TValue.T_ID, opts.id, RETROACTIVE);
+            } else if (opts.tvalues) {
+                // id is in the tvalues
+            } else {
+                this.set(TValue.T_ID, this.guid.substr(0,SHORT_GUID_DIGITS), RETROACTIVE);
             }
-            Object.defineProperty(this, "id", {
-                get() {
-                    return this.get(TValue.T_ID);
-                },
-                set(value) {
-                    this.set(TValue.T_ID, value);
-                },
-            });
 
             Object.defineProperty(this, "_name", {
                 writable: true,
@@ -81,6 +78,9 @@
 
             ];
         }
+
+        get id() { return this.get(TValue.T_ID); }
+        set id(value) { this.set(TValue.T_ID, value); }
 
         set(...args) {
             if (typeof args[0] === 'string') { // set(type,value,date)

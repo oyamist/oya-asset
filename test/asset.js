@@ -7,14 +7,19 @@
         TValue,
     } = require("../index");
 
-    it("Asset(opts) creates an asset", function() {
+    it("TESTTESTAsset(opts) creates an asset", function() {
+        // Default ctor
         var asset = new Asset();
         should(asset.type).equal(Asset.T_PLANT);
-        should(asset.id).equal(null);
-        should.deepEqual(asset.tvalues, []);
+        should(asset.id).equal(asset.guid.substr(0,7)); // Default id is short guid
+        should.deepEqual(asset.tvalues, [new TValue({
+            t: new Date(0), // id's are retroactive to 1/1/1970
+            type: 'id',
+            value: asset.guid.substr(0,7),
+        })]);
 
         // Asset name is generated if not provided
-        should.deepEqual(asset.name, `plant_${asset.guid.substr(0,6)}`); 
+        should.deepEqual(asset.name, `plant_${asset.guid.substr(0,7)}`); 
         asset.id = 'A0001';
         should.deepEqual(asset.name, `plant_A0001`); 
         asset.name = 'asdf';
@@ -26,11 +31,12 @@
         // ctor options can set asset properties
         asset = new Asset({
             name: 'TomatoA',
-            id: 'A0001',
+            id: 'A0001', // if provided, id overrides guid prefix
             begin,
         });
         should.deepEqual(asset.name, `TomatoA`);
-        should.deepEqual(asset.id, `A0001`);
+        should.deepEqual(asset.id, `A0001`); // current id
+        should(asset.get(TValue.T_ID, new Date(0))).equal('A0001'); // id is retroactive
 
         // the "begin" option sets temporal property TValue.T_BEGINVALUE
         var begin = new Date(2018,1,10);
@@ -89,8 +95,18 @@
             id: 'A0001',
             name: 'tomatoA',
         });
-        var json = JSON.stringify(asset);
-        var asset2 = new Asset(JSON.parse(json));
+        var json = JSON.parse(JSON.stringify(asset));
+        should.deepEqual(json, {
+            type: 'plant',
+            name: 'tomatoA',
+            guid: asset.guid,
+            tvalues:[{
+                t: new Date(0).toJSON(),
+                type: 'id',
+                value: 'A0001',
+            }]
+        });
+        var asset2 = new Asset(json);
         should.deepEqual(asset2, asset);
 
         asset.set(TValue.T_BEGIN, {
