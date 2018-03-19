@@ -5,9 +5,26 @@
 
     class Asset {
         constructor(opts = {}) {
-            Object.defineProperty(this, "_name", {
-                writable: true,
-            });
+            // core properties
+            this.guid = opts.guid || this.guid || uuidv4();
+            if (opts.hasOwnProperty('type')) {
+                if (Asset.assetTypes().indexOf(opts.type) < 0) {
+                    throw new Error(`Invalid type:${opts.type}`);
+                }
+                this.type = opts.type;
+            } else {
+                this.type = Asset.T_PLANT;
+            }
+            this.tvalues = (opts.tvalues || []).map(evt =>
+                (evt instanceof TValue ? evt : new TValue(evt)));
+
+            // id appears on the asset tag, which can be lost and replaced
+            // id is therefore a temporal value 
+            if (opts.id) {
+                // in common usage, the initial setting of an id is retroactive
+                var retroactive = new Date(0); // January 1, 1970 UTC (just because)
+                this.set(TValue.T_ID, opts.id, retroactive);
+            }
             Object.defineProperty(this, "id", {
                 get() {
                     return this.get(TValue.T_ID);
@@ -15,6 +32,10 @@
                 set(value) {
                     this.set(TValue.T_ID, value);
                 },
+            });
+
+            Object.defineProperty(this, "_name", {
+                writable: true,
             });
             Object.defineProperty(this, "name", {
                 enumerable: true,
@@ -30,7 +51,12 @@
                     this._name = value;
                 },
             });
-            this.update(opts);
+
+            this._name = opts.name || this._name;
+            if (opts.begin) {
+                var t = opts.begin instanceof Date ? opts.begin : new Date(opts.begin);
+                this.set(TValue.T_BEGIN, true, t);
+            }
         }
 
         static get T_ACTUATOR() { return "actuator"; }
@@ -54,30 +80,6 @@
                 Asset.T_TENT,
 
             ];
-        }
-
-        update(opts={}) {
-            if (opts.hasOwnProperty('type')) {
-                if (Asset.assetTypes().indexOf(opts.type) < 0) {
-                    throw new Error(`Invalid type:${opts.type}`);
-                }
-                this.type = opts.type;
-            } else {
-                this.type = this.type || Asset.T_PLANT;
-            }
-            this.guid = opts.guid || this.guid || uuidv4();
-            this.tvalues = (opts.tvalues || this.tvalues || []).map(evt =>
-                (evt instanceof TValue ? evt : new TValue(evt)));
-            this._name = opts.name || this._name;
-            if (opts.begin) {
-                var t = opts.begin instanceof Date ? opts.begin : new Date(opts.begin);
-                this.set(TValue.T_BEGIN, true, t);
-            }
-            if (opts.id) {
-                // in common usage, the initial setting of an id is retroactive
-                var retroactive = new Date(0); // January 1, 1970 UTC (just because)
-                this.set(TValue.T_ID, opts.id, retroactive);
-            }
         }
 
         set(...args) {

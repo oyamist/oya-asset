@@ -6,6 +6,8 @@
             super(Object.assign({
                 type: Asset.T_PLANT,
             }, opts));
+            this.cultivar = opts.cultivar || this.cultivar;
+            this.plant = opts.plant || this.plant;
         }
 
         static get T_GERMINATING() { return "germinating"; } // singular
@@ -31,12 +33,6 @@
                 TValue.T_RIPENING,
                 TValue.T_HARVESTED,
             ];
-        }
-
-        update(opts={}) {
-            super.update(opts);
-            this.cultivar = opts.cultivar || this.cultivar;
-            this.plant = opts.plant || this.plant;
         }
 
     }
