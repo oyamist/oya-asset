@@ -14,8 +14,9 @@
     const EventEmitter = require("events");
     const path = require('path');
     const {
-        RbAsset,
+        Asset,
         Inventory,
+        RbAsset,
     } = require('../index');
     function rbtest() {
         return app.locals.restBundles.filter(rb => rb.name==='test')[0];
@@ -184,6 +185,59 @@
                         guid: 'GUID004',
                     });
                 }).end((e,r) => e ? async.throw(e) : async.next(r));
+
+                done();
+            } catch(err) {
+                winston.error(err.stack);
+                done(err);
+            }
+        }();
+        async.next();
+    });
+    it("TESTTESTPOST /asset upserts asset", function(done) {
+        var async = function* () {
+            try {
+                var assetProps = {
+                    type: Asset.T_RESERVOIR,
+                    name: 'bucketA',
+                    size: '5 gallon',
+                };
+                var initialAssetCount = rbtest().inventory.assets().length;
+                var t1 = new Date(2018, 1, 1);
+                var t2 = new Date(2018, 1, 2);
+
+                // insert new asset snapshot for time t2
+                var command = {
+                    upsert: assetProps,
+                    t: t2,
+                };
+                var asset = null; // the new inventory asset
+                var response = yield supertest(app).post("/test/asset").send(command).expect((res) => {
+                    res.statusCode.should.equal(200);
+                    should(res.body).properties(assetProps);
+                    var oldasset = asset;
+                    asset = rbtest().inventory.assetOfGuid(res.body.guid);
+                    should(res.body.guid).equal(asset.guid);
+                    should(res.body.id).equal(`${asset.guid.substr(0,7)}`);
+                    should.deepEqual(res.body, asset.snapshot()); // snapshot() of updated asset
+                    should(asset.get('size', t2)).equal('5 gallon');
+                    should(asset.get('size', t1)).equal(undefined);
+                }).end((e,r) => e ? async.throw(e) : async.next(r));
+                should(rbtest().inventory.assets().length).equal(initialAssetCount+1);
+                
+                // update new asset
+                command.upsert = asset.snapshot();
+                command.upsert.color = 'white';
+                var response = yield supertest(app).post("/test/asset").send(command).expect((res) => {
+                    res.statusCode.should.equal(200);
+                    should(res.body).properties(command.upsert);
+                    should.deepEqual(res.body, asset.snapshot()); // snapshot() of updated asset
+                    should(asset.get('size', t2)).equal('5 gallon');
+                    should(asset.get('size', t1)).equal(undefined);
+                    should(asset.get('color', t1)).equal(undefined);
+                    should(asset.get('color')).equal('white');
+                }).end((e,r) => e ? async.throw(e) : async.next(r));
+                should(rbtest().inventory.assets().length).equal(initialAssetCount+1);
 
                 done();
             } catch(err) {

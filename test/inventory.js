@@ -26,9 +26,11 @@
             name: 'tent1',
             type: Asset.T_TENT,
         });
-        iv.addAsset(plant1);
-        iv.addAsset(plant2);
-        iv.addAsset(tent1);
+        var asset = iv.addAsset(plant1);
+        should(asset).equal(plant1);
+        var asset = iv.addAsset(plant2);
+        should(asset).equal(plant2);
+        var asset = iv.addAsset(tent1);
         should.deepEqual(iv.assetOfGuid(plant1.guid), plant1);
         should.deepEqual(iv.assetOfGuid(plant2.guid), plant2);
         should.deepEqual(iv.assetOfGuid(tent1.guid), tent1);

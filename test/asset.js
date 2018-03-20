@@ -385,6 +385,32 @@
         }();
         async.next();
     });
+    it("updateSnapshot(snapBase,snapNew,date,text) adds properties", function(done) {
+        var async = function*() {
+            var t0 = new Date();
+            var asset = new Asset();
+            var assetOld = new Asset(asset);
+            var snapBase = asset.snapshot();
+            yield setTimeout(() => (async.next()), 1);
+            var t1 = new Date();
+
+            asset.updateSnapshot({
+                size: 'Large',
+            }, t1, 'update1');
+            should(asset.get('size', t0)).equal(undefined);
+            should(asset.get('size', t1)).equal('Large');
+            should(asset.get('size')).equal('Large');
+            should.deepEqual(asset.snapshot(), {
+                guid: asset.guid,
+                id: asset.id,
+                name: asset.name,
+                type: 'plant',
+                size: 'Large',
+            });
+            done();
+        }();
+        async.next();
+    });
     it("snapshots map true to assignment date", function(done) {
         var async = function*() {
             var asset = new Asset();

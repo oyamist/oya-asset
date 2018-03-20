@@ -33,6 +33,7 @@
                     this.assetMap[key] = this.assetOf(asset);
                 }
             }
+            return undefined; // TBD
         }
 
         assetOfGuid(guid) {
@@ -68,7 +69,7 @@
             if (Asset.assetTypes().indexOf(asset.type) < 0) {
                 throw new Error(`Inventory.addAsset() invalid asset type:${asset.type}`);
             }
-            this.assetMap[asset.guid] = this.assetOf(asset);
+            return (this.assetMap[asset.guid] = this.assetOf(asset));
         }
     }
 

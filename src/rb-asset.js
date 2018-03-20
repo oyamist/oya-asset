@@ -77,11 +77,19 @@
         
         postAsset(req, res, next) {
             try {
-                var asset = req.body;
-                var guid = asset.guid;
-                var asset = guid && this.inventory.assetOfGuid(guid) || 
-                    this.inventory.assetOf(asset);
-                asset.updateSnapshot(req.body);
+                var command = req.body;
+                var t = command.t ? new Date(command.t) : new Date();
+                if (!command.upsert) {
+                    throw new Error(`RbAsset.postAsset() no asset to upsert`);
+                }
+                var guid = command.upsert.guid;
+                var asset = guid && this.inventory.assetOfGuid(guid);
+                if (!asset) {
+                    asset = this.inventory.assetOf(command.upsert);
+                    this.inventory.addAsset(asset);
+                    winston.info(`RbAsset.postAsset() created asset ${asset.name}`);
+                }
+                asset.updateSnapshot(command.upsert,t);
                 return asset.snapshot();
             } catch (e) {
                 winston.warn(e.stack);
