@@ -289,6 +289,7 @@
             var snapBase = asset.snapshot();
             yield setTimeout(() => (async.next()), 1);
             var t1 = new Date();
+
             asset.updateSnapshot({
                 id: 'A0001',
             }, t1, 'update1');
@@ -308,6 +309,17 @@
                     value: 'A0001',
                 }),
             ]);
+
+            // ignore redundant updates
+            yield setTimeout(() => (async.next()), 1);
+            var t2 = new Date();
+            asset.updateSnapshot({
+                id: 'A0001',
+            }, t2, 'update1');
+            should(asset.id).equal('A0001');
+            should(asset.get('id', t0)).equal(assetOld.id);
+            should.deepEqual(asset.tvalues.length, 3);
+
             done();
         }();
         async.next();
