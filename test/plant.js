@@ -25,7 +25,7 @@
         var idExpected = plant.guid.substr(0,7);
         should(plant.id).equal(idExpected);
         should(plant.type).equal('plant');
-        should(plant.plant).equal(null);
+        should(plant.plant).equal(undefined);
         should(plant.cultivar).equal('Cherokee Purple');
         should(plant.name).equal(`Cherokee Purple plant_${idExpected}`);
 
@@ -36,7 +36,7 @@
         should(plant.id).equal(idExpected);
         should(plant.type).equal('plant');
         should(plant.plant).equal('corn');
-        should(plant.cultivar).equal(null);
+        should(plant.cultivar).equal(undefined);
         should(plant.name).equal(`corn_${idExpected}`);
 
         var plant = new Plant({

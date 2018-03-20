@@ -23,6 +23,7 @@
 
         static get T_NONE() { return "(none)"; } // singular
         static get T_BEGIN() { return "begin"; } // singular
+        static get T_ACTIVATED() { return "activated"; } // singular
         static get T_END() { return "end"; } // singular
         static get T_ID() { return "id"; } 
         static get T_NAME() { return "name"; } 
@@ -30,7 +31,7 @@
         static get T_DIMENSIONS() { return "dimensions"; } 
         static get T_LOCATION() { return "location"; } 
 
-        static get TIME_RESOLUTION_MS() { return 1; }
+        static get TIME_RESOLUTION_MS() { return 2; }
         static get RETROACTIVE() { return new Date(0); }
 
         static valueTypes() {

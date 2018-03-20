@@ -92,8 +92,8 @@
         should(td.tomato2.get(TValue.T_LOCATION, td.t[0])).equal(td.bucket2.guid);
         should(td.bucket1.get(TValue.T_LOCATION, td.t[0])).equal(td.tent1.guid);
         should(td.bucket2.get(TValue.T_LOCATION, td.t[0])).equal(td.tent1.guid);
-        should(td.tent1.get(TValue.T_LOCATION, td.t[0])).equal(null);
-        should(td.tent2.get(TValue.T_LOCATION, td.t[0])).equal(null);
+        should(td.tent1.get(TValue.T_LOCATION, td.t[0])).equal(undefined);
+        should(td.tent2.get(TValue.T_LOCATION, td.t[0])).equal(undefined);
 
         // current state locations:
         //   tent1[ bucket1[tomato1] ]
@@ -102,8 +102,8 @@
         should(td.tomato2.get(TValue.T_LOCATION)).equal(td.bucket2.guid);
         should(td.bucket1.get(TValue.T_LOCATION)).equal(td.tent1.guid);
         should(td.bucket2.get(TValue.T_LOCATION)).equal(td.tent2.guid);
-        should(td.tent1.get(TValue.T_LOCATION)).equal(null);
-        should(td.tent2.get(TValue.T_LOCATION)).equal(null);
+        should(td.tent1.get(TValue.T_LOCATION)).equal(undefined);
+        should(td.tent2.get(TValue.T_LOCATION)).equal(undefined);
 
         // bucket2 moved to tent2 on t[1]
         should(td.bucket2.get(TValue.T_LOCATION, td.t[1])).equal(td.tent2.guid);  

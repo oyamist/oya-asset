@@ -78,8 +78,11 @@
         postAsset(req, res, next) {
             try {
                 var asset = req.body;
-                Asset.validate(asset.type);
-
+                var guid = asset.guid;
+                var asset = guid && this.inventory.assetOfGuid(guid) || 
+                    this.inventory.assetOf(asset);
+                asset.updateSnapshot(req.body);
+                return asset.snapshot();
             } catch (e) {
                 winston.warn(e.stack);
                 return Promise.reject(e);

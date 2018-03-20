@@ -3,6 +3,7 @@
     const TValue = require('./tvalue');
     const MSDAYS = 24*3600*1000;
     const SHORT_GUID_DIGITS = 7; // same as git default
+    const ISODATE = /^\d\d\d\d-\d\d-\d\d/;
 
     class Asset {
         constructor(opts = {}) {
@@ -119,7 +120,10 @@
         get(valueType, date = new Date()) {
             Asset.validateType(valueType);
             var tvalue =  this.getTValue(valueType, date);
-            return tvalue ? tvalue.value : null;
+            if (tvalue && tvalue.value === true) {
+                return tvalue.t;
+            }
+            return tvalue ? tvalue.value : undefined;
         }
 
         location(date = new Date()) {
@@ -194,7 +198,11 @@
                 var valueType = tvalue.type;
                 var tv = typeMap[valueType];
                 if (!tv && tvalue.t <= t || tv && tv.t <= tvalue.t && tvalue.t <= t) {
-                    snapshot[valueType] = tvalue.value;
+                    if (tvalue.value === true) { 
+                        snapshot[valueType] = tvalue.t.toJSON(); // coerce to date
+                    } else {
+                        snapshot[valueType] = tvalue.value;
+                    }
                     typeMap[valueType] = tvalue;
                 }
                 return snapshot;
@@ -206,14 +214,25 @@
                 var newValue = snapNew[key];
                 var oldValue = snapBase[key];
                 if (key === 'guid' || key === 'type') {
-                    // skip
+                    if (newValue !== oldValue) {
+                        throw new Error(`Asset ${key} cannot be changed`);
+                    }
                 } else if (newValue !== oldValue) {
-                    this.set(new TValue({
-                        t,
-                        type: key,
-                        value: newValue,
-                        text,
-                    }));
+                    if ((typeof newValue === 'string') && newValue.match(ISODATE)) {
+                        this.set(new TValue({
+                            t: new Date(newValue),
+                            type: key,
+                            value: true,
+                            text,
+                        }));
+                    } else {
+                        this.set(new TValue({
+                            t,
+                            type: key,
+                            value: newValue,
+                            text,
+                        }));
+                    }
                 } else {
                     // no change
                 }

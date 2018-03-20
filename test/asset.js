@@ -179,6 +179,13 @@
         should.deepEqual(asset.get(TValue.T_DIMENSIONS), {
             size: 'large',
         });
+
+        var t1 = new Date(2018,1,1);
+        var t2 = new Date(2018,1,2);
+        asset.set(TValue.T_ACTIVATED, true, t1);
+        should.equal(asset.get(TValue.T_ACTIVATED, t1), t1); // true is mapped to date
+        asset.set(TValue.T_ACTIVATED, false, t2);
+        should.equal(asset.get(TValue.T_ACTIVATED, t2), false);
     });
     it("location(date) returns asset location for date", function() {
         var asset = new Asset();
@@ -191,7 +198,7 @@
         asset.set(TValue.T_LOCATION, 'PIT', t3);
         var asset = new Asset(JSON.parse(JSON.stringify(asset))); // is serializable
         should(asset.location()).equal('PIT');
-        should(asset.location(t0)).equal(null);
+        should(asset.location(t0)).equal(undefined);
         should(asset.location(t1)).equal('SFO');
         should(asset.location(new Date(t2.getTime()-1))).equal('SFO');
         should(asset.location(t2)).equal('LAX');
@@ -362,6 +369,128 @@
             should(asset.id).equal('A0001');
             should(asset.get('id', t0)).equal(assetOld.id);
             should.deepEqual(asset.tvalues.length, 3);
+
+            should.throws(() => {
+                asset.updateSnapshot({
+                    type: 'a new type',
+                });
+            });
+            should.throws(() => {
+                asset.updateSnapshot({
+                    guid: 'a new guid',
+                });
+            });
+
+            done();
+        }();
+        async.next();
+    });
+    it("snapshots map true to assignment date", function(done) {
+        var async = function*() {
+            var asset = new Asset();
+            var t0 = new Date(0);
+            var t1 = new Date(2018, 1, 1);
+            var tv1 = new TValue({
+                type: TValue.T_ACTIVATED,
+                value: true,
+                t: t1,
+            });
+            var t2 = new Date(2018, 1, 2);
+            var tv2 = new TValue({
+                type: TValue.T_ACTIVATED,
+                value: true,
+                t: t2,
+            });
+            var t3 = new Date(2018, 1, 3);
+            var tv3 = new TValue({
+                type: TValue.T_ACTIVATED,
+                value: false,
+                t: t3,
+            });
+            var tfuture = new Date(Date.now() + 365*24*3600*1000);
+            var tvfuture = new TValue({
+                type: TValue.T_ACTIVATED,
+                value: true,
+                t: tfuture,
+            });
+
+            // before first assignment
+            should(asset.get(TValue.T_ACTIVATED, t0)).equal(undefined);
+
+            // assignment can be with explicit date
+            asset.updateSnapshot({
+                [TValue.T_ACTIVATED]: t1.toJSON(),
+            });
+            should.deepEqual(asset.valueHistory(TValue.T_ACTIVATED), [ tv1 ]);
+            should.deepEqual(tv1.value, true); // store boolean value, not date
+            should.deepEqual(asset.snapshot(), {
+                guid: asset.guid,
+                id: asset.id,
+                name: asset.name,
+                type: asset.type,
+                activated: t1.toJSON(),
+            });
+
+            // map true to assignment date
+            asset.updateSnapshot({
+                [TValue.T_ACTIVATED]: true,
+            }, t2);
+            should.deepEqual(asset.valueHistory(TValue.T_ACTIVATED), [ tv1, tv2 ]);
+            should.deepEqual(tv2.value, true); // store boolean value, not date
+            should.deepEqual(asset.snapshot(), { // snapshot returns current activated date
+                guid: asset.guid,
+                id: asset.id,
+                name: asset.name,
+                type: asset.type,
+                activated: t2.toJSON(),
+            });
+            should.deepEqual(asset.snapshot(t1), {
+                guid: asset.guid,
+                id: asset.id,
+                name: asset.name,
+                type: asset.type,
+                activated: t1.toJSON(),
+            });
+
+            // future dates are supported without "plan vs. actual" distinction
+            asset.updateSnapshot({
+                [TValue.T_ACTIVATED]: tfuture.toJSON(),
+            });
+            should.deepEqual(asset.valueHistory(TValue.T_ACTIVATED), [ tv1, tv2, tvfuture ]);
+            should.deepEqual(asset.snapshot(), { // snapshot returns current activated date
+                guid: asset.guid,
+                id: asset.id,
+                name: asset.name,
+                type: asset.type,
+                activated: t2.toJSON(),
+            });
+            should.deepEqual(asset.snapshot(tfuture), {
+                guid: asset.guid,
+                id: asset.id,
+                name: asset.name,
+                type: asset.type,
+                activated: tfuture.toJSON(),
+            });
+
+            // false is supported directly
+            asset.updateSnapshot({
+                [TValue.T_ACTIVATED]: false,
+            }, t3);
+            should.deepEqual(asset.valueHistory(TValue.T_ACTIVATED), [ tv1, tv2, tv3, tvfuture ]);
+            should.deepEqual(asset.snapshot(), { // snapshot returns current activated date
+                guid: asset.guid,
+                id: asset.id,
+                name: asset.name,
+                type: asset.type,
+                activated: false,
+            });
+            should.deepEqual(asset.snapshot(tfuture), {
+                guid: asset.guid,
+                id: asset.id,
+                name: asset.name,
+                type: asset.type,
+                activated: tfuture.toJSON(),
+            });
 
             done();
         }();

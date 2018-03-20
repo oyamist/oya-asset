@@ -61,7 +61,7 @@
 
             var isAncestor = {};
             var srcGuids = this.assetGuids(set);
-            srcGuids.length || (srcGuids = [null]); // orphans
+            srcGuids.length || (srcGuids = [null,undefined]); // orphans
             srcGuids.forEach(guid => (isAncestor[guid] = true));
 
             var candidates = this.inventory.assets();
