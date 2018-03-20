@@ -28,6 +28,7 @@
                     this.resourceMethod("get", "asset/:id", this.getAsset),
                     this.resourceMethod("get", "assets/:date", this.getAssets),
                     this.resourceMethod("get", "assets", this.getAssets),
+                    this.resourceMethod("post", "asset", this.postAsset),
                 ]),
             });
         }
@@ -66,18 +67,19 @@
 
         getAsset(req, res, next) {
             try {
-                var id = req.params.id;
-                if (id == null) {
-                    var err = new Error("RbAsset.getAsset() id is required");
-                    winston.warn(err.message);
-                    return Promise.reject(err);
-                }
-                var tvf = new Filter.TValueFilter(Filter.OP_EQ, {
-                    type: TValue.T_ID,
-                    value: id,
-                });
-                var assets = this.inventory.assets(tvf);
-                return assets.length ? assets[0].snapshot() : {};
+                var asset =  this.inventory.assetOfId(req.params.id);
+                return asset ? asset.snapshot() : {};
+            } catch (e) {
+                winston.warn(e.stack);
+                return Promise.reject(e);
+            }
+        }
+        
+        postAsset(req, res, next) {
+            try {
+                var asset = req.body;
+                Asset.validate(asset.type);
+
             } catch (e) {
                 winston.warn(e.stack);
                 return Promise.reject(e);

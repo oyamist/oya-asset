@@ -1,6 +1,8 @@
 (function(exports) {
     const Asset = require('./asset');
     const Plant = require('./plant');
+    const Filter = require('./filter');
+    const TValue = require('./tvalue');
 
     class Inventory {
         constructor(opts={}) {
@@ -35,6 +37,22 @@
 
         assetOfGuid(guid) {
             return this.assetMap[guid];
+        }
+
+        assetOfId(id, t=new Date()) {
+            if (id == null) {
+                throw new Error("id is required");
+            }
+            var tvf = new Filter.TValueFilter(Filter.OP_EQ, {
+                type: TValue.T_ID,
+                value: id,
+                t,
+            });
+            var assets =  this.assets(tvf);
+            if (assets.length > 1) {
+                throw new Error(`Data integrity error: ${assets.length} assets have same id: ${id}`);
+            }
+            return assets[0];
         }
 
         assets(filter) {

@@ -9,6 +9,7 @@
             // core properties
             this.guid = opts.guid || this.guid || uuidv4();
             if (opts.hasOwnProperty('type')) {
+                Asset.validateType(opts.type);
                 if (Asset.assetTypes().indexOf(opts.type) < 0) {
                     throw new Error(`Invalid type:${opts.type}`);
                 }
@@ -66,20 +67,28 @@
             ];
         }
 
+        static validateType(type) {
+            if (type == null) {
+                throw new Error("Value type is required");
+            }
+            return type;
+        }
+
         namePrefix(opts={}) {
             return `${this.type}_`;
         }
 
         get id() { return this.get(TValue.T_ID); }
-        set id(value) { this.set(TValue.T_ID, value); }
+        set id(value) { this.set(TValue.T_ID, value); return value; }
 
         get name() { return this.get(TValue.T_NAME); }
-        set name(value) { this.set(TValue.T_NAME, value); }
+        set name(value) { this.set(TValue.T_NAME, value); return value; }
 
         set(...args) {
             if (typeof args[0] === 'string') { // set(type,value,date)
+                var type = Asset.validateType(args[0]);
                 var tvalue = {
-                    type: args[0],
+                    type,
                     value: args[1] === undefined ? true : args[1],
                     t: args[2] || new Date(),
                 };
@@ -94,25 +103,11 @@
                 tvalue = new TValue(tvalue);
             }
             this.tvalues.push(tvalue);
-        }
-
-        snapshot(t=new Date()) {
-            var snapshot = Object.assign({}, this);
-            delete snapshot.tvalues;
-            delete snapshot.name;
-            var typeMap = {};
-            return this.tvalues.reduce((snapshot,tvalue) => {    
-                var valueType = tvalue.type;
-                var tv = typeMap[valueType];
-                if (!tv && tvalue.t <= t || tv && tv.t <= tvalue.t && tvalue.t <= t) {
-                    snapshot[valueType] = tvalue.value;
-                    typeMap[valueType] = tvalue;
-                }
-                return snapshot;
-            }, snapshot);
+            return undefined; // TBD
         }
 
         getTValue(valueType, date = new Date()) {
+            Asset.validateType(valueType);
             return this.tvalues.reduce((acc,evt) => {    
                 if (evt.type === valueType) {
                    return evt.t<=date && (!acc || evt.t >= acc.t) ? evt : acc;
@@ -122,6 +117,7 @@
         }
 
         get(valueType, date = new Date()) {
+            Asset.validateType(valueType);
             var tvalue =  this.getTValue(valueType, date);
             return tvalue ? tvalue.value : null;
         }
@@ -131,6 +127,8 @@
         }
 
         valueElapsed(targetType, startType = TValue.T_BEGIN) {
+            Asset.validateType(targetType);
+            Asset.validateType(startType);
             var eStart = this.getTValue(startType);
             if (eStart == null) {
                 throw new Error(`${this.name} has no tvalue:${startType}`);
@@ -154,6 +152,7 @@
 
         age() {
             var eStart = this.getTValue(TValue.T_BEGIN);
+
             if (eStart == null) {
                 throw new Error(`${this.name} has no tvalue:${startType}`);
             }
@@ -163,6 +162,8 @@
         }
 
         ageAt(targetType, startType = TValue.T_BEGIN) {
+            Asset.validateType(targetType);
+            Asset.validateType(startType);
             var elapsed = this.valueElapsed(targetType, startType);
             return typeof elapsed === 'number' ?  this.ageElapsed(elapsed) : elapsed;
         }
@@ -172,7 +173,32 @@
         }
 
         valueHistory(type) {
+            Asset.validateType(type);
             return this.tvalues.filter(tv => tv.type === type).sort(TValue.compareTime);
+        }
+
+        updateValueHistory(type, history) {
+            Asset.validateType(type);
+            var tvalues = this.tvalues.filter(tv => tv.type !== type);
+            tvalue.concat(history.filter(tv => tv.type === type));
+            this.tvalues = tvalues;
+            return undefined; // TBD
+        }
+
+        snapshot(t=new Date()) {
+            var snapshot = Object.assign({}, this);
+            delete snapshot.tvalues;
+            delete snapshot.name;
+            var typeMap = {};
+            return this.tvalues.reduce((snapshot,tvalue) => {    
+                var valueType = tvalue.type;
+                var tv = typeMap[valueType];
+                if (!tv && tvalue.t <= t || tv && tv.t <= tvalue.t && tvalue.t <= t) {
+                    snapshot[valueType] = tvalue.value;
+                    typeMap[valueType] = tvalue;
+                }
+                return snapshot;
+            }, snapshot);
         }
 
         updateSnapshot(snapNew, t = new Date(), text, snapBase=this.snapshot()) {
@@ -192,6 +218,7 @@
                     // no change
                 }
             })
+            return undefined; // TBD
         }
 
     } //// class Asset
