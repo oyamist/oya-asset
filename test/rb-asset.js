@@ -100,7 +100,33 @@
         }();
         async.next();
     });
-    it("TESTTESTGET /assets/date returns asset snapshot for date", function(done) {
+    it("GET /asset/:id returns asset snapshot for id", function(done) {
+        var async = function*() {
+            try {
+                var date = new Date();
+                var url = `/test/asset/A0001`;
+                var response = yield supertest(app).get(url).expect((res) => {
+                    res.statusCode.should.equal(200);
+                    var asset = res.body;
+                    should.deepEqual(asset, {
+                        type: 'plant',
+                        cultivar: 'Chocolate Stripes',
+                        id: 'A0001',
+                        location: 'GUID003',
+                        plant: 'tomato',
+                        guid: 'GUID001',
+                        name: 'Tomato1',
+                    });
+                }).end((e,r) => e ? async.throw(e) : async.next(r));
+                done();
+            } catch(err) {
+                winston.error(err.stack);
+                done(err);
+            }
+        }();
+        async.next();
+    });
+    it("GET /assets/:date returns asset snapshot for date", function(done) {
         var async = function* () {
             try {
                 // tomato1 is in bucket1; tomato2 is in bucket2

@@ -3,11 +3,12 @@
     const should = require("should");
     const {
         Asset,
+        Plant,
         AssetDefs,
         TValue,
     } = require("../index");
 
-    it("TESTTESTAsset(opts) creates an asset", function() {
+    it("Asset(opts) creates an asset", function() {
         // Default ctor
         var asset = new Asset();
         should(asset.type).equal(Asset.T_PLANT); // Default type
@@ -100,7 +101,7 @@
             "tent",
         ]);
     });
-    it("TESTTESTAsset is serializable", function() {
+    it("Asset is serializable", function() {
         var asset = new Asset({
             type: Asset.T_PLANT,
             id: 'A0001',
@@ -205,6 +206,48 @@
         var asset = new Asset({
             type: Asset.T_PUMP,
             id: "A0001",
+            name: "Mister1",
+            tvalues:[{
+                type: 'color',
+                value: 'red',
+                t: t0,
+            }]
+        });
+        should.deepEqual(asset.snapshot(), {
+            type: Asset.T_PUMP,
+            id: 'A0001',
+            name: 'Mister1',
+            guid: asset.guid,
+            color: 'red',
+        });
+
+        var asset = new Plant({
+            "type": "plant",
+            "plant": "tomato",
+            "cultivar": "Chocolate Stripes",
+            "guid":"GUID001",
+            "name": "Tomato1",
+            "id": "A0001",
+            "tvalues":[{
+                "type": "location",
+                "t": "2018-03-12T00:00:00Z",
+                "value":"GUID003"
+            }]
+        });
+        should(asset.get(Asset.T_PLANT)).equal('tomato');
+        should.deepEqual(asset.snapshot(), {
+            "type": "plant",
+            "plant": "tomato",
+            "cultivar": "Chocolate Stripes",
+            "guid":"GUID001",
+            "name": "Tomato1",
+            "id": "A0001",
+            "location": "GUID003",
+        });
+
+        var asset = new Asset({
+            type: Asset.T_PUMP,
+            id: "A0001",
         });
         should.deepEqual(asset.snapshot(), {
             type: Asset.T_PUMP,
@@ -281,7 +324,7 @@
         }();
         async.next();
     });
-    it("TESTTESTupdateSnapshot(snapBase,snapNew,date,text) updates properties", function(done) {
+    it("updateSnapshot(snapBase,snapNew,date,text) updates properties", function(done) {
         var async = function*() {
             var t0 = new Date();
             var asset = new Asset();
@@ -324,7 +367,7 @@
         }();
         async.next();
     });
-    it("TESTTESTvalueHistory(type) returns array of TValues of type", function() {
+    it("valueHistory(type) returns array of TValues of type", function() {
         var asset = new Asset();
         var t1 = new Date(2018,1,1);
         var t2 = new Date(2018,1,2);

@@ -1,6 +1,8 @@
 (function(exports) {
     const winston = require('winston');
     const Inventory = require('./inventory');
+    const Filter = require('./filter');
+    const TValue = require('./tvalue');
     const EventEmitter = require("events");
     const srcPkg = require("../package.json");
     const fs = require('fs');
@@ -63,13 +65,23 @@
         }
 
         getAsset(req, res, next) {
-            var id = req.params.id;
-            if (id == null) {
-                var err = new Error("RbAsset.getAsset() id is required");
-                winston.warn(err.message);
-                return Promise.reject(err);
+            try {
+                var id = req.params.id;
+                if (id == null) {
+                    var err = new Error("RbAsset.getAsset() id is required");
+                    winston.warn(err.message);
+                    return Promise.reject(err);
+                }
+                var tvf = new Filter.TValueFilter(Filter.OP_EQ, {
+                    type: TValue.T_ID,
+                    value: id,
+                });
+                var assets = this.inventory.assets(tvf);
+                return assets.length ? assets[0].snapshot() : {};
+            } catch (e) {
+                winston.warn(e.stack);
+                return Promise.reject(e);
             }
-            return "TBD";
         }
 
         getAssets(req, res, next) {

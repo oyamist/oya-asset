@@ -4,6 +4,7 @@
     const {
         Asset,
         TValue,
+        Filter,
         Inventory,
         Plant,
     } = require("../index");
@@ -64,6 +65,94 @@
         var ivcopy = new Inventory(json);
         should.deepEqual(ivcopy, iv);
         should(ivcopy.assetMap[plant1.guid]).instanceOf(Plant);
+    });
+    it("assets(filter) returns matching assets", function() {
+        var iv = new Inventory();
+        var t1 = new Date(2018,1,1);
+        var t2 = new Date(2018,1,2);
+        var plant1 = new Plant({
+            name: 'plant1',
+            plant: Plant.P_TOMATO,
+            cultivar: Plant.C_CHOCOLATE_STRIPES,
+            id: 'A0001',
+        });
+        should(plant1.id).equal('A0001');
+        plant1.set(TValue.T_ID, 'A0004', t2);
+        should(plant1.id).equal('A0004');
+        var plant2 = new Plant({
+            name: 'plant2',
+            id: 'A0002',
+        });
+        var tent1 = new Asset({
+            name: 'tent1',
+            type: Asset.T_TENT,
+            id: 'A0003',
+        });
+        iv.addAsset(plant1);
+        iv.addAsset(plant2);
+        iv.addAsset(tent1);
+
+        // match current id
+        var tvf = new Filter.TValueFilter(Filter.OP_EQ, {
+            type: TValue.T_ID,
+            value: 'A0004',
+        });
+        should(tvf.matches(plant1)).equal(true);
+        should(tvf.matches(plant2)).equal(false);
+        var assets = iv.assets(tvf);
+        should(assets.length).equal(1);
+        should(assets[0]).equal(plant1);
+
+        // match current id
+        var tvf = new Filter.TValueFilter(Filter.OP_EQ, {
+            type: TValue.T_ID,
+            value: 'A0002',
+        });
+        should(tvf.matches(plant2)).equal(true);
+        should(tvf.matches(plant1)).equal(false);
+        var assets = iv.assets(tvf);
+        should(assets.length).equal(1);
+        should(assets[0]).equal(plant2);
+
+        // match historical id
+        var tvf = new Filter.TValueFilter(Filter.OP_EQ, {
+            type: TValue.T_ID,
+            value: 'A0001',
+            t: t1,
+        });
+        should(tvf.matches(plant1)).equal(true);
+        should(tvf.matches(plant2)).equal(false);
+        var assets = iv.assets(tvf);
+        should(assets.length).equal(1);
+        should(assets[0]).equal(plant1);
+    });
+    it("assetOf(asset) creates typed assets", function() {
+        var iv = new Inventory();
+        var asset = iv.assetOf({
+            "type": "plant",
+            "plant": "tomato",
+            "cultivar": "Chocolate Stripes",
+            "guid":"GUID001",
+            "name": "Tomato1",
+            "id": "A0001",
+            "tvalues":[{
+                "type": "location",
+                "t": "2018-03-12T00:00:00Z",
+                "value":"GUID003"
+            }]
+        });
+        should(asset).instanceOf(Plant);
+        should(asset.get(Plant.T_PLANT)).equal('tomato');
+        should(asset.get(Plant.T_CULTIVAR)).equal('Chocolate Stripes');
+        should.deepEqual(asset.snapshot(), {
+            "type": "plant",
+            "plant": "tomato",
+            "cultivar": "Chocolate Stripes",
+            "guid":"GUID001",
+            "name": "Tomato1",
+            "id": "A0001",
+            "location": "GUID003",
+        });
     });
 
 })

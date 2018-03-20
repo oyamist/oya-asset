@@ -7,7 +7,7 @@
         Plant,
     } = require("../index");
 
-    it("TESTTESTPlant(opts) creates a plant asset", function() {
+    it("Plant(opts) creates a plant asset", function() {
         var plant = new Plant({
             id: 'A0002',
             plant: 'tomato',
