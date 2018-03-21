@@ -11,9 +11,9 @@
     it("Asset(opts) creates an asset", function() {
         // Default ctor
         var asset = new Asset();
-        should(asset.type).equal(Asset.T_PLANT); // Default type
+        should(asset.type).equal(Asset.T_ASSET); // Default type
         should(asset.id).equal(asset.guid.substr(0,7)); // Default id 
-        should(asset.get(TValue.T_NAME)).equal(`plant_${asset.guid.substr(0,7)}`); // Default name
+        should(asset.get(TValue.T_NAME)).equal(`asset_${asset.guid.substr(0,7)}`); // Default name
         should.deepEqual(asset.tvalues, [
             new TValue({
                 t: new Date(0), // retroactive to 1/1/1970
@@ -23,7 +23,7 @@
             new TValue({
                 t: new Date(0), // retroactive to 1/1/1970
                 tag: 'name',
-                value: `plant_${asset.guid.substr(0,7)}`,
+                value: `asset_${asset.guid.substr(0,7)}`,
             }),
         ]);
 
@@ -36,12 +36,12 @@
         ].sort());
 
         // Asset name is generated if not provided
-        should.deepEqual(asset.name, `plant_${asset.guid.substr(0,7)}`); 
+        should.deepEqual(asset.name, `asset_${asset.guid.substr(0,7)}`); 
 
         var asset = new Asset({
             id: 'A0001',
         });
-        should.deepEqual(asset.name, `plant_A0001`); 
+        should.deepEqual(asset.name, `asset_A0001`); 
         asset.name = 'asdf';
         should.deepEqual(asset.name, `asdf`); 
 
@@ -92,14 +92,18 @@
     it("assetTypes returns asset types", function() {
         should.deepEqual(Asset.assetTypes(), [
             "actuator",
+            "asset",
+            "computer",
             "light",
-            "mcu",
+            "nutrient",
             "plant",
             "pump",
             "reservoir",
             "sensor",
             "tent",
-        ]);
+            "vendor",
+
+        ].sort());
     });
     it("TESTTESTAsset is serializable", function() {
         var begin = new Date();
@@ -426,7 +430,7 @@
                 guid: asset.guid,
                 id: asset.id,
                 name: asset.name,
-                type: 'plant',
+                type: 'asset',
                 size: 'Large',
             });
             done();

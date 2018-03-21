@@ -327,8 +327,8 @@ export default {
                 text: "Pump",
                 value: "pump",
             },{
-                text: "Other",
-                value: "other",
+                text: "Asset (generic)",
+                value: "asset",
             },{
                 text: "Vendor",
                 value: "vendor",

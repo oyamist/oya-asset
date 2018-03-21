@@ -22,7 +22,7 @@
                 }
                 this.type = opts.type;
             } else {
-                this.type = Asset.T_PLANT;
+                this.type = Asset.T_ASSET;
             }
             Object.defineProperty(this, "tvalues", {
                 writable: true,
@@ -69,9 +69,12 @@
         }
 
         static get T_ACTUATOR() { return "actuator"; }
+        static get T_ASSET() { return "asset"; }
         static get T_LIGHT() { return "light"; }
-        static get T_MCU() { return "mcu"; }
         static get T_PLANT() { return "plant"; }
+        static get T_VENDOR() { return "vendor"; }
+        static get T_NUTRIENT() { return "nutrient"; }
+        static get T_COMPUTER() { return "computer"; }
         static get T_PUMP() { return "pump"; }
         static get T_RESERVOIR() { return "reservoir"; }
         static get T_SENSOR() { return "sensor"; }
@@ -80,13 +83,16 @@
         static assetTypes() {
             return [
                 Asset.T_ACTUATOR,
+                Asset.T_ASSET,
+                Asset.T_COMPUTER,
                 Asset.T_LIGHT,
-                Asset.T_MCU,
+                Asset.T_NUTRIENT,
                 Asset.T_PLANT,
                 Asset.T_PUMP,
                 Asset.T_RESERVOIR,
                 Asset.T_SENSOR,
                 Asset.T_TENT,
+                Asset.T_VENDOR,
 
             ];
         }
