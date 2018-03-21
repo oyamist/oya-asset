@@ -7,13 +7,13 @@
             if (!(this.t instanceof Date)) {
                 this.t = new Date(this.t);
             }
-            if (opts.hasOwnProperty('type')) {
-                if (typeof opts.type !== 'string') {
-                    throw new Error(`Invalid type:${opts.type}`);
+            if (opts.hasOwnProperty('tag')) {
+                if (typeof opts.tag !== 'string') {
+                    throw new Error(`Invalid tag:${opts.tag}`);
                 }
-                this.type = opts.type;
+                this.tag = opts.tag;
             } else {
-                this.type = TValue.T_NONE;
+                this.tag = TValue.T_NONE;
             }
             this.value = opts.value;
             if (opts.text != null) {
@@ -32,7 +32,7 @@
         static get TIME_RESOLUTION_MS() { return 2; }
         static get RETROACTIVE() { return new Date(0); }
 
-        static valueTypes() {
+        static valueTags() {
             return [
                 TValue.T_NONE,
 

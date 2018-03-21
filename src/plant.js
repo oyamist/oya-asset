@@ -30,7 +30,7 @@
         static get P_TOMATO() { return "tomato"; }
         static get C_CHOCOLATE_STRIPES() { return "chocolate_stripes"; }
 
-        static valueTypes() {
+        static valueTags() {
             return [
                 TValue.T_BUDDING,
                 TValue.T_CULTIVAR,

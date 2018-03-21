@@ -96,7 +96,7 @@
 
         // match current id
         var tvf = new Filter.TValueFilter(Filter.OP_EQ, {
-            type: TValue.T_ID,
+            tag: TValue.T_ID,
             value: 'A0004',
         });
         should(tvf.matches(plant1)).equal(true);
@@ -107,7 +107,7 @@
 
         // match current id
         var tvf = new Filter.TValueFilter(Filter.OP_EQ, {
-            type: TValue.T_ID,
+            tag: TValue.T_ID,
             value: 'A0002',
         });
         should(tvf.matches(plant2)).equal(true);
@@ -118,7 +118,7 @@
 
         // match historical id
         var tvf = new Filter.TValueFilter(Filter.OP_EQ, {
-            type: TValue.T_ID,
+            tag: TValue.T_ID,
             value: 'A0001',
             t: t1,
         });
@@ -128,7 +128,7 @@
         should(assets.length).equal(1);
         should(assets[0]).equal(plant1);
     });
-    it("assetOf(asset) creates typed assets", function() {
+    it("assetOf(asset) creates tagd assets", function() {
         var iv = new Inventory();
         var t1 = new Date(2018, 1, 2);
         var asset = iv.assetOf({
@@ -140,7 +140,7 @@
             "name": "Tomato1",
             "id": "A0001",
             "tvalues":[{
-                "type": "location",
+                "tag": "location",
                 "t": "2018-03-12T00:00:00Z",
                 "value":"GUID003"
             }]

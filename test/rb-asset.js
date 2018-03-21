@@ -101,7 +101,7 @@
         }();
         async.next();
     });
-    it("GET /asset/:id returns asset snapshot for id", function(done) {
+    it("TESTTESTGET /asset/:id returns asset snapshot for id", function(done) {
         var async = function*() {
             try {
                 var date = new Date();

@@ -49,7 +49,7 @@
     "test:watch": "mocha -w --inline-diffs"
   },
   "repository": {
-    "type": "git",
+    "tag": "git",
     "url": "git+https://github.com/oyamist/oya-asset.git"
   },
   "bin": {},

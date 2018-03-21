@@ -17,12 +17,12 @@
         should.deepEqual(asset.tvalues, [
             new TValue({
                 t: new Date(0), // retroactive to 1/1/1970
-                type: 'id',
+                tag: 'id',
                 value: asset.guid.substr(0,7),
             }),
             new TValue({
                 t: new Date(0), // retroactive to 1/1/1970
-                type: 'name',
+                tag: 'name',
                 value: `plant_${asset.guid.substr(0,7)}`,
             }),
         ]);
@@ -117,11 +117,11 @@
             guid: asset.guid,
             tvalues:[{
                 t: new Date(0).toJSON(),
-                type: 'id',
+                tag: 'id',
                 value: 'A0001',
             },{
                 t: new Date(0).toJSON(),
-                type: 'name',
+                tag: 'name',
                 value: 'tomatoA',
             }]
         });
@@ -152,12 +152,12 @@
 
         // set(tvalue)
         asset.set(new TValue({
-            type: TValue.T_LOCATION, 
+            tag: TValue.T_LOCATION, 
             value: 'ATL',
         }));
         should(asset.get(TValue.T_LOCATION)).equal('ATL');
         asset.set({
-            type: TValue.T_LOCATION, 
+            tag: TValue.T_LOCATION, 
             value: 'PIT',
         });
         should(asset.get(TValue.T_LOCATION)).equal('PIT');
@@ -165,7 +165,7 @@
         // set prior value
         var t1 = new Date(2018,1,10);
         asset.set({
-            type: TValue.T_LOCATION, 
+            tag: TValue.T_LOCATION, 
             value: 'NYC',
             t: t1,
         });
@@ -222,7 +222,7 @@
             id: "A0001",
             name: "Mister1",
             tvalues:[{
-                type: 'color',
+                tag: 'color',
                 value: 'red',
                 t: t0,
             }]
@@ -246,7 +246,7 @@
             "name": "Tomato1",
             "id": "A0001",
             "tvalues":[{
-                "type": "location",
+                "tag": "location",
                 "t": "2018-03-12T00:00:00Z",
                 "value":"GUID003"
             }]
@@ -323,7 +323,7 @@
             asset.id = 'A0002';
             should(asset.id).equal('A0002');
 
-            // but we still remember the legacy tag
+            // but we still remember the legacy id
             should(asset.get(TValue.T_ID, t1)).equal('A0001');
         }();
         async.next();
@@ -346,13 +346,13 @@
             should.deepEqual(asset.valueHistory('id'), [
                 new TValue({
                     t:new Date(0),
-                    type: 'id',
+                    tag: 'id',
                     value: `${asset.guid.substr(0,7)}`,
                 }), 
                 new TValue({
                     t:t1,
                     text: 'update1',
-                    type: 'id',
+                    tag: 'id',
                     value: 'A0001',
                 }),
             ]);
@@ -418,25 +418,25 @@
             var t0 = new Date(0);
             var t1 = new Date(2018, 1, 1);
             var tv1 = new TValue({
-                type: TValue.T_ACTIVATED,
+                tag: TValue.T_ACTIVATED,
                 value: true,
                 t: t1,
             });
             var t2 = new Date(2018, 1, 2);
             var tv2 = new TValue({
-                type: TValue.T_ACTIVATED,
+                tag: TValue.T_ACTIVATED,
                 value: true,
                 t: t2,
             });
             var t3 = new Date(2018, 1, 3);
             var tv3 = new TValue({
-                type: TValue.T_ACTIVATED,
+                tag: TValue.T_ACTIVATED,
                 value: false,
                 t: t3,
             });
             var tfuture = new Date(Date.now() + 365*24*3600*1000);
             var tvfuture = new TValue({
-                type: TValue.T_ACTIVATED,
+                tag: TValue.T_ACTIVATED,
                 value: true,
                 t: tfuture,
             });
@@ -495,7 +495,7 @@
         }();
         async.next();
     });
-    it("valueHistory(type) returns array of TValues of type", function() {
+    it("valueHistory(tag) returns array of TValues of tag", function() {
         var asset = new Asset();
         var t1 = new Date(2018,1,1);
         var t2 = new Date(2018,1,2);
@@ -506,7 +506,7 @@
         var history = asset.valueHistory('color');
         should.deepEqual(history.map(tv=>tv.value), ['red','green', 'blue']);
         should.deepEqual(history.map(tv=>tv.t), [t1,t2,t3]);
-        should.deepEqual(history.map(tv=>tv.type), ['color','color','color']);
+        should.deepEqual(history.map(tv=>tv.tag), ['color','color','color']);
         should.deepEqual(history.map(tv=>tv.text), ['A','B','C']);
     });
 

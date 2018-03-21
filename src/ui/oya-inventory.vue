@@ -31,7 +31,7 @@
                         </v-checkbox>
                     </td>
                     <td class="text-xs-left oya-asset-cell" @click="assetClick(cursor)"> 
-                        {{ cursor.item.type }} </td>
+                        {{ cursor.item.tag }} </td>
                     <td class="text-xs-left oya-asset-cell" @click="assetClick(cursor)"> 
                         {{ cursor.item.name }} </td>
                     <td class="text-xs-left oya-asset-cell" @click="assetClick(cursor)"> 
@@ -112,7 +112,7 @@ export default {
             } 
             var asset = this.assetMap[value];
             if (asset) {
-                return `${asset.name} \u2666 ${asset.id} \u2666 ${asset.type}`;
+                return `${asset.name} \u2666 ${asset.id} \u2666 ${asset.tag}`;
             }
 
             if (value.match(DATE_VALUE)) {
@@ -199,7 +199,7 @@ export default {
     computed: {
         headers() {
             return [
-                { text: 'Type', align: 'left', value: 'type' },
+                { text: 'Type', align: 'left', value: 'tag' },
                 { text: 'Name', align: 'left', value: 'name' },
                 { text: 'Id', align: 'left', value: 'id' },
                 { text: 'GUID', align: 'left', value: 'guid' },

@@ -45,7 +45,7 @@
                 throw new Error("id is required");
             }
             var tvf = new Filter.TValueFilter(Filter.OP_EQ, {
-                type: TValue.T_ID,
+                tag: TValue.T_ID,
                 value: id,
                 t,
             });

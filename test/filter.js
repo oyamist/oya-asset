@@ -19,19 +19,19 @@
         asset.set("size", 40, t2);
         should(asset.get("size", t1)).equal(32);
         var tv32 = new TValue({ 
-            type: "size",
+            tag: "size",
             value: 32,
         });
         var tv40 = new TValue({ 
-            type: "size",
+            tag: "size",
             value: 40,
         });
         var tv50 = new TValue({ 
-            type: "size",
+            tag: "size",
             value: 50,
         });
         var tv32_t1 = new TValue({ 
-            type: "size",
+            tag: "size",
             value: 32,
             t: t1,
         });

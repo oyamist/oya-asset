@@ -69,7 +69,7 @@
         }
 
         matches(asset) {
-            var assetValue = asset.get(this.tvalue.type, this.tvalue.t);
+            var assetValue = asset.get(this.tvalue.tag, this.tvalue.t);
             return this.matchRelational(assetValue, this.op, this.tvalue);
         }
     } // class TValueFilterk

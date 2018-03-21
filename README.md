@@ -3,7 +3,7 @@ OyaMist assets for crop and garden management.
 
 ### Asset
 Each `Asset` instance is uniquely identified by guid. 
-Assets have normal, immutable properties (i.e., 'guid' and 'type'),
+Assets have normal, immutable properties (i.e., 'guid' and 'tag'),
 but all mutable properties are temporal (see <a href="#TValue">TValue</a>);
 
 ```JS
@@ -43,7 +43,7 @@ Asset snapshots provide read/write access to temporal versions:
     //   guid: ...
     //   id: ...
     //   name: ...
-    //   type: ...
+    //   tag: ...
     // }
 
     asset.updateSnapshot({
@@ -62,14 +62,14 @@ Caution should be exercised when editing temporal value history, since it can in
 ### TValue
 A `TValue` is a <i>temporal value</i>, which has properties:
 
-* **type** a string such as "location" (i.e., TValue.LOCATION)
+* **tag** a string such as "location" (i.e., TValue.LOCATION)
 * **value** arbitrary value (default is true)
 * **t** a timestamp (default is now)
 * **text** optional end-user annotation
 
 ```JS
     var tvalue = new TValue({
-        type: TValue.T_LOCATION,
+        tag: TValue.T_LOCATION,
         value: 'SFO',
         t: new Date(2018, 1, 20),
         text: 'Departure',

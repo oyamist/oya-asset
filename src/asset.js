@@ -10,7 +10,7 @@
             // core properties
             this.guid = opts.guid || this.guid || uuidv4();
             if (opts.hasOwnProperty('type')) {
-                Asset.validateType(opts.type);
+                this.validateTag(opts.type);
                 if (Asset.assetTypes().indexOf(opts.type) < 0) {
                     throw new Error(`Invalid type:${opts.type}`);
                 }
@@ -73,11 +73,14 @@
             ];
         }
 
-        static validateType(type) {
-            if (type == null) {
-                throw new Error("Value type is required");
+        validateTag(tag) {
+            if (tag == null) {
+                throw new Error("Temporal value tag is required");
             }
-            return type;
+            if (this.hasOwnProperty(tag)) {
+                throw new Error(`Property "${tag}" is not a temporal property`);
+            }
+            return tag;
         }
 
         namePrefix(opts={}) {
@@ -91,10 +94,10 @@
         set name(value) { this.set(TValue.T_NAME, value); return value; }
 
         set(...args) {
-            if (typeof args[0] === 'string') { // set(type,value,date)
-                var type = Asset.validateType(args[0]);
+            if (typeof args[0] === 'string') { // set(tag,value,date)
+                var tag = this.validateTag(args[0]);
                 var tvalue = {
-                    type,
+                    tag,
                     value: args[1] === undefined ? true : args[1],
                     t: args[2] || new Date(),
                 };
@@ -113,9 +116,9 @@
         }
 
         getTValue(valueType, date = new Date()) {
-            Asset.validateType(valueType);
+            this.validateTag(valueType);
             return this.tvalues.reduce((acc,evt) => {    
-                if (evt.type === valueType) {
+                if (evt.tag === valueType) {
                    return evt.t<=date && (!acc || evt.t >= acc.t) ? evt : acc;
                 }
                 return acc;
@@ -123,7 +126,7 @@
         }
 
         get(valueType, date = new Date()) {
-            Asset.validateType(valueType);
+            this.validateTag(valueType);
             var tvalue =  this.getTValue(valueType, date);
             if (tvalue && tvalue.value === true) {
                 return tvalue.t;
@@ -136,7 +139,7 @@
         }
 
         valueElapsed(targetType) {
-            Asset.validateType(targetType);
+            this.validateTag(targetType);
             if (this.begin == null) {
                 throw new Error(`${this.name} has no tvalue:${startType}`);
             }
@@ -166,7 +169,7 @@
         }
 
         ageAt(targetType) {
-            Asset.validateType(targetType);
+            this.validateTag(targetType);
             var elapsed = this.valueElapsed(targetType);
             return typeof elapsed === 'number' ?  this.ageElapsed(elapsed) : elapsed;
         }
@@ -177,15 +180,15 @@
             }, this);
         }
 
-        valueHistory(type) {
-            Asset.validateType(type);
-            return this.tvalues.filter(tv => tv.type === type).sort(TValue.compareTime);
+        valueHistory(tag) {
+            this.validateTag(tag);
+            return this.tvalues.filter(tv => tv.tag === tag).sort(TValue.compareTime);
         }
 
-        updateValueHistory(type, history) {
-            Asset.validateType(type);
-            var tvalues = this.tvalues.filter(tv => tv.type !== type);
-            tvalue.concat(history.filter(tv => tv.type === type));
+        updateValueHistory(tag, history) {
+            this.validateTag(tag);
+            var tvalues = this.tvalues.filter(tv => tv.tag !== tag);
+            tvalue.concat(history.filter(tv => tv.tag === tag));
             this.tvalues = tvalues;
             return undefined; // TBD
         }
@@ -194,17 +197,17 @@
             var snapshot = JSON.parse(JSON.stringify(this));
             delete snapshot.tvalues;
             delete snapshot.name;
-            var typeMap = {};
+            var tagMap = {};
             return this.tvalues.reduce((snapshot,tvalue) => {    
-                var valueType = tvalue.type;
-                var tv = typeMap[valueType];
+                var valueType = tvalue.tag;
+                var tv = tagMap[valueType];
                 if (!tv && tvalue.t <= t || tv && tv.t <= tvalue.t && tvalue.t <= t) {
                     if (tvalue.value === true) { 
                         snapshot[valueType] = tvalue.t.toJSON(); // coerce to date
                     } else {
                         snapshot[valueType] = tvalue.value;
                     }
-                    typeMap[valueType] = tvalue;
+                    tagMap[valueType] = tvalue;
                 }
                 return snapshot;
             }, snapshot);
@@ -222,14 +225,14 @@
                     if ((typeof newValue === 'string') && newValue.match(ISODATE)) {
                         this.set(new TValue({
                             t: new Date(newValue),
-                            type: key,
+                            tag: key,
                             value: true,
                             text,
                         }));
                     } else {
                         this.set(new TValue({
                             t,
-                            type: key,
+                            tag: key,
                             value: newValue,
                             text,
                         }));

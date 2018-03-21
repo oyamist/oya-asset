@@ -169,7 +169,7 @@
 
         // currently, only bucket1 is in tent1 
         var tent1Filter = new Filter.TValueFilter(Filter.OP_EQ, {
-            type: TValue.T_LOCATION,
+            tag: TValue.T_LOCATION,
             value: td.tent1.guid,
         });
         var assets = td.inventory.assets(tent1Filter);
@@ -177,7 +177,7 @@
 
         // at t[0], both buckets were in tent1 
         var tent1Filter = new Filter.TValueFilter(Filter.OP_EQ, {
-            type: TValue.T_LOCATION,
+            tag: TValue.T_LOCATION,
             value: td.tent1.guid,
             t: td.t[0],
         });

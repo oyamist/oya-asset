@@ -9,7 +9,7 @@
             "name": "Tomato1",
             "id": "A0001",
             "tvalues":[{
-                "type": "location",
+                "tag": "location",
                 "t": "2018-03-12T00:00:00Z",
                 "value":"GUID003"
             }]
@@ -20,11 +20,11 @@
             "name": "Tomato2",
             "id": "A0002",
             "tvalues":[{
-                "type": "location",
+                "tag": "location",
                 "t": "2018-03-12T00:00:00Z",
                 "value":"GUID003"
             },{
-                "type": "location",
+                "tag": "location",
                 "t": "2018-03-13T00:00:00Z",
                 "value":"GUID004"
             }]
