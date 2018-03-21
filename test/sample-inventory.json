@@ -2,24 +2,53 @@
     "type": "Inventory",
     "assetMap": {
         "GUID001": {
+            "begin": "2018-02-10T10:20:30.123Z",
+            "end": null,
             "type": "plant",
             "plant": "tomato",
             "cultivar": "Chocolate Stripes",
             "guid":"GUID001",
-            "name": "Tomato1",
-            "id": "A0001",
             "tvalues":[{
+                "tag": "id",
+                "t": "2018-03-12T00:00:00Z",
+                "value":"A0001"
+            },{
+                "tag": "name",
+                "t": "2018-03-12T00:00:00Z",
+                "value":"Tomato1"
+            },{
                 "tag": "location",
                 "t": "2018-03-12T00:00:00Z",
                 "value":"GUID003"
             }]
         },
         "GUID002": {
+            "begin": "2018-02-10T10:30:40.123Z",
+            "end": null,
             "type": "plant",
             "guid":"GUID002",
             "name": "Tomato2",
-            "id": "A0002",
             "tvalues":[{
+                "tag": "id",
+                "t": "2018-02-10T10:30:40.123Z",
+                "value":"A0002"
+            },{
+                "tag": "name",
+                "t": "2018-02-10T10:30:40.123Z",
+                "value":"Tomato2"
+            },{
+                "tag": "germinated",
+                "t": "2018-02-15T10:30:40.123Z",
+                "value":true
+            },{
+                "tag": "sprouted",
+                "t": "2018-02-20T10:30:40.123Z",
+                "value":true
+            },{
+                "tag": "budding",
+                "t": "2018-02-25T10:30:40.123Z",
+                "value":true
+            },{
                 "tag": "location",
                 "t": "2018-03-12T00:00:00Z",
                 "value":"GUID003"
@@ -30,18 +59,33 @@
             }]
         },
         "GUID003": {
+            "begin": "2018-01-10T08:20:30.123Z",
             "type": "reservoir",
             "guid":"GUID003",
-            "name": "Bucket1",
-            "id": "A0003",
-            "tvalues":[]
+            "tvalues":[{
+                "t": "2018-01-10T08:20:30.123Z",
+                "tag": "id",
+                "value": "A0003"
+            },{
+                "t": "2018-01-10T08:20:30.123Z",
+                "tag": "name",
+                "value": "Bucket1"
+            }]
         },
         "GUID004": {
+            "begin": "2018-01-11T09:20:30.123Z",
+            "end": null,
             "type": "reservoir",
             "guid":"GUID004",
-            "name": "Bucket2",
-            "id": "A0004",
-            "tvalues":[]
+            "tvalues":[{
+                "t": "2018-01-11T09:20:30.123Z",
+                "tag": "id",
+                "value": "A0004"
+            },{
+                "t": "2018-01-11T09:20:30.123Z",
+                "tag": "name",
+                "value": "Bucket2"
+            }]
         }
         
     }

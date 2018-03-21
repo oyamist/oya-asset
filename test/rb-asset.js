@@ -101,11 +101,11 @@
         }();
         async.next();
     });
-    it("TESTTESTGET /asset/:id returns asset snapshot for id", function(done) {
+    it("TESTTESTGET /asset/snapshot/:id returns asset snapshot for id", function(done) {
         var async = function*() {
             try {
                 var date = new Date();
-                var url = `/test/asset/A0001`;
+                var url = `/test/asset/snapshot/A0001`;
                 var response = yield supertest(app).get(url).expect((res) => {
                     res.statusCode.should.equal(200);
                     var asset = res.body;
@@ -133,7 +133,7 @@
             try {
                 // tomato1 is in bucket1; tomato2 is in bucket2
                 var date = new Date();
-                var url = `/test/assets/${date.toJSON()}`;
+                var url = `/test/inventory/snapshots/${date.toJSON()}`;
                 var response = yield supertest(app).get(url).expect((res) => {
                     res.statusCode.should.equal(200);
                     should(res.body).properties({
@@ -155,7 +155,7 @@
 
                 // tomato1,tomato2 both in bucket1; 
                 var date = new Date(2018,2,12);
-                var url = `/test/assets/${date.toJSON()}`;
+                var url = `/test/inventory/snapshots/${date.toJSON()}`;
                 var response = yield supertest(app).get(url).expect((res) => {
                     res.statusCode.should.equal(200);
                     should(res.body).properties({
@@ -195,7 +195,7 @@
         }();
         async.next();
     });
-    it("TESTTESTPOST /asset upserts asset", function(done) {
+    it("TESTTESTPOST /inventory/snapshot upserts asset", function(done) {
         var async = function* () {
             try {
                 var assetProps = {
@@ -206,6 +206,7 @@
                 var initialAssetCount = rbtest().inventory.assets().length;
                 var t1 = new Date(2018, 1, 1);
                 var t2 = new Date(2018, 1, 2);
+                var url = `/test/asset/snapshot`;
 
                 // insert new asset snapshot for time t2
                 var command = {
@@ -213,7 +214,7 @@
                     t: t2,
                 };
                 var asset = null; // the new inventory asset
-                var response = yield supertest(app).post("/test/asset").send(command).expect((res) => {
+                var response = yield supertest(app).post(url).send(command).expect((res) => {
                     res.statusCode.should.equal(200);
                     should(res.body).properties(assetProps);
                     var oldasset = asset;
@@ -229,7 +230,7 @@
                 // update new asset
                 command.upsert = asset.snapshot();
                 command.upsert.color = 'white';
-                var response = yield supertest(app).post("/test/asset").send(command).expect((res) => {
+                var response = yield supertest(app).post(url).send(command).expect((res) => {
                     res.statusCode.should.equal(200);
                     should(res.body).properties(command.upsert);
                     should.deepEqual(res.body, asset.snapshot()); // snapshot() of updated asset

@@ -25,10 +25,10 @@
             winston.info(`RbAsset.ctor(${name})`);
             Object.defineProperty(this, "handlers", {
                 value: super.handlers.concat([
-                    this.resourceMethod("get", "asset/:id", this.getAsset),
-                    this.resourceMethod("get", "assets/:date", this.getAssets),
-                    this.resourceMethod("get", "assets", this.getAssets),
-                    this.resourceMethod("post", "asset", this.postAsset),
+                    this.resourceMethod("get", "asset/snapshot/:id", this.getAsset),
+                    this.resourceMethod("get", "inventory/snapshots/:date", this.getAssets),
+                    this.resourceMethod("get", "inventory/snapshots", this.getAssets),
+                    this.resourceMethod("post", "asset/snapshot", this.postAsset),
                 ]),
             });
         }

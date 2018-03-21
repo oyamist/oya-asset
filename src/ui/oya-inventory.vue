@@ -31,7 +31,7 @@
                         </v-checkbox>
                     </td>
                     <td class="text-xs-left oya-asset-cell" @click="assetClick(cursor)"> 
-                        {{ cursor.item.tag }} </td>
+                        {{ cursor.item.type }} </td>
                     <td class="text-xs-left oya-asset-cell" @click="assetClick(cursor)"> 
                         {{ cursor.item.name }} </td>
                     <td class="text-xs-left oya-asset-cell" @click="assetClick(cursor)"> 
@@ -42,10 +42,37 @@
             </template>
             <template slot="expand" slot-scope="cursor">
                 <v-container fluid class="oya-asset-expand">
-                    <v-layout row v-for="key in Object.keys(cursor.item).sort()" :key="key"
-                        class="pl-5">
-                        <v-flex xs2 class='body-2'>{{key}}</v-flex>
-                        <v-flex >{{assetValue(key, cursor.item)}}</v-flex>
+                    <v-layout row class="pl-5">
+                        <v-flex xs2 class="body-2">Identity</v-flex>
+                        <v-flex>
+                            <v-layout row v-for="key in Object.keys(cursor.item).sort()" :key="key"
+                                v-if="assetValue(key, cursor.item) && keyClass(key, cursor.item)==='identity'"
+                                class="">
+                                <v-flex xs3 class='body-2'>{{key}}</v-flex>
+                                <v-flex >{{assetValue(key, cursor.item)}}</v-flex>
+                            </v-layout>
+                        </v-flex>
+                    </v-layout>
+                    <v-layout row class="pl-5">
+                        <v-flex xs2 class="body-2">Detail</v-flex>
+                        <v-flex>
+                            <v-layout row v-for="key in Object.keys(cursor.item).sort()" :key="key"
+                                v-if="assetValue(key, cursor.item) && keyClass(key, cursor.item)==='detail'"
+                                class="">
+                                <v-flex xs3 class='body-2'>{{key}}</v-flex>
+                                <v-flex >{{assetValue(key, cursor.item)}}</v-flex>
+                            </v-layout>
+                        </v-flex>
+                    </v-layout>
+                    <v-layout row class="pl-5">
+                        <v-flex xs2 class="body-2">Status</v-flex>
+                        <v-flex>
+                            <v-layout row v-for="(dp,i) in statusProps(cursor.item)" :key="i"
+                                class="">
+                                <v-flex xs3 class='body-2'>{{dp.key}}</v-flex>
+                                <v-flex >{{dp.value}}</v-flex>
+                            </v-layout>
+                        </v-flex>
                     </v-layout>
                 </v-container>
             </template>
@@ -98,21 +125,46 @@ export default {
         }
     },
     methods: {
+        statusProps(asset) {
+            var status = Object.keys(asset).reduce((acc,key) => {
+                var value = asset[key];
+                if (typeof value === 'string' && value.match(/^\d\d\d\d-\d\d-\d\dT/)) {
+                    acc.push({
+                        key,
+                        date: value,
+                        value: this.assetValue(key, asset),
+                    });
+                }
+                return acc;
+            },[]);
+            status.sort((a,b) => -(a.date < b.date ? -1 : (a.date === b.date ? 0 : 1)));
+            return status;
+        },
         assetClick(cursor) {
             cursor.expanded = !cursor.expanded;
             //console.log('assetClick', cursor.expanded);
         },
-        assetValue(key, item) {
+        keyClass(key, item) {
+            if (key === 'id' || key === 'name' || key === 'guid') {
+                return 'identity';
+            }
             var value = item[key];
+            if (typeof value === 'string' && value.match(/^\d\d\d\d-\d\d-\d\dT/)) {
+                return 'history';
+            }
+            return 'detail';
+        },
+        assetValue(key, asset) {
+            var value = asset[key];
             if (key === 'guid') {
                 return value;
             } 
             if (typeof value !== 'string') {
                 return value;
             } 
-            var asset = this.assetMap[value];
-            if (asset) {
-                return `${asset.name} \u2666 ${asset.id} \u2666 ${asset.tag}`;
+            var valueAsset = this.assetMap[value];
+            if (valueAsset) {
+                return `${valueAsset.name} \u2666 ${valueAsset.id} \u2666 ${valueAsset.type}`;
             }
 
             if (value.match(DATE_VALUE)) {
@@ -141,8 +193,8 @@ export default {
                     hour: '2-digit',
                     minute: '2-digit',
                 });
-                if (key !== 'begin' && item.begin) {
-                    var begin = new Date(item.begin);
+                if (key !== 'begin' && asset.begin) {
+                    var begin = new Date(asset.begin);
                     var age = Math.trunc((date - begin)/(24*3600*1000));
                     return `${dateStr} (${-days} days @ ${age} days) \u2666 ${timeStr}`;
                 } else {
@@ -152,7 +204,7 @@ export default {
             return value;
         },
         refresh(opts={}) {
-            var url = [this.restOrigin(), this.service, 'assets'].join('/');
+            var url = [this.restOrigin(), this.service, 'inventory', 'snapshots'].join('/');
             console.log(`refreshing ${url}`);
             this.$http.get(url).then(res=>{
                 this.assets = res.data.assets || [];
@@ -169,7 +221,7 @@ export default {
             return values;
         },
         searchChanged() {
-            console.log(`search change ${this.search}`);
+            //console.log(`search change ${this.search}`);
         },
         link(host) {
             if (host.hostname === 'localhost') {
@@ -186,7 +238,6 @@ export default {
             this.selectedAssets.forEach(asset => (asset.selected = true));
             var SEARCH = search.toUpperCase();
             var keys = headers.map(hdr=>hdr.value);
-            console.log('assetFilter');
             return items.filter((item,i) => {
                 return keys.reduce((acc,key) => {
                     var value = item[key];
@@ -199,7 +250,7 @@ export default {
     computed: {
         headers() {
             return [
-                { text: 'Type', align: 'left', value: 'tag' },
+                { text: 'Type', align: 'left', value: 'type' },
                 { text: 'Name', align: 'left', value: 'name' },
                 { text: 'Id', align: 'left', value: 'id' },
                 { text: 'GUID', align: 'left', value: 'guid' },
