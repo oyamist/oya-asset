@@ -160,5 +160,16 @@
             location: "GUID003",
         });
     });
-
+    it("guidify(snapshot) updates id references to guids", function() {
+        var iv = new Inventory();
+        var a1 = new Asset({
+            id: "A0001",
+        });
+        iv.addAsset(a1);
+        var snapshot = a1.snapshot();
+        snapshot.test = 'a0001'; // ignores case
+        should.deepEqual(iv.guidify(snapshot), Object.assign({}, snapshot, {
+            test: a1.guid,
+        }));
+    });
 })

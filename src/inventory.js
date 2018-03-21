@@ -62,6 +62,18 @@
             return filter ? assets.filter(a=>filter.matches(a)) : assets;
         }
 
+        guidify(snapshot) {
+            var idGuidMap = {};
+            this.assets().forEach(asset => idGuidMap[asset.id.toUpperCase()] = asset.guid);
+            return Object.keys(snapshot).reduce((acc,key) => {
+                var value = snapshot[key];
+                var v = (typeof value === 'string') && value.toUpperCase() || value;
+                var guid = idGuidMap[v];
+                acc[key] = key !== 'id' && guid ? guid : value;
+                return acc;
+            }, {});
+        }
+
         addAsset(asset) {
             if (asset == null) {
                 throw new Error(`Inventory.addAsset() asset is required`);

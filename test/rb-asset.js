@@ -204,6 +204,8 @@
                     name: 'bucketA',
                     size: '5 gallon',
                 };
+                var a0001 = rbtest().inventory.assetOfId('A0001');
+                should(a0001).instanceOf(Asset);
                 var initialAssetCount = rbtest().inventory.assets().length;
                 var t1 = new Date(2018, 1, 1);
                 var t2 = new Date(2018, 1, 2);
@@ -262,14 +264,13 @@
                 command = {
                    upsert: {
                        guid: asset.guid,
-                       location: 'SFO',
+                       location: 'a0001', // guidify test
                    },
                    t: TValue.RETROACTIVE.toJSON(),
                 }
                 var response = yield supertest(app).post(url).send(command).expect((res) => {
                     res.statusCode.should.equal(200);
-                    should(res.body).properties(command.upsert);
-                    should.deepEqual(res.body, asset.snapshot()); // snapshot() of updated asset
+                    should(res.body.location).equal(a0001.guid);
                 }).end((e,r) => e ? async.throw(e) : async.next(r));
                 should(rbtest().inventory.assets().length).equal(initialAssetCount+1);
                 // location is a retroactive temporal property
@@ -280,6 +281,7 @@
                     temporal:true,
                     own: false,
                 });
+                should(asset.get('location')).equal(a0001.guid); // guidify
 
                 done();
             } catch(err) {

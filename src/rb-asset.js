@@ -82,14 +82,15 @@
                 if (!command.upsert) {
                     throw new Error(`RbAsset.postAsset() no asset to upsert`);
                 }
-                var guid = command.upsert.guid;
+                var upsert = this.inventory.guidify(command.upsert);
+                var guid = upsert.guid;
                 var asset = guid && this.inventory.assetOfGuid(guid);
                 if (!asset) {
-                    asset = this.inventory.assetOf(command.upsert);
+                    asset = this.inventory.assetOf(upsert);
                     this.inventory.addAsset(asset);
                     winston.info(`RbAsset.postAsset() created asset ${asset.name}`);
                 }
-                asset.updateSnapshot(command.upsert,t);
+                asset.updateSnapshot(upsert,t);
                 return asset.snapshot();
             } catch (e) {
                 winston.warn(e.stack);
