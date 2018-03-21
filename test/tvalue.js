@@ -27,9 +27,7 @@
         should.deepEqual(TValue.valueTypes(), [
             "(none)",
 
-            "begin",
             "dimensions",
-            "end",
             "id",
             "location",
             "name",

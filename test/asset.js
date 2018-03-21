@@ -128,11 +128,13 @@
         var asset2 = new Asset(json);
         should.deepEqual(asset2, asset);
 
-        asset.set(TValue.T_BEGIN, {
+        var value = {
             size: 'large',
             color: 'blue',
             qty: 3,
-        });
+        };
+        asset.set(TValue.T_DIMENSIONS, value);
+        should.deepEqual(asset.get(TValue.T_DIMENSIONS), value);
         asset.set(TValue.T_DIMENSIONS);
         var json = JSON.stringify(asset);
         var asset2 = new Asset(JSON.parse(json));

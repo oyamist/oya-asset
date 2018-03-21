@@ -22,9 +22,7 @@
         }
 
         static get T_NONE() { return "(none)"; } // singular
-        static get T_BEGIN() { return "begin"; } // singular
         static get T_ACTIVATED() { return "activated"; } // singular
-        static get T_END() { return "end"; } // singular
         static get T_ID() { return "id"; } 
         static get T_NAME() { return "name"; } 
         static get T_SIZE() { return "size"; } 
@@ -38,9 +36,7 @@
             return [
                 TValue.T_NONE,
 
-                TValue.T_BEGIN,
                 TValue.T_DIMENSIONS,
-                TValue.T_END,
                 TValue.T_ID,
                 TValue.T_LOCATION,
                 TValue.T_NAME,

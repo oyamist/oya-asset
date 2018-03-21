@@ -135,14 +135,12 @@
             return this.get(TValue.T_LOCATION, date);
         }
 
-        valueElapsed(targetType, startType = TValue.T_BEGIN) {
+        valueElapsed(targetType) {
             Asset.validateType(targetType);
-            Asset.validateType(startType);
-            var eStart = this.getTValue(startType);
-            if (eStart == null) {
+            if (this.begin == null) {
                 throw new Error(`${this.name} has no tvalue:${startType}`);
             }
-            if (!(eStart.t instanceof Date)) {
+            if (!(this.begin instanceof Date)) {
                 throw new Error(`${this.name} has no timestamp for start tvalue:${startType}`);
             }
             var eTarget = this.getTValue(targetType);
@@ -152,7 +150,7 @@
             if (!(eTarget.t instanceof Date)) {
                 throw new Error(`${this.name} has no timestamp for target tvalue:${targetType}`);
             }
-            return eTarget.t-eStart.t;
+            return eTarget.t-this.begin;
         }
 
         ageElapsed(elapsed) {
@@ -160,20 +158,16 @@
         }
 
         age() {
-            var eStart = this.getTValue(TValue.T_BEGIN);
-
-            if (eStart == null) {
-                throw new Error(`${this.name} has no tvalue:${startType}`);
+            if (this.begin == null) {
+                throw new Error(`${this.name} has no begin date`);
             }
-            var eEnd = this.getTValue(TValue.T_END);
-            var elapsed = (eEnd ? eEnd.t : Date.now()) - eStart.t;
+            var elapsed = (this.end ? this.end : Date.now()) - this.begin;
             return this.ageElapsed(elapsed);
         }
 
-        ageAt(targetType, startType = TValue.T_BEGIN) {
+        ageAt(targetType) {
             Asset.validateType(targetType);
-            Asset.validateType(startType);
-            var elapsed = this.valueElapsed(targetType, startType);
+            var elapsed = this.valueElapsed(targetType);
             return typeof elapsed === 'number' ?  this.ageElapsed(elapsed) : elapsed;
         }
 
