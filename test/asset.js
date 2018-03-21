@@ -101,7 +101,7 @@
             "tent",
         ]);
     });
-    it("Asset is serializable", function() {
+    it("TESTTESTAsset is serializable", function() {
         var asset = new Asset({
             type: Asset.T_PLANT,
             id: 'A0001',

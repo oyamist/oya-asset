@@ -18,8 +18,11 @@
             } else {
                 this.type = Asset.T_PLANT;
             }
-            this.tvalues = (opts.tvalues || []).map(evt =>
-                (evt instanceof TValue ? evt : new TValue(evt)));
+            Object.defineProperty(this, "tvalues", {
+                writable: true,
+                value: (opts.tvalues || []).map(tv =>
+                    (tv instanceof TValue ? tv : new TValue(tv))),
+            });
 
             // Asset id is retroactive temporal value initializable with ctor options
             if (opts.hasOwnProperty('id')) {
@@ -173,7 +176,9 @@
         }
 
         toJSON() {
-            return this;
+            return Object.assign({
+                tvalues: this.tvalues,
+            }, this);
         }
 
         valueHistory(type) {
@@ -190,7 +195,7 @@
         }
 
         snapshot(t=new Date()) {
-            var snapshot = Object.assign({}, this);
+            var snapshot = JSON.parse(JSON.stringify(this));
             delete snapshot.tvalues;
             delete snapshot.name;
             var typeMap = {};
