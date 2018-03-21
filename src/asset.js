@@ -95,12 +95,20 @@
 
         set(...args) {
             if (typeof args[0] === 'string') { // set(tag,value,date)
-                var tag = this.validateTag(args[0]);
+                var tag = args[0];
                 var tvalue = {
                     tag,
                     value: args[1] === undefined ? true : args[1],
                     t: args[2] || new Date(),
                 };
+                if (this.hasOwnProperty(args[0])) { // non-temporal
+                    if (tag === 'guid' || tag === 'type') {
+                        throw new Error(`Attempt to change immutable property:${tag}`);
+                    }
+                    this[tag] = tvalue.value;
+                    return undefined; // TBD
+                }
+                this.validateTag(tag);
                 args[3] && (tvalue.text = args[3]+'');
             } else { // set(tvalue)
                 var tvalue = args[0];
@@ -115,19 +123,22 @@
             return undefined; // TBD
         }
 
-        getTValue(valueType, date = new Date()) {
-            this.validateTag(valueType);
+        getTValue(valueTag, date = new Date()) {
+            this.validateTag(valueTag);
             return this.tvalues.reduce((acc,evt) => {    
-                if (evt.tag === valueType) {
+                if (evt.tag === valueTag) {
                    return evt.t<=date && (!acc || evt.t >= acc.t) ? evt : acc;
                 }
                 return acc;
             }, null);
         }
 
-        get(valueType, date = new Date()) {
-            this.validateTag(valueType);
-            var tvalue =  this.getTValue(valueType, date);
+        get(valueTag, date = new Date()) {
+            if (this.hasOwnProperty(valueTag)) {
+                return this[valueTag]; // non-temporal property
+            }
+            this.validateTag(valueTag);
+            var tvalue =  this.getTValue(valueTag, date);
             if (tvalue && tvalue.value === true) {
                 return tvalue.t;
             }
@@ -199,15 +210,15 @@
             delete snapshot.name;
             var tagMap = {};
             return this.tvalues.reduce((snapshot,tvalue) => {    
-                var valueType = tvalue.tag;
-                var tv = tagMap[valueType];
+                var valueTag = tvalue.tag;
+                var tv = tagMap[valueTag];
                 if (!tv && tvalue.t <= t || tv && tv.t <= tvalue.t && tvalue.t <= t) {
                     if (tvalue.value === true) { 
-                        snapshot[valueType] = tvalue.t.toJSON(); // coerce to date
+                        snapshot[valueTag] = tvalue.t.toJSON(); // coerce to date
                     } else {
-                        snapshot[valueType] = tvalue.value;
+                        snapshot[valueTag] = tvalue.value;
                     }
-                    tagMap[valueType] = tvalue;
+                    tagMap[valueTag] = tvalue;
                 }
                 return snapshot;
             }, snapshot);

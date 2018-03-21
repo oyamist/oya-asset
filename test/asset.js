@@ -141,10 +141,10 @@
         should.deepEqual(asset2, asset);
         should(asset2.name).equal('tomatoA');
     });
-    it("set(valueType, value, date) sets asset temporal value", function() {
+    it("set(valueTag, value, date) sets asset temporal value", function() {
         var asset = new Asset();
 
-        // set(valueType, value)
+        // set(valueTag, value)
         asset.set(TValue.T_LOCATION, 'SFO');
         should(asset.get(TValue.T_LOCATION)).equal('SFO');
         asset.set(TValue.T_LOCATION, 'LAX');
@@ -172,7 +172,7 @@
         should(asset.get(TValue.T_LOCATION,t1)).equal('NYC');
         should(asset.get(TValue.T_LOCATION)).equal('PIT');
     });
-    it("get(valueType,date) returns temporal value for date", function() {
+    it("get(valueTag,date) returns temporal value for date", function() {
         var asset = new Asset();
         asset.set(TValue.T_DIMENSIONS, {
             size: 'small',
@@ -192,6 +192,27 @@
         should.equal(asset.get(TValue.T_ACTIVATED, t1), t1); // true is mapped to date
         asset.set(TValue.T_ACTIVATED, false, t2);
         should.equal(asset.get(TValue.T_ACTIVATED, t2), false);
+    });
+    it("get(valueTag,date) also returns non-temporal property value ", function() {
+        var asset = new Asset();
+        var t1 = new Date(2018,1,2);
+        should(asset.get('guid')).equal(asset.guid);
+        should(asset.get('guid', t1)).equal(asset.guid);
+    });
+    it("set(valueTag, value, date) also sets non-temporal properties", function() {
+        var asset = new Asset();
+        var t1 = new Date(2018,2,1);
+        should(asset.begin.toJSON()).not.equal(t1.toJSON());
+        asset.set("begin", t1);
+        should(asset.begin.toJSON()).equal(t1.toJSON());
+
+        // immutable 
+        should.throws(() => {
+            asset.set("guid", "asdf");
+        });
+        should.throws(() => {
+            asset.set("type", "asdf");
+        });
     });
     it("location(date) returns asset location for date", function() {
         var asset = new Asset();

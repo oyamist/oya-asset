@@ -31,32 +31,32 @@
             throw new Error(`Query.assetGuids() expected asset or collection of assets`);
         }
 
-        parents(set,valueType,t=new Date()) {
-            return this.ancestors(set, valueType, t, 1);
+        parents(set,valueTag,t=new Date()) {
+            return this.ancestors(set, valueTag, t, 1);
         }
 
-        ancestors(set,valueType,t=new Date(),n=0) {
+        ancestors(set,valueTag,t=new Date(),n=0) {
             t = t || new Date(); // null
             var guidMap = {};
             var srcGuids = this.assetGuids(set);
             var result = [];
             srcGuids.forEach(guid=>{
                 var srcAsset = this.inventory.assetOfGuid(guid);
-                var value = srcAsset && srcAsset.get(valueType,t);
+                var value = srcAsset && srcAsset.get(valueTag,t);
                 var steps = 0;
                 while (value && !guidMap[value] && (n===0 || steps++<n)) {
                     var dstAsset = this.inventory.assetOfGuid(value);
                     if (dstAsset) { // value is an asset guid
                         guidMap[value] = true;
                         result.push(dstAsset);
-                        value = dstAsset.get(valueType,t);
+                        value = dstAsset.get(valueTag,t);
                     }
                 }
             });
             return result.sort(Query.guidAscending);
         }
 
-        descendants(set,valueType,t=new Date(),n=0) {
+        descendants(set,valueTag,t=new Date(),n=0) {
             t = t || new Date(); // null
 
             var isAncestor = {};
@@ -72,7 +72,7 @@
                 var children = [];
                 var newCandidates = [];
                 candidates.forEach(asset => {
-                    var parent = asset.get(valueType,t);
+                    var parent = asset.get(valueTag,t);
                     if (isAncestor[parent]) {
                         children.push(asset);
                     } else {

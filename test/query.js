@@ -117,7 +117,7 @@
             inventory: td.inventory
         });
     });
-    it("parents(set,valueType,date) returns immediate ancestors", function() {
+    it("parents(set,valueTag,date) returns immediate ancestors", function() {
         var td = testData();
         var query = new Query({
             inventory: td.inventory
@@ -187,7 +187,7 @@
             td.bucket2.guid,
         ].sort());
     });
-    it("ancestors(set,valueType,date,n) returns n-closure of linked assets", function() {
+    it("ancestors(set,valueTag,date,n) returns n-closure of linked assets", function() {
         var td = testData();
         var query = new Query({
             inventory: td.inventory
@@ -228,7 +228,7 @@
         ].sort());
 
     });
-    it("descendants(set,valueType,date,n) returns assets with given ancestors", function() {
+    it("descendants(set,valueTag,date,n) returns assets with given ancestors", function() {
         var td = testData();
         var query = new Query({
             inventory: td.inventory
