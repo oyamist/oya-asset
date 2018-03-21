@@ -128,7 +128,7 @@
         should(assets.length).equal(1);
         should(assets[0]).equal(plant1);
     });
-    it("assetOf(asset) creates typed assets", function() {
+    it("assetOf(asset) is an asset factor", function() {
         var iv = new Inventory();
         var t1 = new Date(2018, 1, 2);
         var asset = iv.assetOf({

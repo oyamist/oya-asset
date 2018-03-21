@@ -530,5 +530,62 @@
         should.deepEqual(history.map(tv=>tv.tag), ['color','color','color']);
         should.deepEqual(history.map(tv=>tv.text), ['A','B','C']);
     });
+    it("describeProperty(name) returns property description", function() {
+        var asset = new Asset({
+            size: 'large',
+        });
+        function immutable(name) {
+            return {
+                name,
+                mutable: false,
+                temporal: false,
+                retroactive: false,
+                own: true,
+            };
+        }
+        function retroactive(name) {
+            return {
+                name,
+                mutable: true,
+                temporal: true,
+                retroactive: true,
+                own: false,
+            };
+        }
+        function mutable(name) {
+            return {
+                name,
+                mutable: true,
+                temporal: false,
+                retroactive: false,
+                own: true,
+            };
+        }
+        function unused(name) {
+            return {
+                name,
+                mutable: true,
+                temporal: false,
+                retroactive: false,
+                own: false,
+            };
+        }
+        function temporal(name) {
+            return {
+                name,
+                mutable: true,
+                temporal: true,
+                retroactive: false,
+                own: false,
+            };
+        }
+        asset.set("location", "SFO");
+        should.deepEqual(asset.describeProperty('guid'), immutable('guid'));
+        should.deepEqual(asset.describeProperty('type'), immutable('type'));
+        should.deepEqual(asset.describeProperty('id'), retroactive('id'));
+        should.deepEqual(asset.describeProperty('size'), mutable('size'));
+        should.deepEqual(asset.describeProperty('asdf'), unused('asdf'));
+        should.deepEqual(asset.describeProperty('location'), temporal('location'));
+    });
 
 })

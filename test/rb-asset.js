@@ -17,6 +17,7 @@
         Asset,
         Inventory,
         RbAsset,
+        TValue,
     } = require('../index');
     function rbtest() {
         return app.locals.restBundles.filter(rb => rb.name==='test')[0];
@@ -223,11 +224,19 @@
                     should(res.body.id).equal(`${asset.guid.substr(0,7)}`);
                     should.deepEqual(res.body, asset.snapshot()); // snapshot() of updated asset
                     should(asset.get('size', t2)).equal('5 gallon');
-                    should(asset.get('size', t1)).equal(undefined);
+                    should(asset.get('size', t1)).equal('5 gallon'); // size is non-temporal
                 }).end((e,r) => e ? async.throw(e) : async.next(r));
                 should(rbtest().inventory.assets().length).equal(initialAssetCount+1);
+                // size was set at creation, so it is a mutable non-temporal property
+                should.deepEqual(asset.describeProperty('size'), {
+                    mutable: true,
+                    name: 'size',
+                    retroactive: false,
+                    temporal:false,
+                    own: true,
+                });
                 
-                // update new asset
+                // update new asset with new temporal property
                 command.upsert = asset.snapshot();
                 command.upsert.color = 'white';
                 var response = yield supertest(app).post(url).send(command).expect((res) => {
@@ -235,11 +244,42 @@
                     should(res.body).properties(command.upsert);
                     should.deepEqual(res.body, asset.snapshot()); // snapshot() of updated asset
                     should(asset.get('size', t2)).equal('5 gallon');
-                    should(asset.get('size', t1)).equal(undefined);
-                    should(asset.get('color', t1)).equal(undefined);
+                    should(asset.get('size', t1)).equal('5 gallon'); // size is non-temporal
+                    should(asset.get('color', t1)).equal(undefined); // color is temporal
                     should(asset.get('color')).equal('white');
                 }).end((e,r) => e ? async.throw(e) : async.next(r));
                 should(rbtest().inventory.assets().length).equal(initialAssetCount+1);
+                // color was set after creation, so it is a temporal property
+                should.deepEqual(asset.describeProperty('color'), {
+                    mutable: true,
+                    name: 'color',
+                    retroactive: false,
+                    temporal:true,
+                    own: false,
+                });
+
+                // update new asset with new retroactive temporal property
+                command = {
+                   upsert: {
+                       guid: asset.guid,
+                       location: 'SFO',
+                   },
+                   t: TValue.RETROACTIVE.toJSON(),
+                }
+                var response = yield supertest(app).post(url).send(command).expect((res) => {
+                    res.statusCode.should.equal(200);
+                    should(res.body).properties(command.upsert);
+                    should.deepEqual(res.body, asset.snapshot()); // snapshot() of updated asset
+                }).end((e,r) => e ? async.throw(e) : async.next(r));
+                should(rbtest().inventory.assets().length).equal(initialAssetCount+1);
+                // location is a retroactive temporal property
+                should.deepEqual(asset.describeProperty('location'), {
+                    mutable: true,
+                    name: 'location',
+                    retroactive: true,
+                    temporal:true,
+                    own: false,
+                });
 
                 done();
             } catch(err) {

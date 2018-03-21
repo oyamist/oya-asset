@@ -4,6 +4,12 @@
     const MSDAYS = 24*3600*1000;
     const SHORT_GUID_DIGITS = 7; // same as git default
     const ISODATE = /^\d\d\d\d-\d\d-\d\d/;
+    
+    // Assets have different kinds of properties:
+    // * immutable non-temporal properties (e.g., guid) 
+    // * mutable non-temporal properties (e.g., cultivar) 
+    // * standard temporal properties (e.g., pollinated) are undefined till set
+    // * retroactive temporal properties (e.g., id) have values that predate their creation
 
     class Asset {
         constructor(opts = {}) {
@@ -22,6 +28,18 @@
                 writable: true,
                 value: (opts.tvalues || []).map(tv =>
                     (tv instanceof TValue ? tv : new TValue(tv))),
+            });
+
+            // ctor properties are non-temporal
+            var keys = Object.keys(opts).filter(key => 
+                key !== 'type' && // immutable non-temporal
+                key !== 'guid' && // immutable non-temporal
+                key !== 'id' && // retroactive temporal
+                key !== 'begin' && // mutable non-temporal
+                key !== 'tvalues' && // temporal implementation 
+                key !== 'name');// retroactive temporal
+            keys.forEach(key => {
+                this[key] = opts[key];
             });
 
             // Asset id is retroactive temporal value initializable with ctor options
@@ -81,6 +99,33 @@
                 throw new Error(`Property "${tag}" is not a temporal property`);
             }
             return tag;
+        }
+
+        describeProperty(name) {
+            var retroTime = TValue.RETROACTIVE.getTime();
+            var retroDate = TValue.RETROACTIVE.toJSON();
+            var { 
+                temporal,
+                retroactive,
+            } = this.tvalues.reduce((acc,tv) => {
+                    if (tv.tag === name) {
+                        acc.temporal = true;
+                        if (tv.t.getTime() === retroTime) {
+                            acc.retroactive = true;
+                        }
+                    }
+                return acc;
+            }, {
+                temporal: false,
+                retroactive: false,
+            });
+            return {
+                name,
+                mutable: name !== 'guid' && name !== 'type',
+                temporal,
+                retroactive,
+                own: this.hasOwnProperty(name),
+            }
         }
 
         namePrefix(opts={}) {
