@@ -46,6 +46,7 @@
                 var t = opts.begin instanceof Date ? opts.begin : new Date(opts.begin);
                 this.set(TValue.T_BEGIN, true, t);
             }
+            this.end = opts.end || null;
         }
 
         static get T_ACTUATOR() { return "actuator"; }

@@ -27,6 +27,14 @@
             }),
         ]);
 
+        // non-temporal properties are enumerable
+        should.deepEqual(Object.keys(asset).sort(), [ 
+            //"begin",
+            "end",
+            "guid",
+            "type",
+        ].sort());
+
         // Asset name is generated if not provided
         should.deepEqual(asset.name, `plant_${asset.guid.substr(0,7)}`); 
 
@@ -109,6 +117,7 @@
         });
         var json = JSON.parse(JSON.stringify(asset));
         should.deepEqual(json, {
+            end: null,
             type: 'plant',
             guid: asset.guid,
             tvalues:[{
@@ -221,6 +230,7 @@
             }]
         });
         should.deepEqual(asset.snapshot(), {
+            end: null,
             type: Asset.T_PUMP,
             id: 'A0001',
             name: 'Mister1',
@@ -243,13 +253,14 @@
         });
         should(asset.get(Asset.T_PLANT)).equal('tomato');
         should.deepEqual(asset.snapshot(), {
-            "type": "plant",
-            "plant": "tomato",
-            "cultivar": "Chocolate Stripes",
-            "guid":"GUID001",
-            "name": "Tomato1",
-            "id": "A0001",
-            "location": "GUID003",
+            end: null,
+            type: "plant",
+            plant: "tomato",
+            cultivar: "Chocolate Stripes",
+            guid: "GUID001",
+            name: "Tomato1",
+            id: "A0001",
+            location: "GUID003",
         });
 
         var asset = new Asset({
@@ -257,6 +268,7 @@
             id: "A0001",
         });
         should.deepEqual(asset.snapshot(), {
+            end: null,
             type: Asset.T_PUMP,
             id: 'A0001',
             name: 'pump_A0001',
@@ -266,6 +278,7 @@
         asset.set(TValue.T_LOCATION, 'LAX', t2);
         asset.set(TValue.T_LOCATION, 'PIT', t3);
         should.deepEqual(asset.snapshot(), {
+            end: null,
             type: Asset.T_PUMP,
             id: 'A0001',
             name: 'pump_A0001',
@@ -273,6 +286,7 @@
             location: 'PIT',
         });
         should.deepEqual(asset.snapshot(new Date(t1.getTime()-1)), {
+            end: null,
             type: Asset.T_PUMP,
             id: 'A0001',
             name: 'pump_A0001',
@@ -280,6 +294,7 @@
             // no location
         });
         should.deepEqual(asset.snapshot(t1), {
+            end: null,
             type: Asset.T_PUMP,
             id: 'A0001',
             name: 'pump_A0001',
@@ -287,6 +302,7 @@
             location: 'SFO',
         });
         should.deepEqual(asset.snapshot(new Date(t2.getTime()-1)), {
+            end: null,
             type: Asset.T_PUMP,
             id: 'A0001',
             name: 'pump_A0001',
@@ -294,6 +310,7 @@
             location: 'SFO',
         });
         should.deepEqual(asset.snapshot(t2), {
+            end: null,
             type: Asset.T_PUMP,
             id: 'A0001',
             name: 'pump_A0001',
@@ -301,6 +318,7 @@
             location: 'LAX',
         });
         should.deepEqual(asset.snapshot(t3), {
+            end: null,
             type: Asset.T_PUMP,
             id: 'A0001',
             name: 'pump_A0001',
@@ -401,6 +419,7 @@
             should(asset.get('size', t1)).equal('Large');
             should(asset.get('size')).equal('Large');
             should.deepEqual(asset.snapshot(), {
+                end: null,
                 guid: asset.guid,
                 id: asset.id,
                 name: asset.name,
@@ -450,6 +469,7 @@
             should.deepEqual(asset.valueHistory(TValue.T_ACTIVATED), [ tv1 ]);
             should.deepEqual(tv1.value, true); // store boolean value, not date
             should.deepEqual(asset.snapshot(), {
+                end: null,
                 guid: asset.guid,
                 id: asset.id,
                 name: asset.name,
@@ -464,6 +484,7 @@
             should.deepEqual(asset.valueHistory(TValue.T_ACTIVATED), [ tv1, tv2 ]);
             should.deepEqual(tv2.value, true); // store boolean value, not date
             should.deepEqual(asset.snapshot(), { // snapshot returns current activated date
+                end: null,
                 guid: asset.guid,
                 id: asset.id,
                 name: asset.name,
@@ -471,6 +492,7 @@
                 activated: t2.toJSON(),
             });
             should.deepEqual(asset.snapshot(t1), {
+                end: null,
                 guid: asset.guid,
                 id: asset.id,
                 name: asset.name,
@@ -484,6 +506,7 @@
             });
             should.deepEqual(asset.valueHistory(TValue.T_ACTIVATED), [ tv1, tv2, tvfuture ]);
             should.deepEqual(asset.snapshot(), { // snapshot returns current activated date
+                end: null,
                 guid: asset.guid,
                 id: asset.id,
                 name: asset.name,
@@ -491,6 +514,7 @@
                 activated: t2.toJSON(),
             });
             should.deepEqual(asset.snapshot(tfuture), {
+                end: null,
                 guid: asset.guid,
                 id: asset.id,
                 name: asset.name,
@@ -504,6 +528,7 @@
             }, t3);
             should.deepEqual(asset.valueHistory(TValue.T_ACTIVATED), [ tv1, tv2, tv3, tvfuture ]);
             should.deepEqual(asset.snapshot(), { // snapshot returns current activated date
+                end: null,
                 guid: asset.guid,
                 id: asset.id,
                 name: asset.name,
@@ -511,6 +536,7 @@
                 activated: false,
             });
             should.deepEqual(asset.snapshot(tfuture), {
+                end: null,
                 guid: asset.guid,
                 id: asset.id,
                 name: asset.name,

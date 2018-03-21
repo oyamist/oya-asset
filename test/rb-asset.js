@@ -110,6 +110,7 @@
                     res.statusCode.should.equal(200);
                     var asset = res.body;
                     should.deepEqual(asset, {
+                        end: null,
                         type: 'plant',
                         cultivar: 'Chocolate Stripes',
                         id: 'A0001',

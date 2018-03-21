@@ -147,13 +147,14 @@
         should(asset.get(Plant.T_PLANT)).equal('tomato');
         should(asset.get(Plant.T_CULTIVAR)).equal('Chocolate Stripes');
         should.deepEqual(asset.snapshot(), {
-            "type": "plant",
-            "plant": "tomato",
-            "cultivar": "Chocolate Stripes",
-            "guid":"GUID001",
-            "name": "Tomato1",
-            "id": "A0001",
-            "location": "GUID003",
+            end: null,
+            type: "plant",
+            plant: "tomato",
+            cultivar: "Chocolate Stripes",
+            guid:"GUID001",
+            name: "Tomato1",
+            id: "A0001",
+            location: "GUID003",
         });
     });
 
