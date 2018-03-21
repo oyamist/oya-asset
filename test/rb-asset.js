@@ -109,7 +109,7 @@
                 var response = yield supertest(app).get(url).expect((res) => {
                     res.statusCode.should.equal(200);
                     var asset = res.body;
-                    should.deepEqual(asset, {
+                    should(asset).properties({
                         end: null,
                         type: 'plant',
                         cultivar: 'Chocolate Stripes',

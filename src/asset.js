@@ -43,8 +43,9 @@
                 this.set(TValue.T_NAME, name, TValue.RETROACTIVE);
             }
             if (opts.begin) {
-                var t = opts.begin instanceof Date ? opts.begin : new Date(opts.begin);
-                this.set(TValue.T_BEGIN, true, t);
+                this.begin = opts.begin instanceof Date ? opts.begin : new Date(opts.begin);
+            } else {
+                this.begin = new Date();
             }
             this.end = opts.end || null;
         }

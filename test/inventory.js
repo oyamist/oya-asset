@@ -35,8 +35,8 @@
         should.deepEqual(iv.assetOfGuid(plant2.guid), plant2);
         should.deepEqual(iv.assetOfGuid(tent1.guid), tent1);
 
-        var json = JSON.stringify(iv);
-        var iv2 = new Inventory(JSON.parse(json));
+        var json = JSON.parse(JSON.stringify(iv));
+        var iv2 = new Inventory(json);
         should.deepEqual(iv2, iv);
         should.deepEqual(iv2.assetOfGuid(plant1.guid), plant1);
         should.deepEqual(iv2.assetOfGuid(plant2.guid), plant2);
@@ -130,7 +130,9 @@
     });
     it("assetOf(asset) creates typed assets", function() {
         var iv = new Inventory();
+        var t1 = new Date(2018, 1, 2);
         var asset = iv.assetOf({
+            begin: t1,
             "type": "plant",
             "plant": "tomato",
             "cultivar": "Chocolate Stripes",
@@ -147,6 +149,7 @@
         should(asset.get(Plant.T_PLANT)).equal('tomato');
         should(asset.get(Plant.T_CULTIVAR)).equal('Chocolate Stripes');
         should.deepEqual(asset.snapshot(), {
+            begin: t1.toJSON(),
             end: null,
             type: "plant",
             plant: "tomato",
