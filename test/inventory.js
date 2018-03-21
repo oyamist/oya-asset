@@ -128,21 +128,21 @@
         should(assets.length).equal(1);
         should(assets[0]).equal(plant1);
     });
-    it("assetOf(asset) creates tagd assets", function() {
+    it("assetOf(asset) creates typed assets", function() {
         var iv = new Inventory();
         var t1 = new Date(2018, 1, 2);
         var asset = iv.assetOf({
             begin: t1,
-            "type": "plant",
-            "plant": "tomato",
-            "cultivar": "Chocolate Stripes",
-            "guid":"GUID001",
-            "name": "Tomato1",
-            "id": "A0001",
-            "tvalues":[{
-                "tag": "location",
-                "t": "2018-03-12T00:00:00Z",
-                "value":"GUID003"
+            type: "plant",
+            plant: "tomato",
+            cultivar: "Chocolate Stripes",
+            guid:"GUID001",
+            name: "Tomato1",
+            id: "A0001",
+            tvalues:[{
+                tag: "location",
+                t: "2018-03-12T00:00:00Z",
+                value:"GUID003"
             }]
         });
         should(asset).instanceOf(Plant);

@@ -13,10 +13,10 @@
 
     <v-card>
         <v-card-title primary-title>
-            <h3> {{title}}</h3>
-            <v-spacer/>
             <v-text-field append-icon="search" label="Search" single-line clearable
                 :change="searchChanged()" hide-details v-model="search" ></v-text-field>
+            <v-spacer/>
+            <v-btn primary @click="addAsset()">Add</v-btn>
         </v-card-title>
         <v-data-table v-bind:headers="headers" :items="assets" hide-actions 
             :custom-filter="assetFilter"
@@ -82,6 +82,42 @@
                 v-model="pagination.page" 
                 :total-visible="assets.length"></v-pagination>
         </div>
+        <v-dialog v-model="showAddDialog" fullscreen transition="dialog-bottom-transition"
+           :overlay="false" scrollable >
+            <v-card tile>
+                <v-toolbar card dark color="primary">
+                    <v-btn icon @click.native="showAddDialog=false" dark>
+                        <v-icon>close</v-icon>
+                    </v-btn>
+                    <v-toolbar-title>Add Asset</v-toolbar-title>
+                    <v-spacer></v-spacer>
+                    <v-toolbar-items>
+                        <v-btn dark flat @click.native="showAddDialog=false">Save</v-btn>
+                    </v-toolbar-items>
+                 </v-toolbar>
+                 <v-card-text>
+                    <v-select v-bind:items="assetTypes" label="Asset Type"
+                        v-model="newAsset.type">
+                    </v-select>
+                    <v-text-field label="Asset Id" clearable
+                        v-model="newAsset.id"  class="input-group" ></v-text-field>
+                    <v-text-field label="Asset Name" clearable
+                        v-model="newAsset.name"  class="input-group" ></v-text-field>
+                    <v-text-field label="Asset Source" clearable
+                        placeholder='(e.g., "A0001")'
+                        :change='changeNewAssetSource()'
+                        v-model="newAsset.source"  class="input-group" ></v-text-field>
+                    <v-text-field label='Plant Type'  clearable
+                        placeholder='(e.g., "tomato")'
+                        v-if="newAsset.type === 'plant'"
+                        v-model="newAsset.plant"  class="input-group" ></v-text-field>
+                    <v-text-field label='Variety/Cultivar'  clearable
+                        placeholder='(e.g., "Cherokee Purple Heirloom")'
+                        v-if="newAsset.type === 'plant'"
+                        v-model="newAsset.cultivar"  class="input-group" ></v-text-field>
+                 </v-card-text>
+            </v-card>
+        </v-dialog>
     </v-card>
 </div>
 
@@ -113,9 +149,15 @@ export default {
         return {
             assets: [],
             selectedAssets: [],
+            showAddDialog: false,
             assetMap: {},
             page: 1,
             search: "",
+            newAsset: {
+                id: "",
+                name: "",
+                type: "plant",
+            },
             pagination: { 
                 page: 1, 
                 rowsPerPage: 2, 
@@ -125,6 +167,23 @@ export default {
         }
     },
     methods: {
+        changeNewAssetSource() {
+            var pat = new RegExp(`.*${this.newAsset.source}.*`,"i");
+            var assets = this.assets.filter(a=> a.id.match(pat));
+            if (assets.length === 1) {
+                var asset = assets[0];
+                if (this.newAsset.type === asset.type) {
+                    if (this.newAsset.type === 'plant') {
+                        this.newAsset.cultivar = asset.cultivar;
+                        this.newAsset.plant = asset.plant;
+                    }
+                }
+            }
+        },
+        addAsset() {
+            console.log("addAsset");
+            this.showAddDialog = true;
+        },
         statusProps(asset) {
             var status = Object.keys(asset).reduce((acc,key) => {
                 var value = asset[key];
@@ -248,6 +307,36 @@ export default {
         }
     },
     computed: {
+        assetTypes() {
+            return [{
+                text: "Plant",
+                value: "plant",
+            },{
+                text: "Computer",
+                value: "computer",
+            },{
+                text: "Nutrient Solution",
+                value: "nutrient",
+            },{
+                text: "Light",
+                value: "light",
+            },{
+                text: "Grow tent",
+                value: "tent",
+            },{
+                text: "Pump",
+                value: "pump",
+            },{
+                text: "Other",
+                value: "other",
+            },{
+                text: "Vendor",
+                value: "vendor",
+            },{
+                text: "Reservoir (e.g., bucket, tank, etc.)",
+                value: "reservoir",
+            }].sort((a,b) => a.text < b.text ? -1 : (a.text === b.text ? 0 : 1));
+        },
         headers() {
             return [
                 { text: 'Type', align: 'left', value: 'type' },
