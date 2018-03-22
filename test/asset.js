@@ -106,7 +106,7 @@
 
         ].sort());
     });
-    it("TESTTESTAsset is serializable", function() {
+    it("Asset is serializable", function() {
         var begin = new Date();
         var asset = new Asset({
             begin,

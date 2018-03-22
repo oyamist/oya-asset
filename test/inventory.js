@@ -174,7 +174,7 @@
             test: a1.guid,
         }));
     });
-    it("TESTTESTopen(path) opens existing inventory", function(done) {
+    it("open(path) opens existing inventory", function(done) {
         var async = function *() {
             try {
                 var ivpath = path.join(__dirname, '..', 'test', 'test-inventory.json');
@@ -225,7 +225,7 @@
         }();
         async.next();
     });
-    it("TESTTESTcommit(backup) saves a backup to archive directory", function(done) {
+    it("commit(backup) saves a backup to archive directory", function(done) {
         var async = function *() {
             try {
                 var ivpath = path.join(__dirname, '..', 'test', 'test-inventory.json');

@@ -228,7 +228,7 @@
         ].sort());
 
     });
-    it("TESTTESTdescendants(set,valueTag,date,n) returns assets with given ancestors", function() {
+    it("descendants(set,valueTag,date,n) returns assets with given ancestors", function() {
         var td = testData();
         var query = new Query({
             inventory: td.inventory

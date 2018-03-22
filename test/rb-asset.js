@@ -102,7 +102,7 @@
         }();
         async.next();
     });
-    it("TESTTESTGET /asset/snapshot/:id returns asset snapshot for id", function(done) {
+    it("GET /asset/snapshot/:id returns asset snapshot for id", function(done) {
         var async = function*() {
             try {
                 var date = new Date();
@@ -196,7 +196,7 @@
         }();
         async.next();
     });
-    it("TESTTESTPOST /inventory/snapshot upserts asset", function(done) {
+    it("POST /inventory/snapshot upserts asset", function(done) {
         var async = function* () {
             try {
                 var assetProps = {
