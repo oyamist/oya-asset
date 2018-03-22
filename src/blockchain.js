@@ -37,7 +37,7 @@
     class Blockchain{
         constructor(opts={}) {
             this.genesis = opts.genesis || "Genesis block";
-            this.t = opts.t || new Date();
+            this.t = opts.t || new Date(0); // genesis blocks are same by default
             this.chain = [this.createGenesis(this.genesis)];
             this.resolveConflict = opts.resolveConflict || Blockchain.resolveDiscard;
         }
@@ -89,36 +89,26 @@
             return this.latestBlock();
         }
 
-        merge(bc) {
-            if (bc.chain.length < this.chain.length) {
-                return false; // reject newer blockchain
-            }
-            this.validate(bc);
-            var lastBlk = this.latestBlock();
-            if (bc.chain[lastBlk].hash === lastBlk.hash) {
-                // accept newer blockchain as valid extension
-                this.chain = bc.chain;
-                return true;
-            }
-
-            // Divergent but valid blockchains
+        merge(src) {
+            this.validate(src);
+            var iSame = Math.min(this.chain.length, src.chain.length)-1;
             var conflict = [];
-            for (var index = lastBlk.index; 0<=index; index--) {
-                if (bc.chain[index].hash !== this.chain[index]) {
-                    conflict.unshift(this.chain[index]);
-                }
+            var conflictChain = this.chain.length > src.chain.length ? src.chain : this.chain;
+            while (iSame>=0 && src.chain[iSame].hash !== this.chain[iSame].hash) {
+                conflict.unshift(conflictChain[iSame]);
+                iSame--;
+            }
+            if (this.chain.length <= src.chain.length) {
+                this.chain = this.chain.slice(0, iSame+1).concat(src.chain.slice(iSame+1));
             }
 
-            this.chain = bc.chain;
             this.resolveConflict(conflict);
-
-            return true; // accepted newer blockchain
         }
 
-        validate(bc=this) {
-            for (var i = 1; i < bc.chain.length; i++) {
-                const curBlk = bc.chain[i];
-                const prevBlk = bc.chain[i - 1];
+        validate(src=this) {
+            for (var i = 1; i < src.chain.length; i++) {
+                const curBlk = src.chain[i];
+                const prevBlk = src.chain[i - 1];
 
                 if (curBlk.hash !== curBlk.hashBlock()) {
                     throw new Error(`Blockchain.validate() hash expected:${curBlk.hashBlock()} actual:${curBlk.hash}`);
