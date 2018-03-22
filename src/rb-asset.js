@@ -47,15 +47,10 @@
                             winston.error(e.stack);
                             reject(e);
                         });
-                        if (fs.existsSync(that.inventoryPath)) {
-                            winston.info(`RbAsset.initialize() loading: ${that.inventoryPath}`);
-                            var json = JSON.parse(fs.readFileSync(that.inventoryPath));
-                            that.inventory = new Inventory(json);
-                        } else {
-                            winston.info(`RbAsset.initialize() using default inventory`);
-                            that.inventory = new Inventory();
-                        }
-                        resolve();
+                        that.inventory = new Inventory({
+                            path: that.inventoryPath,
+                        });
+                        that.inventory.open().then(r=>resolve()).catch(e=>reject(e));
                     } catch (e) {
                         winston.error(e.stack);
                         reject(e);

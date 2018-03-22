@@ -174,13 +174,15 @@
             test: a1.guid,
         }));
     });
-    it("open(path) opens existing inventory", function(done) {
+    it("TESTTESTopen(path) opens existing inventory", function(done) {
         var async = function *() {
             try {
                 var ivpath = path.join(__dirname, '..', 'test', 'test-inventory.json');
                 fs.existsSync(ivpath) && fs.unlinkSync(ivpath);
                 var iv = new Inventory();
+                should(iv.isOpen).equal(false);
                 var r = yield iv.open(ivpath).then(r=>async.next(r)).catch(e=>async.throw(e));
+                should(iv.isOpen).equal(true);
                 should(r).equal(iv);
                 should(fs.existsSync(ivpath)).equal(true);
                 var json = JSON.parse(fs.readFileSync(ivpath));
@@ -215,6 +217,39 @@
 
                 var r = yield iv.close().then(r=>async.next(r)).catch(e=>async.throw(e));;
                 should(r).equal(iv);
+
+                done();
+            } catch(e) {
+                done(e);
+            }
+        }();
+        async.next();
+    });
+    it("TESTTESTcommit(backup) saves a backup to archive directory", function(done) {
+        var async = function *() {
+            try {
+                var ivpath = path.join(__dirname, '..', 'test', 'test-inventory.json');
+                fs.existsSync(ivpath) && fs.unlinkSync(ivpath);
+                var iv = new Inventory({
+                    path: ivpath,
+                });
+
+                // open() must be called before commit()
+                var level = winston.level;
+                winston.level = 'error';
+                var r = yield iv.commit(true).then(r=>async.throw("unexpected")).catch(e=>async.next(e));
+                winston.level = level;
+                should(r.message).match(/must be open/);
+
+                var r = yield iv.open().then(r=>async.next(r)).catch(e=>async.throw(e));
+                var r = yield iv.commit(true).then(r=>async.next(r)).catch(e=>async.throw(e));
+
+                // verify backup
+                var date = new Date().toJSON().split('T')[0];
+                var backupPath = path.join(__dirname, 'archive', `test-inventory-${date}.json`);
+                should(fs.existsSync(backupPath)).equal(true);
+                var json = JSON.parse(fs.readFileSync(backupPath));
+                should.deepEqual(json, JSON.parse(JSON.stringify(iv)));
 
                 done();
             } catch(e) {
