@@ -41,12 +41,12 @@
             begin: t[0],
         });
         var tent1 = new Asset({
-            type: Asset.T_TENT,
+            type: Asset.T_ENCLOSURE,
             id: "T0001",
             begin: t[0],
         });
         var tent2 = new Asset({
-            type: Asset.T_TENT,
+            type: Asset.T_ENCLOSURE,
             id: "T0002",
             begin: t[0],
         });
@@ -228,7 +228,7 @@
         ].sort());
 
     });
-    it("descendants(set,valueTag,date,n) returns assets with given ancestors", function() {
+    it("TESTTESTdescendants(set,valueTag,date,n) returns assets with given ancestors", function() {
         var td = testData();
         var query = new Query({
             inventory: td.inventory
@@ -278,16 +278,16 @@
 
         // tents are orphans
         should.deepEqual(query.descendants(null, TValue.T_LOCATION, new Date(), 1).map(a=>a.name).sort(), [
-            'tent_T0001',
-            'tent_T0002',
+            'enclosure_T0001',
+            'enclosure_T0002',
         ]);
 
         // orphans and their children
         should.deepEqual(query.descendants(null, TValue.T_LOCATION, new Date(), 2).map(a=>a.name).sort(), [
             'reservoir_B0001',
             'reservoir_B0002',
-            'tent_T0001',
-            'tent_T0002',
+            'enclosure_T0001',
+            'enclosure_T0002',
         ].sort());
 
     });

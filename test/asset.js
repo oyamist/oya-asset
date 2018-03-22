@@ -92,15 +92,16 @@
     it("assetTypes returns asset types", function() {
         should.deepEqual(Asset.assetTypes(), [
             "actuator",
+            "address",
             "asset",
             "computer",
+            "enclosure",
             "light",
             "nutrient",
             "plant",
             "pump",
             "reservoir",
             "sensor",
-            "tent",
             "vendor",
 
         ].sort());

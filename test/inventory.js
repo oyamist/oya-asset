@@ -24,7 +24,7 @@
         });
         var tent1 = new Asset({
             name: 'tent1',
-            type: Asset.T_TENT,
+            type: Asset.T_ENCLOSURE,
         });
         var asset = iv.addAsset(plant1);
         should(asset).equal(plant1);
@@ -56,7 +56,7 @@
         });
         var tent1 = new Asset({
             name: 'tent1',
-            type: Asset.T_TENT,
+            type: Asset.T_ENCLOSURE,
         });
         iv.addAsset(plant1);
         iv.addAsset(plant2);
@@ -87,7 +87,7 @@
         });
         var tent1 = new Asset({
             name: 'tent1',
-            type: Asset.T_TENT,
+            type: Asset.T_ENCLOSURE,
             id: 'A0003',
         });
         iv.addAsset(plant1);

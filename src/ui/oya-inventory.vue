@@ -95,19 +95,32 @@
                         <v-btn dark flat @click.native="showAddDialog=false">Save</v-btn>
                     </v-toolbar-items>
                  </v-toolbar>
-                 <v-card-text>
-                    <v-select v-bind:items="assetTypes" label="Asset Type"
+                 <v-card-text ><!-- NON-TEMPORAL FIELDS ONLY!!!-->
+                    <v-select v-bind:items="assetTypes" label="Asset Type" required
                         v-model="newAsset.type">
                     </v-select>
-                    <v-text-field label="Asset Id" clearable
+                    <v-text-field label="ID: enter pre-printed asset tag if available" clearable
+                        placeholder="(auto-generate)"
                         v-model="newAsset.id"  class="input-group" ></v-text-field>
-                    <v-text-field label="Asset Name" clearable
+                    <v-text-field label="Name" clearable
+                        placeholder="(auto-generate)"
                         v-model="newAsset.name"  class="input-group" ></v-text-field>
-                    <v-text-field label="Asset Source" clearable
-                        placeholder='(e.g., "A0001")'
+                    <v-text-field :label="assetLabel('Source')" clearable
+                        placeholder='(optional)'
+                        :hint="(newAsset.sourceHint)"
                         :change='changeNewAssetSource()'
                         v-model="newAsset.source"  class="input-group" ></v-text-field>
-                    <v-text-field label='Plant Type'  clearable
+                    <v-text-field :label='assetLabel("Vendor")' clearable
+                        placeholder='(optional)'
+                        v-model="newAsset.vendor"  class="input-group" ></v-text-field>
+                    <v-text-field label='Size' clearable
+                        placeholder='(optional)'
+                        v-model="newAsset.size"  class="input-group" ></v-text-field>
+                    <v-text-field label='Hostname' clearable
+                        placeholder='(e.g., "oyamist01")'
+                        v-if="newAsset.type === 'computer'"
+                        v-model="newAsset.hostname"  class="input-group" ></v-text-field>
+                    <v-text-field label='Plant Type' clearable
                         placeholder='(e.g., "tomato")'
                         v-if="newAsset.type === 'plant'"
                         v-model="newAsset.plant"  class="input-group" ></v-text-field>
@@ -115,6 +128,9 @@
                         placeholder='(e.g., "Cherokee Purple Heirloom")'
                         v-if="newAsset.type === 'plant'"
                         v-model="newAsset.cultivar"  class="input-group" ></v-text-field>
+                    <v-text-field label='Description' multi-line
+                        placeholder='(optional)'
+                        v-model="newAsset.description"  class="input-group" ></v-text-field>
                  </v-card-text>
             </v-card>
         </v-dialog>
@@ -153,11 +169,7 @@ export default {
             assetMap: {},
             page: 1,
             search: "",
-            newAsset: {
-                id: "",
-                name: "",
-                type: "plant",
-            },
+            newAsset: this.createNewAsset(),
             pagination: { 
                 page: 1, 
                 rowsPerPage: 2, 
@@ -167,22 +179,40 @@ export default {
         }
     },
     methods: {
+        assetLabel(text) {
+            return `${text}: enter ID of related asset or descriptive text`;
+        },
+        createNewAsset() {
+            return {
+                id: "",
+                name: "",
+                type: this.newAsset && this.newAsset.type || 'asset',
+            };
+        },
         changeNewAssetSource() {
             var pat = new RegExp(`.*${this.newAsset.source}.*`,"i");
+            var newAsset = this.newAsset;
             var assets = this.assets.filter(a=> a.id.match(pat));
             if (assets.length === 1) {
                 var asset = assets[0];
                 if (this.newAsset.type === asset.type) {
-                    if (this.newAsset.type === 'plant') {
-                        this.newAsset.cultivar = asset.cultivar;
-                        this.newAsset.plant = asset.plant;
+                    if (newAsset.type === 'plant') {
+                        newAsset.cultivar = asset.cultivar;
+                        newAsset.plant = asset.plant;
                     }
                 }
+                var sourceHint = `${asset.name} \u2022 ${asset.id} \u2022 ${asset.guid}`;
+            } else if (assets.length) {    
+                var sourceHint = `${assets.length} matching assets found...`;
+            } else {
+                var sourceHint = "";
             }
+            (sourceHint !== newAsset.sourceHint) && Vue.set(newAsset, 'sourceHint', sourceHint);
         },
         addAsset() {
             console.log("addAsset");
             this.showAddDialog = true;
+            this.newAsset = this.createNewAsset();
         },
         statusProps(asset) {
             var status = Object.keys(asset).reduce((acc,key) => {
@@ -321,8 +351,8 @@ export default {
                 text: "Light",
                 value: "light",
             },{
-                text: "Grow tent",
-                value: "tent",
+                text: "Enclosure (tent, greenhouse, etc.)",
+                value: "enclosure",
             },{
                 text: "Pump",
                 value: "pump",

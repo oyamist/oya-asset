@@ -16,9 +16,8 @@
             // core properties
             this.guid = opts.guid || this.guid || uuidv4();
             if (opts.hasOwnProperty('type')) {
-                this.validateTag(opts.type);
                 if (Asset.assetTypes().indexOf(opts.type) < 0) {
-                    throw new Error(`Invalid type:${opts.type}`);
+                    throw new Error(`Invalid asset type:${opts.type}`);
                 }
                 this.type = opts.type;
             } else {
@@ -69,8 +68,10 @@
         }
 
         static get T_ACTUATOR() { return "actuator"; }
+        static get T_ADDRESS() { return "address"; }
         static get T_ASSET() { return "asset"; }
         static get T_LIGHT() { return "light"; }
+        static get T_ENCLOSURE() { return "enclosure"; }
         static get T_PLANT() { return "plant"; }
         static get T_VENDOR() { return "vendor"; }
         static get T_NUTRIENT() { return "nutrient"; }
@@ -78,20 +79,20 @@
         static get T_PUMP() { return "pump"; }
         static get T_RESERVOIR() { return "reservoir"; }
         static get T_SENSOR() { return "sensor"; }
-        static get T_TENT() { return "tent"; }
 
         static assetTypes() {
             return [
                 Asset.T_ACTUATOR,
+                Asset.T_ADDRESS,
                 Asset.T_ASSET,
                 Asset.T_COMPUTER,
+                Asset.T_ENCLOSURE,
                 Asset.T_LIGHT,
                 Asset.T_NUTRIENT,
                 Asset.T_PLANT,
                 Asset.T_PUMP,
                 Asset.T_RESERVOIR,
                 Asset.T_SENSOR,
-                Asset.T_TENT,
                 Asset.T_VENDOR,
 
             ];
