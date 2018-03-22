@@ -8,6 +8,8 @@
         Inventory,
         Plant,
     } = require("../index");
+    const fs = require('fs');
+    const path = require('path');
 
     it("Inventory(opts) creates an asset inventory", function() {
         var iv = new Inventory();
@@ -171,5 +173,54 @@
         should.deepEqual(iv.guidify(snapshot), Object.assign({}, snapshot, {
             test: a1.guid,
         }));
+    });
+    it("open(path) opens existing inventory", function(done) {
+        var async = function *() {
+            try {
+                var ivpath = path.join(__dirname, '..', 'test', 'test-inventory.json');
+                fs.existsSync(ivpath) && fs.unlinkSync(ivpath);
+                var iv = new Inventory();
+                var r = yield iv.open(ivpath).then(r=>async.next(r)).catch(e=>async.throw(e));
+                should(r).equal(iv);
+                should(fs.existsSync(ivpath)).equal(true);
+                var json = JSON.parse(fs.readFileSync(ivpath));
+                should.deepEqual(json, {
+                    type: 'Inventory',
+                    assetMap: {},
+                });
+
+                iv.addAsset({
+                    type: 'plant',
+                    id: 'A0001',
+                    name: 'tomato01',
+                    size: 'large',
+                });
+                var r = yield iv.commit().then(r=>async.next(r)).catch(e=>async.throw(e));
+                should(r).equal(iv);
+
+                var r = yield iv.close().then(r=>async.next(r)).catch(e=>async.throw(e));;
+                should(r).equal(iv);
+
+                iv = new Inventory({
+                    path: ivpath,
+                });
+                var r = yield iv.open().then(r=>async.next(r)).catch(e=>async.throw(e));
+                should(r).equal(iv);
+
+                var a1 = iv.assetOfId('A0001');
+                should(a1.name).equal('tomato01');
+                should(iv.assetOfGuid(a1.guid)).equal(a1);
+                should(a1.id).equal('A0001');
+                should(a1.size).equal('large');
+
+                var r = yield iv.close().then(r=>async.next(r)).catch(e=>async.throw(e));;
+                should(r).equal(iv);
+
+                done();
+            } catch(e) {
+                done(e);
+            }
+        }();
+        async.next();
     });
 })

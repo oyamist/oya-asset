@@ -1,6 +1,6 @@
 # OyaAsset
 dist
-inventory.json
+*inventory.json
 api-model/
 
 # Logs

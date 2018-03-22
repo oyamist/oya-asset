@@ -3,26 +3,24 @@
     const Plant = require('./plant');
     const Filter = require('./filter');
     const TValue = require('./tvalue');
+    const fs = require('fs');
+    const path = require('path');
+    const winston = require('winston');
 
     class Inventory {
         constructor(opts={}) {
-            this.update(opts);
+            Object.defineProperty(this, 'path', {
+                writable: true,
+                value: path.join(__dirname,'..', 'inventory.json'),
+            });
             this.type = 'Inventory';
-        }
 
-        assetOf(asset) {
-            if (asset instanceof Asset) {
-                return asset;
-            }
-            if (asset.type === Asset.T_PLANT) {
-                return new Plant(asset);
-            } 
-
-            return new Asset(asset);
+            this.update(opts);
         }
 
         update(opts={}) {
             this.assetMap = opts.assetMap || this.assetMap || {};
+            this.path = opts.path || this.path;
             var keys = Object.keys(this.assetMap);
             for (var i = 0; i < keys.length; i++) {
                 var key = keys[i];
@@ -34,6 +32,54 @@
                 }
             }
             return undefined; // TBD
+        }
+
+        open(path=this.path) {
+            return new Promise((resolve, reject) => {
+                try {
+                    this.path = path;
+                    if (fs.existsSync(path)) {
+                        var json = JSON.parse(fs.readFileSync(path));
+                        this.update(json);
+                    } else {
+                        var indent = path.match(/test-/) ? 2 : 0;
+                        fs.writeFileSync(path, JSON.stringify(this,undefined,indent));
+                    }
+                    resolve(this);
+                } catch (e) {
+                    winston.error(e.stack);
+                    reject(e);
+                }
+            });
+        }
+
+        commit() {
+            return new Promise((resolve, reject) => {
+                try {
+                    var path = this.path;
+                    var indent = path.match(/test-/) ? 2 : 0;
+                    fs.writeFileSync(path, JSON.stringify(this,undefined,indent));
+                    resolve(this);
+                } catch (e) {
+                    winston.error(e.stack);
+                    reject(e);
+                }
+            });
+        }
+
+        close() {
+            return this.commit();
+        }
+
+        assetOf(asset) {
+            if (asset instanceof Asset) {
+                return asset;
+            }
+            if (asset.type === Asset.T_PLANT) {
+                return new Plant(asset);
+            } 
+
+            return new Asset(asset);
         }
 
         assetOfGuid(guid) {
@@ -81,7 +127,8 @@
             if (Asset.assetTypes().indexOf(asset.type) < 0) {
                 throw new Error(`Inventory.addAsset() invalid asset type:${asset.type}`);
             }
-            return (this.assetMap[asset.guid] = this.assetOf(asset));
+            var a = this.assetOf(asset);
+            return (this.assetMap[a.guid] = a);
         }
     }
 
