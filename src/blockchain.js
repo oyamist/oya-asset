@@ -23,6 +23,13 @@
             this.hash = this.hashBlock();
         }
 
+        static get MAX_NONCE() { return 1000; }
+        static get DIFFICULTY() { return 2; } // usually below 10ms on Pixelbook
+
+        static target(difficulty=Block.DIFFICULTY) {
+            return "".padStart(difficulty, '0');
+        }
+
         hashBlock(blk=this) {
             var json = JSON.stringify({
                 data: blk.data,
@@ -33,17 +40,28 @@
             });
             return rbHash.hashCached(json);
         }
+
+        mineBlock(difficulty=Block.DIFFICULTY) {
+            var target = Block.target(difficulty);
+            do {
+                this.nonce++;
+                this.hash = this.hashBlock();
+            } while(this.hash.substr(0,difficulty) !== target);
+            return this; // block is mined
+        }
     }
 
     class Blockchain{
         constructor(opts={}) {
             this.genesis = opts.genesis || "Genesis block";
             this.t = opts.t || new Date(0); // genesis blocks are same by default
+            this.difficulty = opts.difficulty == null ? Block.DIFFICULTY : opts.difficulty;
             this.chain = [this.createGenesis(this.genesis)];
             this.resolveConflict = opts.resolveConflict || Blockchain.resolveDiscard;
         }
 
         static get Block() { return Block; }
+
         static resolveDiscard(conflict) {
             // discard conflicting blocks
         }
@@ -88,6 +106,7 @@
             newBlk.prevHash = lastBlk.hash;
             newBlk.index = lastBlk.index+1;
             newBlk.hash = lastBlk.hashBlock(newBlk);
+            newBlk.mineBlock(this.difficulty);
             this.chain.push(newBlk);
             return this.getBlock(-1);
         }

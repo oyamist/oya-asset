@@ -43,6 +43,19 @@
             data:blk.data,
         }));
     });
+    it("TESTTESTmineBlock(difficulty) does work to find target hash", function() {
+        var blk = new Block({
+            color: 'red',
+        });
+        var msStart = Date.now();
+        should(blk.mineBlock()).equal(blk);
+        var hash = blk.hash;
+        should(hash.substr(0,Block.DIFFICULTY)).equal('00');
+        should(blk.mineBlock(3)).equal(blk);
+        should(blk.hash.substr(0,3)).equal('000');
+        should(hash.substr(0,3) === '000');
+        should(Date.now()-msStart).below(100);
+    });
     it("TESTTESTBlockchain() creates a blockchain", function() {
         var t = new Date(Date.UTC(2018,2,10));
         var bc = new Blockchain({
@@ -307,5 +320,10 @@
         should.deepEqual(bcA.chain.map(b=>b.data), ["G","AB1","A2","A3","A4","B2","B3"]);
         should.deepEqual(bcB.chain.map(b=>b.data), ["G","AB1","B2","B3"]);
         should.deepEqual(conflicts.map(b=>b.data), ["B2","B3"]);
+    });
+    it("TESTTESTtarget(difficulty) returns hash target", function() {
+        should(Block.target(0)).equal('');
+        should(Block.target(1)).equal('0');
+        should(Block.target(3)).equal('000');
     });
 })
