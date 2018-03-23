@@ -17,10 +17,10 @@
             this.t = t;
             this.index = index;
             this.prevHash = prevHash;
+            this.nonce = 0;
 
             // Hash all preceding fields
             this.hash = this.hashBlock();
-            this.nonce = 0;
         }
 
         hashBlock(blk=this) {
@@ -29,6 +29,7 @@
                 t: blk.t,
                 index: blk.index,
                 prevHash: blk.prevHash,
+                nonce: blk.nonce || 0,
             });
             return rbHash.hashCached(json);
         }
@@ -59,15 +60,17 @@
             return new Block(genesis,this.t);
         }
 
-        latestBlock() {
-            return this.chain[this.chain.length - 1]
+        getBlock(index = -1) {
+            return index > 0 
+                ? this.chain[index] 
+                : this.chain[this.chain.length + index];
         }
 
         addBlock(newBlk){
             if (!(newBlk instanceof Block)) {
                 newBlk = new Block(newBlk.data, newBlk.t);
             }
-            var lastBlk = this.latestBlock();
+            var lastBlk = this.getBlock(-1);
             if (newBlk.prevHash && newBlk.prevHash !== "0" && newBlk.prevHash !== lastBlk.hash) {
                 throw new Error(`Blockchain.addBlock() new block `+
                     `prevhash:${newBlk.prevHash} expected:${lastBlk.hash}`);
@@ -86,23 +89,24 @@
             newBlk.index = lastBlk.index+1;
             newBlk.hash = lastBlk.hashBlock(newBlk);
             this.chain.push(newBlk);
-            return this.latestBlock();
+            return this.getBlock(-1);
         }
 
         merge(src) {
             this.validate(src);
             var iSame = Math.min(this.chain.length, src.chain.length)-1;
-            var conflict = [];
+            var conflicts = [];
             var conflictChain = this.chain.length > src.chain.length ? src.chain : this.chain;
             while (iSame>=0 && src.chain[iSame].hash !== this.chain[iSame].hash) {
-                conflict.unshift(conflictChain[iSame]);
+                conflicts.unshift(conflictChain[iSame]);
                 iSame--;
             }
             if (this.chain.length <= src.chain.length) {
                 this.chain = this.chain.slice(0, iSame+1).concat(src.chain.slice(iSame+1));
             }
 
-            this.resolveConflict(conflict);
+            this.resolveConflict(conflicts);
+            return conflicts;
         }
 
         validate(src=this) {

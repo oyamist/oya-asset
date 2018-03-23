@@ -18,7 +18,7 @@
             data: {
                 color: 'red',
             },
-            hash: "dc58a5a539565e23548d1544f3bc8693",
+            hash: "5d0ae2426bdd62b10f93090308324a59",
             index: 0,
             nonce: 0,
             prevHash: "0",
@@ -109,8 +109,8 @@
         };
         bc.addBlock(blk1); // new blocks don't need to be Block instances
         should(bc.validate()).equal(true);
-        should(bc.latestBlock().t).equal(t);
-        should(bc.latestBlock().data.color).equal('red');
+        should(bc.getBlock(-1).t).equal(t);
+        should(bc.getBlock(-1).data.color).equal('red');
 
         // bad index
         var blk2 = new Blockchain.Block({
@@ -164,12 +164,13 @@
         should.deepEqual(bcB.chain.map(b=>b.data), ["G","AB1","B2"]);
 
         // merge compatible blockchains
-        bcA.merge(bcB);
+        var conflicts = bcA.merge(bcB);
         should(bcA.chain).not.equal(bcB.chain);
         should.deepEqual(bcA.chain.map(b=>b.data), ["G","AB1","B2"]);
         should.deepEqual(bcB.chain.map(b=>b.data), ["G","AB1","B2"]); // unaffected
         should(bcA.validate()).equal(true);
         should(bcB.validate()).equal(true);
+        should.deepEqual(conflicts.map(b=>b.data), []);
     });
     it("TESTTESTmerge(blkchn) merges in shorter compatible blockchain", function() {
         var opts = {
@@ -189,11 +190,12 @@
         should.deepEqual(bcB.chain.map(b=>b.data), ["G","AB1"]);
 
         // merge compatible blockchains
-        bcA.merge(bcB);
+        var conflicts = bcA.merge(bcB);
         should.deepEqual(bcA.chain.map(b=>b.data), ["G","AB1","A2"]);
         should.deepEqual(bcB.chain.map(b=>b.data), ["G","AB1"]);
         should(bcA.validate()).equal(true);
         should(bcB.validate()).equal(true);
+        should.deepEqual(conflicts.map(b=>b.data), []);
     });
     it("TESTTESTmerge(blkchn) resolves longer conflicting blockchain with discard", function() {
         var opts = {
@@ -219,9 +221,10 @@
         should.deepEqual(bcB.chain.map(b=>b.data), ["G","AB1","B2","B3","B4"]);
 
         // discard [A2,A3] by default
-        bcA.merge(bcB);
+        var conflicts = bcA.merge(bcB);
         should.deepEqual(bcA.chain.map(b=>b.data), ["G","AB1","B2","B3","B4"]);
         should.deepEqual(bcB.chain.map(b=>b.data), ["G","AB1","B2","B3","B4"]);
+        should.deepEqual(conflicts.map(b=>b.data), ["A2","A3"]);
     });
     it("TESTTESTmerge(blkchn) resolves shorter conflicting blockchain with discard", function() {
         var opts = {
@@ -244,9 +247,10 @@
         should.deepEqual(bcB.chain.map(b=>b.data), ["G","AB1","B2"]);
 
         // discard conflict [B2] by default
-        bcA.merge(bcB);
+        var conflicts = bcA.merge(bcB);
         should.deepEqual(bcA.chain.map(b=>b.data), ["G","AB1","A2","A3"]);
         should.deepEqual(bcB.chain.map(b=>b.data), ["G","AB1","B2"]);
+        should.deepEqual(conflicts.map(b=>b.data), ["B2"]);
     });
     it("TESTTESTmerge(blkchn) resolves longer conflicting blockchain with append", function() {
         var opts = {
@@ -271,9 +275,10 @@
         should.deepEqual(bcB.chain.map(b=>b.data), ["G","AB1","B2","B3","B4"]);
 
         // append conflict [A2,A3] 
-        bcA.merge(bcB);
+        var conflicts = bcA.merge(bcB);
         should.deepEqual(bcA.chain.map(b=>b.data), ["G","AB1","B2","B3","B4","A2","A3"]);
         should.deepEqual(bcB.chain.map(b=>b.data), ["G","AB1","B2","B3","B4"]);
+        should.deepEqual(conflicts.map(b=>b.data), ["A2","A3"]);
     });
     it("TESTTESTmerge(blkchn) resolves shorter conflicting blockchain with append", function() {
         var opts = {
@@ -298,8 +303,9 @@
         should.deepEqual(bcB.chain.map(b=>b.data), ["G","AB1","B2","B3"]);
 
         // append conflict [B2,B3] 
-        bcA.merge(bcB);
+        var conflicts = bcA.merge(bcB);
         should.deepEqual(bcA.chain.map(b=>b.data), ["G","AB1","A2","A3","A4","B2","B3"]);
         should.deepEqual(bcB.chain.map(b=>b.data), ["G","AB1","B2","B3"]);
+        should.deepEqual(conflicts.map(b=>b.data), ["B2","B3"]);
     });
 })
