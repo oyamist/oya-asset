@@ -12,16 +12,13 @@
         var rsaKeyPath = path.join(local, 'rsaKey.json');
         var savePath = rsaKeyPath + '.save';
         if (fs.existsSync(rsaKeyPath)) {
-            console.log('saving ', rsaKeyPath);
+            winston.info('saving ', rsaKeyPath);
             should(fs.existsSync(savePath)).equal(false);
             fs.renameSync(rsaKeyPath, savePath);
         } else {
-            console.log('no ', rsaKeyPath);
+            winston.info('no ', rsaKeyPath);
         }
-        var level = winston.level;
-        winston.level = 'info';
         var identity = new Identity();
-        winston.level = level;
         should(typeof identity.publicKey.key).equal('string');
         should(typeof identity.publicKey.id).equal('string');
         should(identity.publicKey.id.length).equal(32);
@@ -30,7 +27,7 @@
             if (fs.existsSync(rsaKeyPath)) {
                 fs.unlinkSync(rsaKeyPath);
             }
-            console.log('restoring ', rsaKeyPath);
+            winston.info('restoring ', rsaKeyPath);
             fs.renameSync(savePath, rsaKeyPath);
         }
         

@@ -4,58 +4,10 @@
     const fs = require('fs');
     const path = require('path');
     const {
+        Block,
         Blockchain,
     } = require("../index");
-    const Block = Blockchain.Block;
 
-    it("TESTTESTBlock(data,t) creates a block", function() {
-        var t = new Date(Date.UTC(2018,2,10));
-        var blk = new Blockchain.Block({
-            color: 'red',
-        },t);
-        var json = JSON.parse(JSON.stringify(blk));
-        should.deepEqual(json, {
-            data: {
-                color: 'red',
-            },
-            hash: "5d0ae2426bdd62b10f93090308324a59",
-            index: 0,
-            nonce: 0,
-            prevHash: "0",
-            t: t.toJSON(),
-        });
-
-        should.throws(() => {
-            var blk = new Blockchain.Block("asdf", "baddate");
-        });
-    });
-    it("TESTTESThashBlock(blk) returns block hash", function() {
-        var t = new Date(Date.UTC(2018,2,10));
-        var blk = new Blockchain.Block({
-            color: 'red',
-        },t);
-        should(blk.hash).equal(blk.hashBlock());
-        should(blk.hash).equal(blk.hashBlock(blk));
-        should(blk.hash).equal(blk.hashBlock({
-            index:blk.index,
-            t,
-            prevHash: blk.prevHash,
-            data:blk.data,
-        }));
-    });
-    it("TESTTESTmineBlock(difficulty) does work to find target hash", function() {
-        var blk = new Block({
-            color: 'red',
-        });
-        var msStart = Date.now();
-        should(blk.mineBlock()).equal(blk);
-        var hash = blk.hash;
-        should(hash.substr(0,Block.DIFFICULTY)).equal('00');
-        should(blk.mineBlock(3)).equal(blk);
-        should(blk.hash.substr(0,3)).equal('000');
-        should(hash.substr(0,3) === '000');
-        should(Date.now()-msStart).below(100);
-    });
     it("TESTTESTBlockchain() creates a blockchain", function() {
         var t = new Date(Date.UTC(2018,2,10));
         var bc = new Blockchain({
@@ -74,12 +26,12 @@
             t, // genesis block timestamp
         });
         should(bc.validate()).equal(true);
-        var blk1 = new Blockchain.Block({
+        var blk1 = new Block({
             color: 'red',
         },t);
         bc.addBlock(blk1);
         should(bc.validate()).equal(true);
-        var blk2 = new Blockchain.Block({
+        var blk2 = new Block({
             color: 'red',
         },t);
         bc.addBlock(blk2);
@@ -126,7 +78,7 @@
         should(bc.getBlock(-1).data.color).equal('red');
 
         // bad index
-        var blk2 = new Blockchain.Block({
+        var blk2 = new Block({
             color: 'blue',
         },t, 5);
         should(bc.chain.length).equal(2);
@@ -137,7 +89,7 @@
         should(bc.chain.length).equal(2);
 
         // bad prevHash
-        var blk2 = new Blockchain.Block({
+        var blk2 = new Block({
             color: 'blue',
         },t, 0, "badPrevHash");
         should(bc.chain.length).equal(2);
@@ -148,7 +100,7 @@
         should(bc.chain.length).equal(2);
 
         // bad hash
-        var blk2 = new Blockchain.Block({
+        var blk2 = new Block({
             color: 'blue',
         },t);
         blk2.hash = "bogus";
@@ -320,10 +272,5 @@
         should.deepEqual(bcA.chain.map(b=>b.data), ["G","AB1","A2","A3","A4","B2","B3"]);
         should.deepEqual(bcB.chain.map(b=>b.data), ["G","AB1","B2","B3"]);
         should.deepEqual(conflicts.map(b=>b.data), ["B2","B3"]);
-    });
-    it("TESTTESTtarget(difficulty) returns hash target", function() {
-        should(Block.target(0)).equal('');
-        should(Block.target(1)).equal('0');
-        should(Block.target(3)).equal('000');
     });
 })

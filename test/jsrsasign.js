@@ -15,14 +15,11 @@
         var mattPublicKey = cryptico.publicKeyString(mattRsaKey);
         var samRsaKey = cryptico.generateRSAKey("Sam's passphrase", 1024); // signer
         var samPublicKey = cryptico.publicKeyString(samRsaKey);
-        //console.log('samPublicKey', samPublicKey, cryptico.publicKeyID(samPublicKey));
 
         var msg = "Sam signed this message";
         var encrypted = cryptico.encrypt(msg, mattPublicKey, samRsaKey);
-        //console.log(encrypted.cipher);
         var decrypted = cryptico.decrypt(encrypted.cipher, mattRsaKey);      
         should(decrypted.publicKeyString).equal(samPublicKey);
-        //console.log(decrypted);
         var signer = cryptico.publicKeyID(decrypted.publicKeyString);
         should(signer).equal(cryptico.publicKeyID(samPublicKey));
     });

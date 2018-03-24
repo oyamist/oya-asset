@@ -1,5 +1,6 @@
 module.exports = {
     Asset: require("./src/asset"),
+    Block: require('./src/block'),
     Blockchain: require("./src/blockchain"),
     Filter: require("./src/filter"),
     Identity: require('./src/identity'),

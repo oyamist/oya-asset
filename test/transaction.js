@@ -10,6 +10,9 @@
 
     it("TESTTESTIdentity(opts) creates an identiy for computer", function() {
         var trans = new Transaction();
+        var identity = new Identity();
+        should(trans.recipient).equal(identity.publicKey.id);
+        should(trans.sender).equal(identity.publicKey.id);
         
         console.log(trans);
     });
