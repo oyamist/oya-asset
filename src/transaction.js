@@ -1,17 +1,19 @@
 (function(exports) {
+    const Identity = require('./identity');
 
     class Transaction {
         constructor(opts={}) {
-            update(opts);
+            this.update(opts);
         }
 
-/*
         update(opts={}) {
-            this.sender = opts.sender || this.sender;
-            this.recipient = opts.recipient || this.recipient;
-            this.snapshot = opts.snapshot || this.snapshot;
+            var identity = opts.identity || new Identity();
+            this.sender = opts.sender || this.sender || identity.publicKey.id;
+            this.recipient = opts.recipient || this.recipient || identity.publicKey.id;
+            this.snapshot = opts.snapshot || this.snapshot || {};
         }
         
+/*
         public String transactionId; //Contains a hash of transaction*
         public PublicKey sender; //Senders address/public key.
         public PublicKey reciepient; //Recipients address/public key.
