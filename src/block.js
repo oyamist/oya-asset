@@ -25,7 +25,7 @@
             this.hash = this.hashBlock();
         }
         
-        static create(obj={}, blockClass=this) {
+        static fromJSON(obj={}, blockClass=this) {
             if (obj.type === 'AbstractBlock') {
                 var block = new AbstractBlock(obj.data, obj.t, obj.index, obj.prevHash);
             } else if (obj.type === 'Block') {

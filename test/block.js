@@ -69,14 +69,14 @@
         var blk = new AbstractBlock("hello", t, index, prevHash);
         var json = JSON.parse(JSON.stringify(blk));
         should(json.type).equal('AbstractBlock');
-        var blk2 = AbstractBlock.create(json);
+        var blk2 = AbstractBlock.fromJSON(json);
         should.deepEqual(blk2, blk);
 
         // mined block
         var blk = new AbstractBlock("hello", t, index, prevHash);
         blk.mineBlock();
         var json = JSON.parse(JSON.stringify(blk));
-        var blk2 = Block.create(json, AbstractBlock);
+        var blk2 = Block.fromJSON(json, AbstractBlock);
         should.deepEqual(blk2, blk);
     });
     it("TESTTESTBlock can be serialized", function() {
@@ -88,14 +88,14 @@
         var blk = new Block("hello", t, index, prevHash);
         var json = JSON.parse(JSON.stringify(blk));
         should(json.type).equal('Block');
-        var blk2 = Block.create(json);
+        var blk2 = Block.fromJSON(json);
         should.deepEqual(blk2, blk);
 
         // mined block
         var blk = new Block("hello", t, index, prevHash);
         blk.mineBlock();
         var json = JSON.parse(JSON.stringify(blk));
-        var blk2 = AbstractBlock.create(json); // block factory knows about "type" property
+        var blk2 = AbstractBlock.fromJSON(json); // block factory knows about "type" property
         should.deepEqual(blk2, blk);
     });
 })
