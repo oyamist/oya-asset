@@ -2,6 +2,7 @@
 dist
 *inventory.json
 api-model/
+local/
 archive
 
 # Logs

@@ -9,9 +9,13 @@
 
     class Inventory {
         constructor(opts={}) {
+            var local = path.join(__dirname, '..', 'local');
+            if (!fs.existsSync(local)) {
+                fs.mkdirSync(local);
+            }
             Object.defineProperty(this, 'path', {
                 writable: true,
-                value: path.join(__dirname,'..', 'inventory.json'),
+                value: path.join(local, 'inventory.json'),
             });
             Object.defineProperty(this, 'isOpen', {
                 writable: true,

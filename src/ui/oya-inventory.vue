@@ -3,7 +3,7 @@
 
 <div>
     <rb-about v-if="about" :name="componentName">
-        <p> Display Inventory assets stored in <i>inventory.json</i>
+        <p> Display Inventory assets stored in <i>local/inventory.json</i>
         </p>
         <rb-about-item name="about" value="false" slot="prop">Show this descriptive text</rb-about-item>
         <rb-about-item name="service" value="oya-asset" slot="prop">RestBundle name</rb-about-item>

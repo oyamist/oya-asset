@@ -47,7 +47,7 @@ let async = function*() {
             inventoryPath = '/tmp/inventory.json';
             fs.writeFileSync(inventoryPath, json);
         } else {
-            inventoryPath = path.join(__dirname, '..', 'inventory.json');
+            inventoryPath = path.join(__dirname, '..', 'local', 'inventory.json');
         }
 
         winston.info(`server.js RbAsset(${serviceName}) ${inventoryPath}`);

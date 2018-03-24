@@ -9,6 +9,8 @@
     "src": "src"
   },
   "dependencies": {
+    "cryptico": "^1.0.2",
+    "jsrsasign": "^8.0.6",
     "rest-bundle": "^0.33.12",
     "uuid": "^3.1.0",
     "winston": "^2.4.1"

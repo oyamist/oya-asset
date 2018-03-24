@@ -34,7 +34,8 @@
         }
 
         update(opts={}) {
-            this.inventoryPath = opts.inventoryPath || path.join(global.__appdir, 'inventory.json');
+            this.inventoryPath = opts.inventoryPath || 
+                path.join(global.__appdir, 'local', 'inventory.json');
         }
 
         initialize() {
