@@ -3,7 +3,7 @@
         RbHash,
     } = require("rest-bundle");
 
-    const Block = require('./block');
+    const AbstractBlock = require('./block');
 
     var rbHash = new RbHash();
 
@@ -11,7 +11,7 @@
         constructor(opts={}) {
             this.genesis = opts.genesis || "Genesis block";
             this.t = opts.t || new Date(0); // genesis blocks are same by default
-            this.difficulty = opts.difficulty == null ? Block.DIFFICULTY : opts.difficulty;
+            this.difficulty = opts.difficulty == null ? AbstractBlock.DIFFICULTY : opts.difficulty;
             this.chain = [this.createGenesis(this.genesis)];
             this.resolveConflict = opts.resolveConflict || Blockchain.resolveDiscard;
         }
@@ -29,7 +29,7 @@
         }
 
         createGenesis(genesis=this.genesis) {
-            return new Block(genesis,this.t);
+            return new AbstractBlock(genesis,this.t);
         }
 
         getBlock(index = -1) {
@@ -39,8 +39,8 @@
         }
 
         addBlock(newBlk){
-            if (!(newBlk instanceof Block)) {
-                newBlk = new Block(newBlk.data, newBlk.t);
+            if (!(newBlk instanceof AbstractBlock)) {
+                newBlk = new AbstractBlock(newBlk.data, newBlk.t);
             }
             var lastBlk = this.getBlock(-1);
             if (newBlk.prevHash && newBlk.prevHash !== "0" && newBlk.prevHash !== lastBlk.hash) {

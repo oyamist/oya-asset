@@ -5,13 +5,13 @@
     const rbHash = new RbHash();
     const Transaction = require('./transaction');
 
-    class Block {
+    class AbstractBlock {
         constructor(data, t=new Date(), index=0, prevHash="0") {
             if (!(t instanceof Date)) {
                 t = new Date(t);
             }
             if (isNaN(t.getTime())) {
-                throw new Error("Blockchain.Block() invalid date");
+                throw new Error("Blockchain.AbstractBlock() invalid date");
             }
             this.data = data;
             this.t = t;
@@ -26,13 +26,13 @@
         static get MAX_NONCE() { return 1000; }
         static get DIFFICULTY() { return 2; } // usually below 10ms on Pixelbook
 
-        static target(difficulty=Block.DIFFICULTY) {
+        static target(difficulty=AbstractBlock.DIFFICULTY) {
             return "".padStart(difficulty, '0');
         }
 
         addTransaction(trans) {
             if (!(trans instanceof Transaction)) {
-                throw new Error(`Block.addTransaction() expected:Transaction actual:${trans}`);
+                throw new Error(`AbstractBlock.addTransaction() expected:Transaction actual:${trans}`);
             }
             this.prevHash === '0' && trans.processTransaction();
         }
@@ -48,8 +48,8 @@
             return rbHash.hashCached(json);
         }
 
-        mineBlock(difficulty=Block.DIFFICULTY) {
-            var target = Block.target(difficulty);
+        mineBlock(difficulty=AbstractBlock.DIFFICULTY) {
+            var target = AbstractBlock.target(difficulty);
             do {
                 this.nonce++;
                 this.hash = this.hashBlock();
@@ -58,6 +58,6 @@
         }
     }
 
-    module.exports = exports.Block = Block;
+    module.exports = exports.AbstractBlock = AbstractBlock;
 })(typeof exports === "object" ? exports : (exports = {}));
 

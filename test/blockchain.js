@@ -1,10 +1,10 @@
-(typeof describe === 'function') && describe("Block", function() {
+(typeof describe === 'function') && describe("AbstractBlock", function() {
     const winston = require('winston');
     const should = require("should");
     const fs = require('fs');
     const path = require('path');
     const {
-        Block,
+        AbstractBlock,
         Blockchain,
     } = require("../index");
 
@@ -26,12 +26,12 @@
             t, // genesis block timestamp
         });
         should(bc.validate()).equal(true);
-        var blk1 = new Block({
+        var blk1 = new AbstractBlock({
             color: 'red',
         },t);
         bc.addBlock(blk1);
         should(bc.validate()).equal(true);
-        var blk2 = new Block({
+        var blk2 = new AbstractBlock({
             color: 'red',
         },t);
         bc.addBlock(blk2);
@@ -72,13 +72,13 @@
             },
             t,
         };
-        bc.addBlock(blk1); // new blocks don't need to be Block instances
+        bc.addBlock(blk1); // new blocks don't need to be AbstractBlock instances
         should(bc.validate()).equal(true);
         should(bc.getBlock(-1).t).equal(t);
         should(bc.getBlock(-1).data.color).equal('red');
 
         // bad index
-        var blk2 = new Block({
+        var blk2 = new AbstractBlock({
             color: 'blue',
         },t, 5);
         should(bc.chain.length).equal(2);
@@ -89,7 +89,7 @@
         should(bc.chain.length).equal(2);
 
         // bad prevHash
-        var blk2 = new Block({
+        var blk2 = new AbstractBlock({
             color: 'blue',
         },t, 0, "badPrevHash");
         should(bc.chain.length).equal(2);
@@ -100,7 +100,7 @@
         should(bc.chain.length).equal(2);
 
         // bad hash
-        var blk2 = new Block({
+        var blk2 = new AbstractBlock({
             color: 'blue',
         },t);
         blk2.hash = "bogus";
@@ -121,11 +121,11 @@
         var t1 = new Date(2018,1,1);
         var t2 = new Date(2018,1,2);
 
-        bcA.addBlock(new Block("AB1", t1));
+        bcA.addBlock(new AbstractBlock("AB1", t1));
         should.deepEqual(bcA.chain.map(b=>b.data), ["G","AB1"]);
 
-        bcB.addBlock(new Block("AB1", t1));
-        bcB.addBlock(new Block("B2", t2));
+        bcB.addBlock(new AbstractBlock("AB1", t1));
+        bcB.addBlock(new AbstractBlock("B2", t2));
         should.deepEqual(bcB.chain.map(b=>b.data), ["G","AB1","B2"]);
 
         // merge compatible blockchains
@@ -147,11 +147,11 @@
         var t1 = new Date(2018,1,1);
         var t2 = new Date(2018,1,2);
 
-        bcA.addBlock(new Block("AB1", t1));
-        bcA.addBlock(new Block("A2", t2));
+        bcA.addBlock(new AbstractBlock("AB1", t1));
+        bcA.addBlock(new AbstractBlock("A2", t2));
         should.deepEqual(bcA.chain.map(b=>b.data), ["G","AB1","A2"]);
 
-        bcB.addBlock(new Block("AB1", t1));
+        bcB.addBlock(new AbstractBlock("AB1", t1));
         should.deepEqual(bcB.chain.map(b=>b.data), ["G","AB1"]);
 
         // merge compatible blockchains
@@ -174,15 +174,15 @@
         var t3 = new Date(2018,1,3);
         var t4 = new Date(2018,1,4);
 
-        bcA.addBlock(new Block("AB1", t1));
-        bcA.addBlock(new Block("A2", t2));
-        bcA.addBlock(new Block("A3", t3));
+        bcA.addBlock(new AbstractBlock("AB1", t1));
+        bcA.addBlock(new AbstractBlock("A2", t2));
+        bcA.addBlock(new AbstractBlock("A3", t3));
         should.deepEqual(bcA.chain.map(b=>b.data), ["G","AB1","A2","A3"]);
 
-        bcB.addBlock(new Block("AB1", t1));
-        bcB.addBlock(new Block("B2", t2));
-        bcB.addBlock(new Block("B3", t3));
-        bcB.addBlock(new Block("B4", t4));
+        bcB.addBlock(new AbstractBlock("AB1", t1));
+        bcB.addBlock(new AbstractBlock("B2", t2));
+        bcB.addBlock(new AbstractBlock("B3", t3));
+        bcB.addBlock(new AbstractBlock("B4", t4));
         should.deepEqual(bcB.chain.map(b=>b.data), ["G","AB1","B2","B3","B4"]);
 
         // discard [A2,A3] by default
@@ -202,13 +202,13 @@
         var t1 = new Date(2018,1,1);
         var t2 = new Date(2018,1,2);
         var t3 = new Date(2018,1,3);
-        bcA.addBlock(new Block("AB1", t1));
-        bcA.addBlock(new Block("A2", t2));
-        bcA.addBlock(new Block("A3", t3));
+        bcA.addBlock(new AbstractBlock("AB1", t1));
+        bcA.addBlock(new AbstractBlock("A2", t2));
+        bcA.addBlock(new AbstractBlock("A3", t3));
         should.deepEqual(bcA.chain.map(b=>b.data), ["G","AB1","A2","A3"]);
 
-        bcB.addBlock(new Block("AB1", t1));
-        bcB.addBlock(new Block("B2", t2));
+        bcB.addBlock(new AbstractBlock("AB1", t1));
+        bcB.addBlock(new AbstractBlock("B2", t2));
         should.deepEqual(bcB.chain.map(b=>b.data), ["G","AB1","B2"]);
 
         // discard conflict [B2] by default
@@ -228,15 +228,15 @@
         var t2 = new Date(2018,1,2);
         var t3 = new Date(2018,1,3);
         var t4 = new Date(2018,1,4);
-        bcA.addBlock(new Block("AB1", t1));
-        bcA.addBlock(new Block("A2", t2));
-        bcA.addBlock(new Block("A3", t3));
+        bcA.addBlock(new AbstractBlock("AB1", t1));
+        bcA.addBlock(new AbstractBlock("A2", t2));
+        bcA.addBlock(new AbstractBlock("A3", t3));
         should.deepEqual(bcA.chain.map(b=>b.data), ["G","AB1","A2","A3"]);
 
-        bcB.addBlock(new Block("AB1", t1));
-        bcB.addBlock(new Block("B2", t2));
-        bcB.addBlock(new Block("B3", t3));
-        bcB.addBlock(new Block("B4", t4));
+        bcB.addBlock(new AbstractBlock("AB1", t1));
+        bcB.addBlock(new AbstractBlock("B2", t2));
+        bcB.addBlock(new AbstractBlock("B3", t3));
+        bcB.addBlock(new AbstractBlock("B4", t4));
         should.deepEqual(bcB.chain.map(b=>b.data), ["G","AB1","B2","B3","B4"]);
 
         // append conflict [A2,A3] 
@@ -256,15 +256,15 @@
         var t2 = new Date(2018,1,2);
         var t3 = new Date(2018,1,3);
         var t4 = new Date(2018,1,4);
-        bcA.addBlock(new Block("AB1", t1));
-        bcA.addBlock(new Block("A2", t2));
-        bcA.addBlock(new Block("A3", t3));
-        bcA.addBlock(new Block("A4", t4));
+        bcA.addBlock(new AbstractBlock("AB1", t1));
+        bcA.addBlock(new AbstractBlock("A2", t2));
+        bcA.addBlock(new AbstractBlock("A3", t3));
+        bcA.addBlock(new AbstractBlock("A4", t4));
         should.deepEqual(bcA.chain.map(b=>b.data), ["G","AB1","A2","A3","A4"]);
 
-        bcB.addBlock(new Block("AB1", t1));
-        bcB.addBlock(new Block("B2", t2));
-        bcB.addBlock(new Block("B3", t3));
+        bcB.addBlock(new AbstractBlock("AB1", t1));
+        bcB.addBlock(new AbstractBlock("B2", t2));
+        bcB.addBlock(new AbstractBlock("B3", t3));
         should.deepEqual(bcB.chain.map(b=>b.data), ["G","AB1","B2","B3"]);
 
         // append conflict [B2,B3] 

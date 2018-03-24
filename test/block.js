@@ -1,13 +1,13 @@
-(typeof describe === 'function') && describe("Block", function() {
+(typeof describe === 'function') && describe("AbstractBlock", function() {
     const winston = require('winston');
     const should = require("should");
     const {
-        Block,
+        AbstractBlock,
     } = require("../index");
 
-    it("Block(data,t) creates a block", function() {
+    it("AbstractBlock(data,t) creates a block", function() {
         var t = new Date(Date.UTC(2018,2,10));
-        var blk = new Block({
+        var blk = new AbstractBlock({
             color: 'red',
         },t);
         var json = JSON.parse(JSON.stringify(blk));
@@ -23,12 +23,12 @@
         });
 
         should.throws(() => {
-            var blk = new Block("asdf", "baddate");
+            var blk = new AbstractBlock("asdf", "baddate");
         });
     });
     it("hashBlock(blk) returns block hash", function() {
         var t = new Date(Date.UTC(2018,2,10));
-        var blk = new Block({
+        var blk = new AbstractBlock({
             color: 'red',
         },t);
         should(blk.hash).equal(blk.hashBlock());
@@ -41,21 +41,21 @@
         }));
     });
     it("mineBlock(difficulty) does work to find target hash", function() {
-        var blk = new Block({
+        var blk = new AbstractBlock({
             color: 'red',
         });
         var msStart = Date.now();
         should(blk.mineBlock()).equal(blk);
         var hash = blk.hash;
-        should(hash.substr(0,Block.DIFFICULTY)).equal('00');
+        should(hash.substr(0,AbstractBlock.DIFFICULTY)).equal('00');
         should(blk.mineBlock(3)).equal(blk);
         should(blk.hash.substr(0,3)).equal('000');
         should(hash.substr(0,3) === '000');
         should(Date.now()-msStart).below(100);
     });
     it("target(difficulty) returns hash target", function() {
-        should(Block.target(0)).equal('');
-        should(Block.target(1)).equal('0');
-        should(Block.target(3)).equal('000');
+        should(AbstractBlock.target(0)).equal('');
+        should(AbstractBlock.target(1)).equal('0');
+        should(AbstractBlock.target(3)).equal('000');
     });
 })
