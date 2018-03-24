@@ -1,6 +1,14 @@
 (function(exports) {
     const Identity = require('./identity');
 
+    class Output {
+        constructor(){
+        }
+    }
+
+    class Input {
+    }
+
     class Transaction {
         constructor(opts={}) {
             this.update(opts);
@@ -12,6 +20,19 @@
             this.recipient = opts.recipient || this.recipient || identity.publicKey.id;
             this.snapshot = opts.snapshot || this.snapshot || {};
         }
+
+        verifySignature() {
+            // TBD
+            return true;
+        }
+
+        processTransaction() {
+            this.verifySignature();
+            return true;
+        }
+
+        static get Output() { return Output; }
+        static get Input() { return Input; }
         
 /*
         public String transactionId; //Contains a hash of transaction*

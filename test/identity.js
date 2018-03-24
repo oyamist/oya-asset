@@ -7,7 +7,7 @@
         Identity,
     } = require("../index");
 
-    it("TESTTESTIdentity(opts) creates an identiy for computer", function() {
+    it("Identity(opts) creates an identiy for computer", function() {
         var local = path.join(__dirname, '..', 'local');
         var rsaKeyPath = path.join(local, 'rsaKey.json');
         var savePath = rsaKeyPath + '.save';

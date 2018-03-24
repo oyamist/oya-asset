@@ -2,8 +2,8 @@
     const {
         RbHash,
     } = require("rest-bundle");
-
-    var rbHash = new RbHash();
+    const rbHash = new RbHash();
+    const Transaction = require('./transaction');
 
     class Block {
         constructor(data, t=new Date(), index=0, prevHash="0") {
@@ -28,6 +28,13 @@
 
         static target(difficulty=Block.DIFFICULTY) {
             return "".padStart(difficulty, '0');
+        }
+
+        addTransaction(trans) {
+            if (!(trans instanceof Transaction)) {
+                throw new Error(`Block.addTransaction() expected:Transaction actual:${trans}`);
+            }
+            this.prevHash === '0' && trans.processTransaction();
         }
 
         hashBlock(blk=this) {

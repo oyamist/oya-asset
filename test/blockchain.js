@@ -8,7 +8,7 @@
         Blockchain,
     } = require("../index");
 
-    it("TESTTESTBlockchain() creates a blockchain", function() {
+    it("Blockchain() creates a blockchain", function() {
         var t = new Date(Date.UTC(2018,2,10));
         var bc = new Blockchain({
             genesis: "fluffy bunnies", // genesis block text
@@ -19,7 +19,7 @@
         should.deepEqual(bc.chain[0], bc.createGenesis());
         should.deepEqual(bc.chain[0], bc.createGenesis("fluffy bunnies"));
     });
-    it("TESTTESTvalidate() validates blockchain", function() {
+    it("validate() validates blockchain", function() {
         var t = new Date(Date.UTC(2018,2,10));
         var bc = new Blockchain({
             genesis: "fluffy bunnies", // genesis block text
@@ -59,7 +59,7 @@
         should.deepEqual(bc.chain[1], blk1);
         should.deepEqual(bc.chain[2], blk2);
     });
-    it("TESTTESTaddBlock(newBlk) adds new block", function() {
+    it("addBlock(newBlk) adds new block", function() {
         var t = new Date(Date.UTC(2018,2,10));
         var bc = new Blockchain({
             genesis: "fluffy bunnies", // genesis block text
@@ -111,7 +111,7 @@
         should(bc.validate()).equal(true);
         should(bc.chain.length).equal(2);
     });
-    it("TESTTESTmerge(blkchn) merges in longer compatible blockchain", function() {
+    it("merge(blkchn) merges in longer compatible blockchain", function() {
         var opts = {
             genesis: "G",
         };
@@ -137,7 +137,7 @@
         should(bcB.validate()).equal(true);
         should.deepEqual(conflicts.map(b=>b.data), []);
     });
-    it("TESTTESTmerge(blkchn) merges in shorter compatible blockchain", function() {
+    it("merge(blkchn) merges in shorter compatible blockchain", function() {
         var opts = {
             genesis: "G",
         };
@@ -162,7 +162,7 @@
         should(bcB.validate()).equal(true);
         should.deepEqual(conflicts.map(b=>b.data), []);
     });
-    it("TESTTESTmerge(blkchn) resolves longer conflicting blockchain with discard", function() {
+    it("merge(blkchn) resolves longer conflicting blockchain with discard", function() {
         var opts = {
             genesis: "G",
         };
@@ -191,7 +191,7 @@
         should.deepEqual(bcB.chain.map(b=>b.data), ["G","AB1","B2","B3","B4"]);
         should.deepEqual(conflicts.map(b=>b.data), ["A2","A3"]);
     });
-    it("TESTTESTmerge(blkchn) resolves shorter conflicting blockchain with discard", function() {
+    it("merge(blkchn) resolves shorter conflicting blockchain with discard", function() {
         var opts = {
             genesis: "G",
             resolveConflict: Blockchain.resolveDiscard,
@@ -217,7 +217,7 @@
         should.deepEqual(bcB.chain.map(b=>b.data), ["G","AB1","B2"]);
         should.deepEqual(conflicts.map(b=>b.data), ["B2"]);
     });
-    it("TESTTESTmerge(blkchn) resolves longer conflicting blockchain with append", function() {
+    it("merge(blkchn) resolves longer conflicting blockchain with append", function() {
         var opts = {
             genesis: "G",
             resolveConflict: Blockchain.resolveAppend,
@@ -245,7 +245,7 @@
         should.deepEqual(bcB.chain.map(b=>b.data), ["G","AB1","B2","B3","B4"]);
         should.deepEqual(conflicts.map(b=>b.data), ["A2","A3"]);
     });
-    it("TESTTESTmerge(blkchn) resolves shorter conflicting blockchain with append", function() {
+    it("merge(blkchn) resolves shorter conflicting blockchain with append", function() {
         var opts = {
             genesis: "G",
             resolveConflict: Blockchain.resolveAppend,

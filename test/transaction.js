@@ -8,12 +8,13 @@
         Transaction,
     } = require("../index");
 
-    it("TESTTESTIdentity(opts) creates an identiy for computer", function() {
+    it("TESTTESTTransaction(opts) creates transaction", function() {
         var trans = new Transaction();
         var identity = new Identity();
         should(trans.recipient).equal(identity.publicKey.id);
         should(trans.sender).equal(identity.publicKey.id);
-        
+        should(Transaction.Output).instanceOf(Function);
+        should(Transaction.Input).instanceOf(Function);
         console.log(trans);
     });
 
