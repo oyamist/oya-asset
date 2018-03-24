@@ -15,7 +15,7 @@
         should(trans.sender).equal(identity.publicKey.id);
         should(Transaction.Output).instanceOf(Function);
         should(Transaction.Input).instanceOf(Function);
-        console.log(trans);
+        //console.log(trans);
     });
 
 })

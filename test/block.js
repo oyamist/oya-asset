@@ -3,6 +3,7 @@
     const should = require("should");
     const {
         AbstractBlock,
+        Block,
     } = require("../index");
 
     it("AbstractBlock(data,t) creates a block", function() {

@@ -3,7 +3,7 @@
         RbHash,
     } = require("rest-bundle");
 
-    const AbstractBlock = require('./block');
+    const AbstractBlock = require('./block').AbstractBlock;
 
     var rbHash = new RbHash();
 
@@ -20,12 +20,7 @@
             // discard conflicting blocks
         }
         static resolveAppend(conflict) {
-            conflict.forEach(blk => {
-                this.addBlock({
-                    data: blk.data, 
-                    t: blk.t,
-                });
-            });
+            conflict.forEach(blk => this.addBlock(blk.unlink()));
         }
 
         createGenesis(genesis=this.genesis) {
@@ -40,6 +35,8 @@
 
         addBlock(newBlk){
             if (!(newBlk instanceof AbstractBlock)) {
+                throw new Error(`Blockchain.addBlock() expected:AbstractBlock actual:${newBlk}`);
+                // Convenience
                 newBlk = new AbstractBlock(newBlk.data, newBlk.t);
             }
             var lastBlk = this.getBlock(-1);

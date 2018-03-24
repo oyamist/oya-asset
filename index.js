@@ -1,6 +1,7 @@
 module.exports = {
+    AbstractBlock: require('./src/block').AbstractBlock,
     Asset: require("./src/asset"),
-    AbstractBlock: require('./src/block'),
+    Block: require('./src/block'),
     Blockchain: require("./src/blockchain"),
     Filter: require("./src/filter"),
     Identity: require('./src/identity'),

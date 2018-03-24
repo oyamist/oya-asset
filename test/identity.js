@@ -6,6 +6,7 @@
     const {
         Identity,
     } = require("../index");
+    winston.level = 'warn';
 
     it("Identity(opts) creates an identiy for computer", function() {
         var local = path.join(__dirname, '..', 'local');

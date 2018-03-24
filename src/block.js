@@ -4,6 +4,7 @@
     } = require("rest-bundle");
     const rbHash = new RbHash();
     const Transaction = require('./transaction');
+    const DIFFICULTY = 2; // hashBlock computes in << 100ms on Pixelbook
 
     class AbstractBlock {
         constructor(data, t=new Date(), index=0, prevHash="0") {
@@ -24,9 +25,9 @@
         }
 
         static get MAX_NONCE() { return 1000; }
-        static get DIFFICULTY() { return 2; } // usually below 10ms on Pixelbook
+        static get DIFFICULTY() { return DIFFICULTY; } 
 
-        static target(difficulty=AbstractBlock.DIFFICULTY) {
+        static target(difficulty=DIFFICULTY) {
             return "".padStart(difficulty, '0');
         }
 
@@ -48,7 +49,7 @@
             return rbHash.hashCached(json);
         }
 
-        mineBlock(difficulty=AbstractBlock.DIFFICULTY) {
+        mineBlock(difficulty=DIFFICULTY) {
             var target = AbstractBlock.target(difficulty);
             do {
                 this.nonce++;
@@ -56,8 +57,24 @@
             } while(this.hash.substr(0,difficulty) !== target);
             return this; // block is mined
         }
+
+        unlink() {
+            this.prevHash = '0'; 
+            this.index = 0; 
+            delete this.hash; 
+            return this;
+        }
     }
 
-    module.exports = exports.AbstractBlock = AbstractBlock;
+    class Block extends AbstractBlock {
+        constructor(transactions, t, index, prevHash) {
+            super(transactions = [], t, index, prevHash);
+        }
+
+        static get DIFFICULTY() { return DIFFICULTY; } 
+        static get AbstractBlock() { return AbstractBlock; }
+    }
+
+    module.exports = exports.Block = Block;
 })(typeof exports === "object" ? exports : (exports = {}));
 

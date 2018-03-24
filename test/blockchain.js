@@ -5,7 +5,9 @@
     const path = require('path');
     const {
         AbstractBlock,
+        Block,
         Blockchain,
+        Transaction,
     } = require("../index");
 
     it("Blockchain() creates a blockchain", function() {
@@ -19,17 +21,16 @@
         should.deepEqual(bc.chain[0], bc.createGenesis());
         should.deepEqual(bc.chain[0], bc.createGenesis("fluffy bunnies"));
     });
-    it("validate() validates blockchain", function() {
+    it("TESTTESTvalidate() validates blockchain", function() {
         var t = new Date(Date.UTC(2018,2,10));
         var bc = new Blockchain({
             genesis: "fluffy bunnies", // genesis block text
             t, // genesis block timestamp
         });
         should(bc.validate()).equal(true);
-        var blk1 = new AbstractBlock({
-            color: 'red',
-        },t);
-        bc.addBlock(blk1);
+        var trans = new Transaction();
+        var blk1 = new Block([trans],t);
+        should(bc.addBlock(blk1)).equal(blk1);
         should(bc.validate()).equal(true);
         var blk2 = new AbstractBlock({
             color: 'red',
@@ -66,13 +67,10 @@
             t, // genesis block timestamp
         });
         should(bc.validate()).equal(true);
-        var blk1 = {
-            data: {
-                color: 'red',
-            },
-            t,
-        };
-        bc.addBlock(blk1); // new blocks don't need to be AbstractBlock instances
+        var blk1 = new AbstractBlock({
+            color: 'red',
+        }, t);
+        bc.addBlock(blk1); 
         should(bc.validate()).equal(true);
         should(bc.getBlock(-1).t).equal(t);
         should(bc.getBlock(-1).data.color).equal('red');
@@ -217,7 +215,7 @@
         should.deepEqual(bcB.chain.map(b=>b.data), ["G","AB1","B2"]);
         should.deepEqual(conflicts.map(b=>b.data), ["B2"]);
     });
-    it("merge(blkchn) resolves longer conflicting blockchain with append", function() {
+    it("TESTTESTmerge(blkchn) resolves longer conflicting blockchain with append", function() {
         var opts = {
             genesis: "G",
             resolveConflict: Blockchain.resolveAppend,
