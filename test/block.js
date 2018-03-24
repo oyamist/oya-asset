@@ -17,6 +17,7 @@
                 color: 'red',
             },
             hash: "5d0ae2426bdd62b10f93090308324a59",
+            type: 'AbstractBlock',
             index: 0,
             nonce: 0,
             prevHash: "0",
@@ -58,5 +59,43 @@
         should(AbstractBlock.target(0)).equal('');
         should(AbstractBlock.target(1)).equal('0');
         should(AbstractBlock.target(3)).equal('000');
+    });
+    it("TESTTESTAbstractBlock can be serialized", function() {
+        var t = new Date(2018,1,2);
+        var index = 123;
+        var prevHash = 'thatWhichCameBefore';
+
+        // unmined block
+        var blk = new AbstractBlock("hello", t, index, prevHash);
+        var json = JSON.parse(JSON.stringify(blk));
+        should(json.type).equal('AbstractBlock');
+        var blk2 = AbstractBlock.create(json);
+        should.deepEqual(blk2, blk);
+
+        // mined block
+        var blk = new AbstractBlock("hello", t, index, prevHash);
+        blk.mineBlock();
+        var json = JSON.parse(JSON.stringify(blk));
+        var blk2 = Block.create(json, AbstractBlock);
+        should.deepEqual(blk2, blk);
+    });
+    it("TESTTESTBlock can be serialized", function() {
+        var t = new Date(2018,1,2);
+        var index = 123;
+        var prevHash = 'thatWhichCameBefore';
+
+        // unmined block
+        var blk = new Block("hello", t, index, prevHash);
+        var json = JSON.parse(JSON.stringify(blk));
+        should(json.type).equal('Block');
+        var blk2 = Block.create(json);
+        should.deepEqual(blk2, blk);
+
+        // mined block
+        var blk = new Block("hello", t, index, prevHash);
+        blk.mineBlock();
+        var json = JSON.parse(JSON.stringify(blk));
+        var blk2 = AbstractBlock.create(json); // block factory knows about "type" property
+        should.deepEqual(blk2, blk);
     });
 })

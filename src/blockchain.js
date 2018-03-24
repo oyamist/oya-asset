@@ -36,8 +36,6 @@
         addBlock(newBlk){
             if (!(newBlk instanceof AbstractBlock)) {
                 throw new Error(`Blockchain.addBlock() expected:AbstractBlock actual:${newBlk}`);
-                // Convenience
-                newBlk = new AbstractBlock(newBlk.data, newBlk.t);
             }
             var lastBlk = this.getBlock(-1);
             if (newBlk.prevHash && newBlk.prevHash !== "0" && newBlk.prevHash !== lastBlk.hash) {

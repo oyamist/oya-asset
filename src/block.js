@@ -19,9 +19,24 @@
             this.index = index;
             this.prevHash = prevHash;
             this.nonce = 0;
+            this.type = "AbstractBlock";
 
             // Hash all preceding fields
             this.hash = this.hashBlock();
+        }
+        
+        static create(obj={}, blockClass=this) {
+            if (obj.type === 'AbstractBlock') {
+                var block = new AbstractBlock(obj.data, obj.t, obj.index, obj.prevHash);
+            } else if (obj.type === 'Block') {
+                var block = new Block(obj.data, obj.t, obj.index, obj.prevHash);
+            } else {
+                var block = new blockClass(obj.data, obj.t, obj.index, obj.prevHash);
+            }
+            block.nonce = obj.nonce || block.nonce;
+            block.hash = obj.hash || block.hash;
+                
+            return block;
         }
 
         static get MAX_NONCE() { return 1000; }
@@ -69,6 +84,7 @@
     class Block extends AbstractBlock {
         constructor(transactions, t, index, prevHash) {
             super(transactions = [], t, index, prevHash);
+            this.type = 'Block';
         }
 
         static get DIFFICULTY() { return DIFFICULTY; } 
