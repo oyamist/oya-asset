@@ -1,5 +1,9 @@
 (function(exports) {
+    const {
+        MerkleJson,
+    } = require("merkle-json");
     const Identity = require('./identity');
+    const mj = new MerkleJson();
 
     class Output {
         constructor(){
@@ -18,7 +22,25 @@
             var identity = opts.identity || new Identity();
             this.sender = opts.sender || this.sender || identity.publicKey.id;
             this.recipient = opts.recipient || this.recipient || identity.publicKey.id;
-            this.snapshot = opts.snapshot || this.snapshot || {};
+            this.value = opts.value || this.value || {};
+            (opts.id) && (this.id = opts.id);
+            this.t = opts.t || new Date();
+            if (!(this.t instanceof Date)) {
+                this.t = new Date(this.t);
+            }
+            if (isNaN(this.t.getTime())) {
+                throw new Error(`invalid Date:${JSON.stringify(opts.t)}`);
+            }
+        }
+
+        transactionHash(trans = this) {
+            return mj.hash({
+                sender: trans.sender,
+                recipient: trans.recipient,
+                snapshot: trans.snapshot,
+                value: trans.value,
+                t: trans.t,
+            });
         }
 
         verifySignature() {
@@ -28,6 +50,7 @@
 
         processTransaction() {
             this.verifySignature();
+            this.id = this.transactionHash();
             return true;
         }
 
@@ -120,14 +143,6 @@
             return total;
         }
         
-        private String calulateHash() {
-            sequence++; //increase the sequence to avoid 2 identical transactions having the same hash
-            return StringUtil.applySha256(
-                    StringUtil.getStringFromKey(sender) +
-                    StringUtil.getStringFromKey(reciepient) +
-                    Float.toString(value) + sequence
-                    );
-        }
     }
     */
     } //// class Transaction

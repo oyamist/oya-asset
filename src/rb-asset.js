@@ -9,7 +9,6 @@
     const path = require("path");
     const {
         RestBundle,
-        RbHash,
         RbSingleton,
     } = require("rest-bundle");
     const exec = require('child_process').exec;

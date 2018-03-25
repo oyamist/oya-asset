@@ -1,8 +1,9 @@
 (function(exports) {
     const {
-        RbHash,
-    } = require("rest-bundle");
-    const rbHash = new RbHash();
+        MerkleJson,
+    } = require("merkle-json");
+    const Identity = require('./identity');
+    const mj = new MerkleJson();
     const Transaction = require('./transaction');
     const DIFFICULTY = 2; // hashBlock computes in << 100ms on Pixelbook
 
@@ -61,7 +62,7 @@
                 prevHash: blk.prevHash,
                 nonce: blk.nonce || 0,
             });
-            return rbHash.hashCached(json);
+            return mj.hash(json);
         }
 
         mineBlock(difficulty=DIFFICULTY) {

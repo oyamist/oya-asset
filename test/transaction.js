@@ -9,13 +9,44 @@
     } = require("../index");
 
     it("TESTTESTTransaction(opts) creates transaction", function() {
+        // default constructor
         var trans = new Transaction();
         var identity = new Identity();
         should(trans.recipient).equal(identity.publicKey.id);
         should(trans.sender).equal(identity.publicKey.id);
         should(Transaction.Output).instanceOf(Function);
         should(Transaction.Input).instanceOf(Function);
-        //console.log(trans);
+
+
+        should.throws(() => {
+            new Transaction({
+                t: 'bad date',
+            });
+        });
+    });
+    it("TESTTESTtransactions are serializable", function() {
+        // unprocess transactions are serializable
+        var trans = new Transaction({
+            sender: 'Bob',
+            recipient: 'Alice',
+            t: new Date(2018,1,12),
+            value: 'A tomato',
+        });
+        var json = JSON.parse(JSON.stringify(trans));
+        var trans2 = new Transaction(json);
+        should.deepEqual(trans2, trans);
+        should.deepEqual(json, {
+            sender: 'Bob',
+            recipient: 'Alice',
+            t: new Date(2018,1,12).toJSON(),
+            value: 'A tomato',
+        });
+
+        // processed transactions are serializable
+        trans.processTransaction();
+        var json = JSON.parse(JSON.stringify(trans));
+        var trans2 = new Transaction(json);
+        should.deepEqual(trans2, trans);
     });
 
 })

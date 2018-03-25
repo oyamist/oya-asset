@@ -1,11 +1,11 @@
 (function(exports) {
     const {
-        RbHash,
-    } = require("rest-bundle");
+        MerkleJson,
+    } = require("merkle-json");
 
     const AbstractBlock = require('./block').AbstractBlock;
 
-    var rbHash = new RbHash();
+    var mj = new MerkleJson();
 
     class Blockchain{
         constructor(opts={}) {
@@ -14,6 +14,7 @@
             this.difficulty = opts.difficulty == null ? AbstractBlock.DIFFICULTY : opts.difficulty;
             this.chain = [this.createGenesis(this.genesis)];
             this.resolveConflict = opts.resolveConflict || Blockchain.resolveDiscard;
+            this.UTXOs = [];
         }
 
         static resolveDiscard(conflict) {
