@@ -48,5 +48,29 @@
         var trans2 = new Transaction(json);
         should.deepEqual(trans2, trans);
     });
+    it("TESTTESTtwo equivalent objects generate different JSON strings", function() {
+        var obj1 = {
+            a: 1,
+            b: 2,
+            c: 3,
+            d: 4,
+            e: 5,
+            f: 6,
+            g: 7,
+        };
+        var obj2 = {
+            e: 5,
+            b: 2,
+            a: 1,
+            c: 3,
+            d: 4,
+            g: 7,
+            f: 6,
+        };
+        var json1 = JSON.stringify(obj1);
+        var json2 = JSON.stringify(obj2);
+        should.deepEqual(obj1, obj2);
+        should(json1).not.equal(json2);
+    });
 
 })

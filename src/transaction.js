@@ -19,9 +19,13 @@
         }
 
         update(opts={}) {
-            var keyPair = opts.keyPair || new SerializedKeyPair();
-            this.sender = opts.sender || this.sender || keyPair.publicKey.id;
-            this.recipient = opts.recipient || this.recipient || keyPair.publicKey.id;
+            opts.sender && (this.sender = opts.sender);
+            if (this.sender == null) {
+                var kpSelf = opts.keyPair || new SerializedKeyPair();
+                this.sender = kpSelf.publicKey.id;
+            }
+            this.recipient = opts.recipient || this.recipient || this.sender;
+            (opts.signature) && (this.signature = opts.signature);
             this.value = opts.value || this.value || {};
             (opts.id) && (this.id = opts.id);
             this.t = opts.t || new Date();
@@ -52,6 +56,10 @@
             this.verifySignature();
             this.id = this.transactionHash();
             return true;
+        }
+
+        sign(keyPair) {
+            var signature = keyPair.sign();
         }
 
         static get Output() { return Output; }
