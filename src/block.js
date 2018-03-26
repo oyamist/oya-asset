@@ -2,7 +2,7 @@
     const {
         MerkleJson,
     } = require("merkle-json");
-    const Identity = require('./identity');
+    const KeyPair = require('./key-pair');
     const mj = new MerkleJson();
     const Transaction = require('./transaction');
     const DIFFICULTY = 2; // hashBlock computes in << 100ms on Pixelbook

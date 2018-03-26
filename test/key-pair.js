@@ -1,14 +1,14 @@
-(typeof describe === 'function') && describe("Identity", function() {
+(typeof describe === 'function') && describe("KeyPair", function() {
     const winston = require('winston');
     const should = require("should");
     const path = require('path');
     const fs = require('fs');
     const {
-        Identity,
+        KeyPair,
     } = require("../index");
     winston.level = 'warn';
 
-    it("Identity(opts) creates an identiy for computer", function() {
+    it("KeyPair(opts) creates an identiy for computer", function() {
         var local = path.join(__dirname, '..', 'local');
         var rsaKeyPath = path.join(local, 'rsaKey.json');
         var savePath = rsaKeyPath + '.save';
@@ -19,10 +19,10 @@
         } else {
             winston.info('no ', rsaKeyPath);
         }
-        var identity = new Identity();
-        should(typeof identity.publicKey.key).equal('string');
-        should(typeof identity.publicKey.id).equal('string');
-        should(identity.publicKey.id.length).equal(32);
+        var keyPair = new KeyPair();
+        should(typeof keyPair.publicKey.key).equal('string');
+        should(typeof keyPair.publicKey.id).equal('string');
+        should(keyPair.publicKey.id.length).equal(32);
 
         if (fs.existsSync(savePath)) {
             if (fs.existsSync(rsaKeyPath)) {

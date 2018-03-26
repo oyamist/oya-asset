@@ -6,7 +6,7 @@
     const fs = require('fs');
     const os = require('os');
     
-    class Identity {
+    class KeyPair {
         constructor(opts={}) {
             var local = path.join(__dirname, '..', 'local');
             if (!fs.existsSync(local)) {
@@ -24,7 +24,7 @@
                     return acc;
                 }, `${Math.random(Date.now())}`);
 
-                winston.info("Identity() created RSA key: ${this.rsaKeyPath}");
+                winston.info("KeyPair() created RSA key: ${this.rsaKeyPath}");
                 this.rsaKey = cryptico.generateRSAKey(passPhrase, 1024); // encryptor
                 fs.writeFileSync(this.rsaKeyPath, JSON.stringify(this.rsaKey, undefined, 2));
             }
@@ -32,11 +32,11 @@
                 key: cryptico.publicKeyString(this.rsaKey),
             };
             this.publicKey.id = cryptico.publicKeyID(this.publicKey.key);
-            winston.info(`Identity() public key:${this.publicKey.key}`);
-            winston.info(`Identity() public key id:${this.publicKey.id}`);
+            winston.info(`KeyPair() public key:${this.publicKey.key}`);
+            winston.info(`KeyPair() public key id:${this.publicKey.id}`);
         }
-    } //// class Identity
+    } //// class KeyPair
 
-    module.exports = exports.Identity = Identity;
+    module.exports = exports.KeyPair = KeyPair;
 })(typeof exports === "object" ? exports : (exports = {}));
 

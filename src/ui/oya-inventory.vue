@@ -43,7 +43,7 @@
             <template slot="expand" slot-scope="cursor">
                 <v-container fluid class="oya-asset-expand">
                     <v-layout row class="pl-5">
-                        <v-flex xs2 class="body-2">Identity</v-flex>
+                        <v-flex xs2 class="body-2">KeyPair</v-flex>
                         <v-flex>
                             <v-layout row v-for="key in Object.keys(cursor.item).sort()" :key="key"
                                 v-if="assetValue(key, cursor.item) && keyClass(key, cursor.item)==='identity'"

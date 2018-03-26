@@ -2,7 +2,7 @@
     const {
         MerkleJson,
     } = require("merkle-json");
-    const Identity = require('./identity');
+    const KeyPair = require('./key-pair');
     const mj = new MerkleJson();
 
     class Output {
@@ -19,9 +19,9 @@
         }
 
         update(opts={}) {
-            var identity = opts.identity || new Identity();
-            this.sender = opts.sender || this.sender || identity.publicKey.id;
-            this.recipient = opts.recipient || this.recipient || identity.publicKey.id;
+            var keyPair = opts.keyPair || new KeyPair();
+            this.sender = opts.sender || this.sender || keyPair.publicKey.id;
+            this.recipient = opts.recipient || this.recipient || keyPair.publicKey.id;
             this.value = opts.value || this.value || {};
             (opts.id) && (this.id = opts.id);
             this.t = opts.t || new Date();
