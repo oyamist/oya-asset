@@ -3,6 +3,7 @@
     const should = require("should");
     const jsrsasign = require('jsrsasign');
     const cryptico = require('cryptico');
+    const { MerkleJson } = require('merkle-json');
     const {
         Asset,
         Plant,
@@ -18,7 +19,9 @@
 
         var msg = "Sam signed this message";
         var encrypted = cryptico.encrypt(msg, mattPublicKey, samRsaKey);
+        //console.log(encrypted);
         var decrypted = cryptico.decrypt(encrypted.cipher, mattRsaKey);      
+        //console.log(decrypted);
         should(decrypted.publicKeyString).equal(samPublicKey);
         var signer = cryptico.publicKeyID(decrypted.publicKeyString);
         should(signer).equal(cryptico.publicKeyID(samPublicKey));

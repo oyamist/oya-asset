@@ -8,7 +8,7 @@
     } = require("../index");
     winston.level = 'warn';
 
-    it("KeyPair(opts) creates an identiy for computer", function() {
+    it("KeyPair(opts) returns the PKI identiy for this computer", function() {
         var local = path.join(__dirname, '..', 'local');
         var rsaKeyPath = path.join(local, 'rsaKey.json');
         var savePath = rsaKeyPath + '.save';
@@ -32,6 +32,15 @@
             fs.renameSync(savePath, rsaKeyPath);
         }
         
+    });
+    it("TESTTESTsign(plainText) returns message signature", function() {
+        var keyPair = new KeyPair({
+            rsaKeyPath: path.join(__dirname, "test-rsaKey.json"),
+        });
+        should(keyPair.publicKey.id).equal('1b7526fe48ca8e6fdb0d849c3a2f5a50');
+        var msg = "A sunny day";
+        should(keyPair.sign(msg).id).equal('bd529c51f3bd678131133af445235e0c');
+        should(keyPair.sign(msg).signature).startWith('fd26228f76');
     });
 
 })

@@ -13,9 +13,11 @@
                 fs.mkdirSync(local);
             }
             this.rsaKeyPath = opts.rsaKeyPath || path.join(local,'rsaKey.json');
-            if (fs.existsSync(this.rsaKeyPath)) {
-                this.rsaKey = JSON.parse(fs.readFileSync(this.rsaKeyPath));
-            } else {
+            if (fs.existsSync(this.rsaKeyPath)) { // deserialize existing rsa key
+                this.rsaKey = cryptico.generateRSAKey('dummy', 8); // hack to get RSAKey ctor
+                var json = JSON.parse(fs.readFileSync(this.rsaKeyPath));
+                this.rsaKey.setPrivateEx(json.n, json.e, json.d, json.p, json.q, json.dmp1, json.dmq1, json.coeff);
+            } else { // create new rsa key
                 var interfaces = os.networkInterfaces();
                 var passPhrase = Object.keys(interfaces).reduce((acc,key) => {
                     var ifctype  = interfaces[key];
@@ -35,6 +37,16 @@
             winston.info(`KeyPair() public key:${this.publicKey.key}`);
             winston.info(`KeyPair() public key id:${this.publicKey.id}`);
         }
+
+        sign(plainText) {
+            var signature = this.rsaKey.signString(plainText, 'sha256');
+            var id = cryptico.publicKeyID(signature);
+            return {
+                signature,
+                id,
+            }
+        }
+
     } //// class KeyPair
 
     module.exports = exports.KeyPair = KeyPair;
