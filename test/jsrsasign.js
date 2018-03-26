@@ -10,6 +10,7 @@
         AssetDefs,
         TValue,
     } = require("../index");
+    winston.level = 'warn';
 
     it("cryptico usage", function() {
         var mattRsaKey = cryptico.generateRSAKey("Matt's passphrase", 1024); // encryptor

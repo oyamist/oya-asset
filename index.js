@@ -4,7 +4,7 @@ module.exports = {
     Block: require('./src/block'),
     Blockchain: require("./src/blockchain"),
     Filter: require("./src/filter"),
-    KeyPair: require('./src/key-pair'),
+    SerializedKeyPair: require('./src/serialized-key-pair'),
     Inventory: require("./src/inventory"),
     Plant: require("./src/plant"),
     Query: require('./src/query'),

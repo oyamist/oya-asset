@@ -4,14 +4,14 @@
     const path = require('path');
     const fs = require('fs');
     const {
-        KeyPair,
+        SerializedKeyPair,
         Transaction,
     } = require("../index");
 
     it("TESTTESTTransaction(opts) creates transaction", function() {
         // default constructor
         var trans = new Transaction();
-        var keyPair = new KeyPair();
+        var keyPair = new SerializedKeyPair();
         should(trans.recipient).equal(keyPair.publicKey.id);
         should(trans.sender).equal(keyPair.publicKey.id);
         should(Transaction.Output).instanceOf(Function);

@@ -2,7 +2,7 @@
     const {
         MerkleJson,
     } = require("merkle-json");
-    const KeyPair = require('./key-pair');
+    const SerializedKeyPair = require('./serialized-key-pair');
     const mj = new MerkleJson();
 
     class Output {
@@ -19,7 +19,7 @@
         }
 
         update(opts={}) {
-            var keyPair = opts.keyPair || new KeyPair();
+            var keyPair = opts.keyPair || new SerializedKeyPair();
             this.sender = opts.sender || this.sender || keyPair.publicKey.id;
             this.recipient = opts.recipient || this.recipient || keyPair.publicKey.id;
             this.value = opts.value || this.value || {};
