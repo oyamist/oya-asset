@@ -16,9 +16,6 @@
         var keyPair = new SerializedKeyPair();
         should(trans.recipient).equal(keyPair.publicKey.id);
         should(trans.sender).equal(keyPair.publicKey.id);
-        should(Transaction.Output).instanceOf(Function);
-        should(Transaction.Input).instanceOf(Function);
-
 
         should.throws(() => {
             new Transaction({
@@ -57,6 +54,13 @@
         var json = JSON.parse(JSON.stringify(trans));
         var trans2 = new Transaction(json);
         should.deepEqual(trans2, trans);
+
+        // serialization is restricted to verifiable properties
+        var json = JSON.parse(JSON.stringify(trans));
+        should.deepEqual(Object.keys(json).sort(), [
+            "id", "sender", "recipient", "t", "value", "signature",
+        ].sort());
+
     });
     it("TESTTESTtwo equivalent objects generate different JSON strings", function() {
         var obj1 = {
@@ -134,7 +138,9 @@
         var t = new Date(2018, 2, 23);
         var sender = agent.publicKey;
         var recipient = "Bob";
-        var value = "a fine day";
+        var value = {
+            weather: "a fine day",
+        };
         var trans = new Transaction({
             sender,
             recipient,
@@ -155,7 +161,10 @@
         should.throws(() => trans.verifySignature());
         trans.sender = sender;
 
-        trans.value = 'ATTACK' + trans.value;
+        trans.value = {
+            weather: 'a fine day',
+            sneak: 'ATTACK',
+        }
         should.throws(() => trans.verifySignature());
         trans.value = value;
 
