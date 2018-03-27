@@ -8,7 +8,7 @@
     const DIFFICULTY = 2; // hashBlock computes in << 100ms on Pixelbook
 
     class AbstractBlock {
-        constructor(data, t=new Date(), index=0, prevHash="0") {
+        constructor(data, t=new Date(), index=0, prevHash="0", nonce) {
             if (!(t instanceof Date)) {
                 t = new Date(t);
             }
@@ -19,23 +19,19 @@
             this.t = t;
             this.index = index;
             this.prevHash = prevHash;
-            this.nonce = 0;
+            this.nonce = nonce || 0;
             this.type = "AbstractBlock";
 
             // Hash all preceding fields
             this.hash = this.hashBlock();
         }
         
-        static fromJSON(obj={}, blockClass=this) {
-            if (obj.type === 'AbstractBlock') {
-                var block = new AbstractBlock(obj.data, obj.t, obj.index, obj.prevHash);
-            } else if (obj.type === 'Block') {
-                var block = new Block(obj.data, obj.t, obj.index, obj.prevHash);
-            } else {
-                var block = new blockClass(obj.data, obj.t, obj.index, obj.prevHash);
-            }
-            block.nonce = obj.nonce || block.nonce;
-            block.hash = obj.hash || block.hash;
+        static fromJSON(obj={}) {
+            var blockClass = obj.type && {
+                AbstractBlock,
+                Block,
+            }[obj.type] || this;
+            var block = new blockClass(obj.data, obj.t, obj.index, obj.prevHash, obj.nonce);
                 
             return block;
         }
@@ -83,9 +79,16 @@
     }
 
     class Block extends AbstractBlock {
-        constructor(transactions, t, index, prevHash) {
-            super(transactions = [], t, index, prevHash);
+        constructor(transactions=[], t, index, prevHash, nonce) {
+            super(transactions, t, index, prevHash, nonce);
             this.type = 'Block';
+            if (!(transactions instanceof Array)) {
+                throw new Error("Expected array of transaction as block data");
+            }
+        }
+
+        get transactions() {
+            return this.data;
         }
 
         static get DIFFICULTY() { return DIFFICULTY; } 

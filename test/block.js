@@ -76,7 +76,7 @@
         var blk = new AbstractBlock("hello", t, index, prevHash);
         blk.mineBlock();
         var json = JSON.parse(JSON.stringify(blk));
-        var blk2 = Block.fromJSON(json, AbstractBlock);
+        var blk2 = Block.fromJSON(json);
         should.deepEqual(blk2, blk);
     });
     it("TESTTESTBlock can be serialized", function() {
@@ -85,14 +85,15 @@
         var prevHash = 'thatWhichCameBefore';
 
         // unmined block
-        var blk = new Block("hello", t, index, prevHash);
+        var blk = new Block([1,2,3], t, index, prevHash);
+        should.deepEqual(blk.transactions, [1,2,3]);
         var json = JSON.parse(JSON.stringify(blk));
         should(json.type).equal('Block');
         var blk2 = Block.fromJSON(json);
         should.deepEqual(blk2, blk);
 
         // mined block
-        var blk = new Block("hello", t, index, prevHash);
+        var blk = new Block([1,2,3], t, index, prevHash);
         blk.mineBlock();
         var json = JSON.parse(JSON.stringify(blk));
         var blk2 = AbstractBlock.fromJSON(json); // block factory knows about "type" property
