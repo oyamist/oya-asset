@@ -47,9 +47,9 @@
             }
         }
 
-        verify(msg, sigId, publicKey) {
+        static verify(msg, signature, publicKey) {
             var pk = cryptico.publicKeyFromString(publicKey);
-            return pk.verifyString(msg, sigId);
+            return pk.verifyString(msg, signature);
         }
 
     } //// class SerializedKeyPair

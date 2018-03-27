@@ -8,10 +8,18 @@
     class Output {
         constructor(){
         }
-    }
+    } // class Output
 
     class Input {
-    }
+        constructor(transactionOutputId) {
+            this.transactionOutputId = transactionOutputId;
+            this.UTXO = null;
+        }
+
+        setUTXO(transaction = null) {
+            this.UTXO = transaction;
+        }
+    } // class Input
 
     class Transaction {
         constructor(opts={}) {
@@ -37,29 +45,49 @@
             }
         }
 
-        transactionHash(trans = this) {
-            return mj.hash({
-                sender: trans.sender,
-                recipient: trans.recipient,
-                snapshot: trans.snapshot,
-                value: trans.value,
-                t: trans.t,
-            });
-        }
-
         verifySignature() {
-            // TBD
+            var plainText = this.signedData();
+            if (this.signature == null) {
+                throw new Error("Transaction has not been signed");
+            }
+            if (!SerializedKeyPair.verify(plainText, this.signature, this.sender)) {
+                throw new Error("Transaction has been tampered");
+            };
+            if (this.id !== this.generateId()) {
+                throw new Error("Transaction id has been tampered");
+            }
             return true;
         }
 
         processTransaction() {
             this.verifySignature();
-            this.id = this.transactionHash();
             return true;
         }
 
+        signedData() {
+            return mj.stringify({
+                sender: this.sender,
+                recipient: this.recipient,
+                value: this.value,
+                t: this.t,
+            });
+        }
+
+        generateId() {
+            return mj.hash({
+                sender: this.sender,
+                recipient: this.recipient,
+                value: this.value,
+                t: this.t,
+                signature: this.signature,
+            });
+        }
+
         sign(keyPair) {
-            var signature = keyPair.sign();
+            var plainText = this.signedData();
+            var sign = keyPair.sign(plainText);
+            this.signature = sign.signature;
+            this.id = this.generateId();
         }
 
         static get Output() { return Output; }

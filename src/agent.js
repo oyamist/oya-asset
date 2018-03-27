@@ -1,31 +1,35 @@
 (function(exports) {
     const SerializedKeyPair = require('./serialized-key-pair');
-    const mj = new MerkleJson();
     const Transaction = require('./transaction');
 
     class Agent {
-        constructor(opts={});
-        this.keyPair = new SerializedKeyPair(opts);
-    }
+        constructor(opts={}) {
+            this.keyPair = new SerializedKeyPair(opts);
+        }
 
-    validateValue(value) {
-        // subclasses can throw an Error.
-        return true; 
-    }
+        get publicKey() {
+            return this.keyPair.publicKey.key;
+        }
 
-    createTransaction(recipient, value) {
-        this.validateValue(value);
-        var inputs = "TBD";
+        validateValue(value) {
+            // subclasses can throw an Error.
+            return true; 
+        }
 
-        var trans = new Transaction({
-            sender_key: this.keyPair.publicKey.key,
-            sender: this.keyPair.publicKey.id,
-            recipient,
-            value,
-            inputs,
-        });
-        trans.sign(this.keyPair);
-    }
+        createTransaction(recipient, value) {
+            this.validateValue(value);
+            var inputs = "TBD";
+
+            var trans = new Transaction({
+                sender_key: this.keyPair.publicKey.key,
+                sender: this.keyPair.publicKey.id,
+                recipient,
+                value,
+                inputs,
+            });
+            trans.sign(this.keyPair);
+        }
+    } // class Agent
     /*
 	public Transaction sendFunds(PublicKey _recipient,float value ) {
 		if(getBalance() < value) {

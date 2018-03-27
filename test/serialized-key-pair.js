@@ -51,16 +51,12 @@
         var kpSigner = new SerializedKeyPair({ // the signer
             rsaKeyPath: path.join(__dirname, "test-rsaKey.json"),
         });
-        var kpAnybody = new SerializedKeyPair({ // anybody else
-            rsaKeyPath: path.join(__dirname, "test-rsaKey2.json"),
-        });
         should(kpSigner.publicKey.id).equal('1b7526fe48ca8e6fdb0d849c3a2f5a50');
 
         // Anybody can verify the signature
-        should(kpAnybody.publicKey.id).equal('a6c421bf03d01ef2689fe711df1a83ae'); // someone else
         var msg = "A sunny day";
         var sign1 = kpSigner.sign(msg);
-        should(kpAnybody.verify(msg, sign1.signature, kpSigner.publicKey.key)).equal(true);
+        should(SerializedKeyPair.verify(msg, sign1.signature, kpSigner.publicKey.key)).equal(true);
 
     });
 
