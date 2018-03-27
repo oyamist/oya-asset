@@ -5,12 +5,13 @@
     const path = require('path');
     const {
         AbstractBlock,
+        Agent,
         Block,
         Blockchain,
         Transaction,
     } = require("../index");
 
-    it("Blockchain() creates a blockchain", function() {
+    it("TESTTESTBlockchain() creates a blockchain", function() {
         var t = new Date(Date.UTC(2018,2,10));
         var bc = new Blockchain({
             genesis: "fluffy bunnies", // genesis block text
@@ -60,7 +61,7 @@
         should.deepEqual(bc.chain[1], blk1);
         should.deepEqual(bc.chain[2], blk2);
     });
-    it("addBlock(newBlk) adds new block", function() {
+    it("TESTTESTaddBlock(newBlk) adds new block", function() {
         var t = new Date(Date.UTC(2018,2,10));
         var bc = new Blockchain({
             genesis: "fluffy bunnies", // genesis block text
@@ -109,7 +110,7 @@
         should(bc.validate()).equal(true);
         should(bc.chain.length).equal(2);
     });
-    it("merge(blkchn) merges in longer compatible blockchain", function() {
+    it("TESTTESTmerge(blkchn) merges in longer compatible blockchain", function() {
         var opts = {
             genesis: "G",
         };
@@ -135,7 +136,7 @@
         should(bcB.validate()).equal(true);
         should.deepEqual(conflicts.map(b=>b.data), []);
     });
-    it("merge(blkchn) merges in shorter compatible blockchain", function() {
+    it("TESTTESTmerge(blkchn) merges in shorter compatible blockchain", function() {
         var opts = {
             genesis: "G",
         };
@@ -160,7 +161,7 @@
         should(bcB.validate()).equal(true);
         should.deepEqual(conflicts.map(b=>b.data), []);
     });
-    it("merge(blkchn) resolves longer conflicting blockchain with discard", function() {
+    it("TESTTESTmerge(blkchn) resolves longer conflicting blockchain with discard", function() {
         var opts = {
             genesis: "G",
         };
@@ -189,7 +190,7 @@
         should.deepEqual(bcB.chain.map(b=>b.data), ["G","AB1","B2","B3","B4"]);
         should.deepEqual(conflicts.map(b=>b.data), ["A2","A3"]);
     });
-    it("merge(blkchn) resolves shorter conflicting blockchain with discard", function() {
+    it("TESTTESTmerge(blkchn) resolves shorter conflicting blockchain with discard", function() {
         var opts = {
             genesis: "G",
             resolveConflict: Blockchain.resolveDiscard,
@@ -243,7 +244,7 @@
         should.deepEqual(bcB.chain.map(b=>b.data), ["G","AB1","B2","B3","B4"]);
         should.deepEqual(conflicts.map(b=>b.data), ["A2","A3"]);
     });
-    it("merge(blkchn) resolves shorter conflicting blockchain with append", function() {
+    it("TESTTESTmerge(blkchn) resolves shorter conflicting blockchain with append", function() {
         var opts = {
             genesis: "G",
             resolveConflict: Blockchain.resolveAppend,
@@ -270,5 +271,86 @@
         should.deepEqual(bcA.chain.map(b=>b.data), ["G","AB1","A2","A3","A4","B2","B3"]);
         should.deepEqual(bcB.chain.map(b=>b.data), ["G","AB1","B2","B3"]);
         should.deepEqual(conflicts.map(b=>b.data), ["B2","B3"]);
+    });
+    it("TESTTESTpostTransaction(trans) adds a transaction to the blockchain", function() {
+        var bc = new Blockchain();
+        var agent1 = new Agent({
+            rsaKeyPath: path.join(__dirname, 'test_rsaKey.json'),
+        });
+        var sender = agent1.publicKey;
+        var agent2 = new Agent({
+            rsaKeyPath: path.join(__dirname, 'test_rsaKey2.json'),
+        });
+        var recipient = agent2.publicKey;
+        var account = "A0001";
+        var t = new Date(2018,2,12);
+        var value = {
+            color: 'red',
+        };
+        var trans1 = new Transaction({
+            sender,
+            recipient,
+            account,
+            t,
+            value,
+        });
+
+        // transaction must be signed
+        should.throws(() => bc.postTransaction(trans1));
+
+        // posting a transaction updates the pool of unspent transaction outputs (UTXOs)
+        trans1.sign(agent1.keyPair);
+        should(bc.findUTXOs(recipient).length).equal(0);
+        bc.postTransaction(trans1);
+        should(bc.findUTXOs(recipient).length).equal(1);
+    });
+    it("TESTTESTfindUTXOs(recipient, account) returns matching UTXOs", function() {
+        var bc = new Blockchain();
+        var agent1 = new Agent({
+            rsaKeyPath: path.join(__dirname, 'test_rsaKey.json'),
+        });
+        var sender = agent1.publicKey;
+        var agent2 = new Agent({
+            rsaKeyPath: path.join(__dirname, 'test_rsaKey2.json'),
+        });
+        var account = "A0001";
+        var t = new Date(2018,2,12);
+        var trans1 = new Transaction({
+            sender,
+            recipient: agent2.publicKey,
+            account: "A0001",
+            t,
+            value: 123,
+        });
+        var trans2 = new Transaction({
+            sender,
+            recipient: agent2.publicKey,
+            account: "A0002",
+            t,
+            value: 222,
+        });
+        trans1.sign(agent1.keyPair);
+        bc.postTransaction(trans1);
+        trans2.sign(agent1.keyPair);
+        bc.postTransaction(trans2);
+
+        // all accounts for agent2
+        var utxos = bc.findUTXOs(agent2.publicKey);
+        should(utxos.length).equal(2);
+        should(utxos[0]).equal(trans1.outputs[0]);
+        should(utxos[1]).equal(trans2.outputs[0]);
+
+        // a specific account for agent2
+        var utxos = bc.findUTXOs(agent2.publicKey, "A0002");
+        should(utxos.length).equal(1);
+        should(utxos[0]).equal(trans2.outputs[0]);
+
+        // a non-existent account for agent2
+        var utxos = bc.findUTXOs(agent2.publicKey, "some other acccount");
+        should(utxos.length).equal(0);
+
+        // all accounts for agent1
+        var utxos = bc.findUTXOs(agent1.publicKey);
+        should(utxos.length).equal(0);
     });
 })

@@ -91,11 +91,14 @@
     });
     it("TESTTESTsign(keyPair) adds signature to transaction", function() {
         var mj = new MerkleJson();
-        var agent = new Agent({
+        var agent1 = new Agent({
             rsaKeyPath: path.join(__dirname, 'test-rsaKey.json'),
         });
+        var agent2 = new Agent({
+            rsaKeyPath: path.join(__dirname, 'test-rsaKey2.json'),
+        });
         var t = new Date(2018, 2, 23);
-        var sender = agent.publicKey;
+        var sender = agent1.publicKey;
         var recipient = "Bob";
         var value = "a fine day";
         var account = "banking";
@@ -116,7 +119,10 @@
         });
         should.deepEqual(trans.signedData(), signedData);
 
-        trans.sign(agent.keyPair);
+        // only sender can sign transaction
+        should.throws(() => trans.sign(agent2.keyPair));
+
+        trans.sign(agent1.keyPair);
 
         // signed data did not change
         should.deepEqual(trans.signedData(), signedData);

@@ -5,10 +5,21 @@
     const SerializedKeyPair = require('./serialized-key-pair');
     const mj = new MerkleJson();
 
+    class Output {
+        constructor(recipient, value, transId, account) {
+            this.id = transId;
+            this.recipient = recipient;
+            this.value = value;
+            this.account = account;
+        }
+    }
+
     class Transaction {
         constructor(opts={}) {
             this.update(opts);
         }
+
+        static get Output() { return Output; }
 
         update(opts={}) {
             opts.sender && (this.sender = opts.sender);
@@ -28,6 +39,10 @@
             if (isNaN(this.t.getTime())) {
                 throw new Error(`invalid Date:${JSON.stringify(opts.t)}`);
             }
+            Object.defineProperty(this, "outputs", {
+                writeable: true,
+                value: [],
+            });
         }
 
         verifySignature() {
@@ -46,6 +61,8 @@
 
         processTransaction() {
             this.verifySignature();
+            var utxo = new Transaction.Output(this.recipient, this.value, this.id, this.account);
+            this.outputs.push(utxo);
             return true;
         }
 
@@ -70,6 +87,9 @@
         }
 
         sign(keyPair) {
+            if (keyPair.publicKey.key !== this.sender) {
+                throw new Error('Transaction.sign() must be signed by sender');
+            }
             var plainText = this.signedData();
             var sign = keyPair.sign(plainText);
             this.signature = sign.signature;

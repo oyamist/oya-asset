@@ -3,7 +3,9 @@
         MerkleJson,
     } = require("merkle-json");
 
-    const AbstractBlock = require('./block').AbstractBlock;
+    const Block = require('./block');
+    const AbstractBlock = Block.AbstractBlock;
+    const Transaction = require('./transaction');
 
     var mj = new MerkleJson();
 
@@ -14,7 +16,7 @@
             this.difficulty = opts.difficulty == null ? AbstractBlock.DIFFICULTY : opts.difficulty;
             this.chain = [this.createGenesis(this.genesis)];
             this.resolveConflict = opts.resolveConflict || Blockchain.resolveDiscard;
-            this.UTXOs = [];
+            this.UTXOs = {};
         }
 
         static resolveDiscard(conflict) {
@@ -34,9 +36,33 @@
                 : this.chain[this.chain.length + index];
         }
 
+        postTransaction(trans) {
+            trans.verifySignature();
+            trans.processTransaction();
+            trans.outputs.forEach(utxo => (this.UTXOs[utxo.id] = utxo));
+        }
+
+        findUTXOs(recipient, account) {
+            var ids = Object.keys(this.UTXOs);
+            return ids.reduce((acc, id) => {
+                var utxo = this.UTXOs[id];
+                if (utxo.recipient === recipient) {
+                    if (account == null || account === utxo.account) {
+                        acc.push(utxo);
+                    }
+                }
+                return acc;
+            }, []);
+        }
+
         addBlock(newBlk){
+            if (newBlk == null) {
+                throw new Error(`Blockchain.addBlock() expected a block`);
+            }
             if (!(newBlk instanceof AbstractBlock)) {
-                throw new Error(`Blockchain.addBlock() expected:AbstractBlock actual:${newBlk}`);
+                var prototype = Object.getPrototypeOf(newBlk);
+                var ctorName = prototype && prototype.constructor && prototype.constructor.name || null;
+                throw new Error(`Blockchain.addBlock() expected:AbstractBlock actual:${ctorName}`);
             }
             var lastBlk = this.getBlock(-1);
             if (newBlk.prevHash && newBlk.prevHash !== "0" && newBlk.prevHash !== lastBlk.hash) {
