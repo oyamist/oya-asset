@@ -19,6 +19,7 @@
             this.recipient = opts.recipient || this.recipient || this.sender;
             (opts.signature) && (this.signature = opts.signature);
             this.value = opts.value || this.value || {};
+            this.account = opts.account || this.account || "wallet";
             (opts.id) && (this.id = opts.id);
             this.t = opts.t || new Date();
             if (!(this.t instanceof Date)) {
@@ -35,7 +36,7 @@
                 throw new Error("Transaction has not been signed");
             }
             if (!SerializedKeyPair.verify(plainText, this.signature, this.sender)) {
-                throw new Error("Transaction has been tampered");
+                throw new Error("Transaction is invalid and does not match its signature");
             };
             if (this.id !== this.generateId()) {
                 throw new Error("Transaction id has been tampered");
@@ -53,6 +54,7 @@
                 sender: this.sender,
                 recipient: this.recipient,
                 value: this.value,
+                account: this.account,
                 t: this.t,
             });
         }
