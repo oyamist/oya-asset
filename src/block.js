@@ -13,7 +13,7 @@
                 t = new Date(t);
             }
             if (isNaN(t.getTime())) {
-                throw new Error("Blockchain.AbstractBlock() invalid date");
+                throw new Error("OyaChain.AbstractBlock() invalid date");
             }
             this.data = data;
             this.t = t;

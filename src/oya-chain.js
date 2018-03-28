@@ -10,7 +10,7 @@
 
     var mj = new MerkleJson();
 
-    class Blockchain{
+    class OyaChain{
         constructor(opts={}) {
             this.genesis = opts.genesis || "Genesis block";
             this.t = opts.t || new Date(0); // genesis blocks are same by default
@@ -19,9 +19,9 @@
             this.agent = opts.agent || new Agent();
             var genesisBlock = this.createGenesis(this.genesis);
             this.chain = [genesisBlock];
-            this.resolveConflict = opts.resolveConflict || Blockchain.resolveDiscard;
+            this.resolveConflict = opts.resolveConflict || OyaChain.resolveDiscard;
             this.UTXOs = {};
-            this.consumeValue = opts.consumeValue || Blockchain.consumeCurrency;
+            this.consumeValue = opts.consumeValue || OyaChain.consumeCurrency;
             var genesisTrans = new Transaction({
                 t: this.t,
                 recipient: this.agent.publicKey,
@@ -118,25 +118,25 @@
 
         addBlock(newBlk){
             if (newBlk == null) {
-                throw new Error(`Blockchain.addBlock() expected a block`);
+                throw new Error(`OyaChain.addBlock() expected a block`);
             }
             if (!(newBlk instanceof AbstractBlock)) {
                 var prototype = Object.getPrototypeOf(newBlk);
                 var ctorName = prototype && prototype.constructor && prototype.constructor.name || null;
-                throw new Error(`Blockchain.addBlock() expected:AbstractBlock actual:${ctorName}`);
+                throw new Error(`OyaChain.addBlock() expected:AbstractBlock actual:${ctorName}`);
             }
             var lastBlk = this.getBlock(-1);
             if (newBlk.prevHash && newBlk.prevHash !== "0" && newBlk.prevHash !== lastBlk.hash) {
-                throw new Error(`Blockchain.addBlock() new block `+
+                throw new Error(`OyaChain.addBlock() new block `+
                     `prevhash:${newBlk.prevHash} expected:${lastBlk.hash}`);
             }
             if (newBlk.index && newBlk.index !== lastBlk.index+1) {
-                throw new Error(`Blockchain.addBlock() new block `+
+                throw new Error(`OyaChain.addBlock() new block `+
                     `index:${newBlk.index} expected:${lastBlk.index+1}`);
             }
             var hash = lastBlk.hashBlock(newBlk);
             if (newBlk.hash && newBlk.hash !== hash) {
-                throw new Error(`Blockchain.addBlock() new block `+
+                throw new Error(`OyaChain.addBlock() new block `+
                     `hash:${newBlk.hash} expected:${hash}`);
             }
 
@@ -171,15 +171,15 @@
                 const prevBlk = src.chain[i - 1];
 
                 if (curBlk.hash !== curBlk.hashBlock()) {
-                    throw new Error(`Blockchain.validate() hash expected:${curBlk.hashBlock()} actual:${curBlk.hash}`);
+                    throw new Error(`OyaChain.validate() hash expected:${curBlk.hashBlock()} actual:${curBlk.hash}`);
                 }
 
                 if (curBlk.prevHash !== prevBlk.hash) {
-                    throw new Error(`Blockchain.validate() prevHash expected:${curBlk.prevHash} actual:${prevBlk.hash}`);
+                    throw new Error(`OyaChain.validate() prevHash expected:${curBlk.prevHash} actual:${prevBlk.hash}`);
                 }
 
                 if (curBlk.index !== prevBlk.index+1) {
-                    throw new Error(`Blockchain.validate() index expected:${prevBlk.index+1} actual:${curBlk.index}`);
+                    throw new Error(`OyaChain.validate() index expected:${prevBlk.index+1} actual:${curBlk.index}`);
                 }
             }
 
@@ -187,6 +187,6 @@
         }
     }
 
-    module.exports = exports.Blockchain = Blockchain;
+    module.exports = exports.OyaChain = OyaChain;
 })(typeof exports === "object" ? exports : (exports = {}));
 

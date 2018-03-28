@@ -7,18 +7,18 @@
         AbstractBlock,
         Agent,
         Block,
-        Blockchain,
+        OyaChain,
         Transaction,
     } = require("../index");
 
-    it("TESTTESTBlockchain() creates a blockchain", function() {
+    it("TESTTESTOyaChain() creates a blockchain", function() {
         var t = new Date(Date.UTC(2018,2,10));
         var agent = new Agent();
-        var bc = new Blockchain({
+        var bc = new OyaChain({
             genesis: 1000, // the currency pool
             t, // genesis block timestamp
         });
-        should(bc.consumeValue).equal(Blockchain.consumeCurrency);
+        should(bc.consumeValue).equal(OyaChain.consumeCurrency);
         should(bc.chain).instanceOf(Array);
         should(bc.chain.length).equal(1);
         should.deepEqual(bc.chain[0], bc.createGenesis());
@@ -28,17 +28,17 @@
         should(bc.chain[0].t.getTime()).equal(t.getTime());
         should.deepEqual(bc.agent, agent);
 
-        var bc = new Blockchain({
-            consumeValue: Blockchain.consumeOne,
+        var bc = new OyaChain({
+            consumeValue: OyaChain.consumeOne,
         });
-        should(bc.consumeValue).equal(Blockchain.consumeOne);
+        should(bc.consumeValue).equal(OyaChain.consumeOne);
         should.deepEqual(bc.chain[0], bc.createGenesis());
         should.deepEqual(bc.chain[0], bc.createGenesis("Genesis block"));
         should(bc.chain[0].t.getTime()).equal(0);
     });
     it("TESTTESTvalidate() validates blockchain", function() {
         var t = new Date(Date.UTC(2018,2,10));
-        var bc = new Blockchain({
+        var bc = new OyaChain({
             genesis: "fluffy bunnies", // genesis block text
             t, // genesis block timestamp
         });
@@ -77,7 +77,7 @@
     });
     it("TESTTESTaddBlock(newBlk) adds new block", function() {
         var t = new Date(Date.UTC(2018,2,10));
-        var bc = new Blockchain({
+        var bc = new OyaChain({
             genesis: "fluffy bunnies", // genesis block text
             t, // genesis block timestamp
         });
@@ -128,8 +128,8 @@
         var opts = {
             genesis: "G",
         };
-        var bcA = new Blockchain(opts);
-        var bcB = new Blockchain(opts);
+        var bcA = new OyaChain(opts);
+        var bcB = new OyaChain(opts);
         should(bcA.chain[0].hash).equal(bcB.chain[0].hash);
         var t1 = new Date(2018,1,1);
         var t2 = new Date(2018,1,2);
@@ -154,8 +154,8 @@
         var opts = {
             genesis: "G",
         };
-        var bcA = new Blockchain(opts);
-        var bcB = new Blockchain(opts);
+        var bcA = new OyaChain(opts);
+        var bcB = new OyaChain(opts);
         should(bcA.chain[0].hash).equal(bcB.chain[0].hash);
         var t1 = new Date(2018,1,1);
         var t2 = new Date(2018,1,2);
@@ -179,9 +179,9 @@
         var opts = {
             genesis: "G",
         };
-        var bcA = new Blockchain(opts);
-        should(bcA.resolveConflict).equal(Blockchain.resolveDiscard); // discard by default
-        var bcB = new Blockchain(opts);
+        var bcA = new OyaChain(opts);
+        should(bcA.resolveConflict).equal(OyaChain.resolveDiscard); // discard by default
+        var bcB = new OyaChain(opts);
         var t1 = new Date(2018,1,1);
         var t2 = new Date(2018,1,2);
         var t3 = new Date(2018,1,3);
@@ -207,11 +207,11 @@
     it("TESTTESTmerge(blkchn) resolves shorter conflicting blockchain with discard", function() {
         var opts = {
             genesis: "G",
-            resolveConflict: Blockchain.resolveDiscard,
+            resolveConflict: OyaChain.resolveDiscard,
         };
-        var bcA = new Blockchain(opts);
-        should(bcA.resolveConflict).equal(Blockchain.resolveDiscard); // discard by default
-        var bcB = new Blockchain(opts);
+        var bcA = new OyaChain(opts);
+        should(bcA.resolveConflict).equal(OyaChain.resolveDiscard); // discard by default
+        var bcB = new OyaChain(opts);
         var t1 = new Date(2018,1,1);
         var t2 = new Date(2018,1,2);
         var t3 = new Date(2018,1,3);
@@ -233,10 +233,10 @@
     it("TESTTESTmerge(blkchn) resolves longer conflicting blockchain with append", function() {
         var opts = {
             genesis: "G",
-            resolveConflict: Blockchain.resolveAppend,
+            resolveConflict: OyaChain.resolveAppend,
         };
-        var bcA = new Blockchain(opts);
-        var bcB = new Blockchain(opts);
+        var bcA = new OyaChain(opts);
+        var bcB = new OyaChain(opts);
         var t1 = new Date(2018,1,1);
         var t2 = new Date(2018,1,2);
         var t3 = new Date(2018,1,3);
@@ -261,10 +261,10 @@
     it("TESTTESTmerge(blkchn) resolves shorter conflicting blockchain with append", function() {
         var opts = {
             genesis: "G",
-            resolveConflict: Blockchain.resolveAppend,
+            resolveConflict: OyaChain.resolveAppend,
         };
-        var bcA = new Blockchain(opts);
-        var bcB = new Blockchain(opts);
+        var bcA = new OyaChain(opts);
+        var bcB = new OyaChain(opts);
         var t1 = new Date(2018,1,1);
         var t2 = new Date(2018,1,2);
         var t3 = new Date(2018,1,3);
@@ -287,7 +287,7 @@
         should.deepEqual(conflicts.map(b=>b.data), ["B2","B3"]);
     });
     it("TESTTESTpostTransaction(trans) adds a transaction to the blockchain", function() {
-        var bc = new Blockchain();
+        var bc = new OyaChain();
         var agent1 = new Agent({
             rsaKeyPath: path.join(__dirname, 'test_rsaKey.json'),
         });
@@ -319,7 +319,7 @@
         should(bc.findUTXOs(recipient).length).equal(1);
     });
     it("TESTTESTfindUTXOs(recipient, dstAccount) returns matching UTXOs", function() {
-        var bc = new Blockchain();
+        var bc = new OyaChain();
         var agent1 = new Agent({
             rsaKeyPath: path.join(__dirname, 'test_rsaKey.json'),
         });
@@ -376,39 +376,39 @@
         var t20 = new Transaction.Output(recipient, 20, "T20", account);
         var t5 = new Transaction.Output(recipient, 5, "T5", account);
 
-        should.deepEqual(Blockchain.consumeCurrency([t5,t20,t10], 6), {
+        should.deepEqual(OyaChain.consumeCurrency([t5,t20,t10], 6), {
             remainder: 4,
             unconsumed: [t5,t20],
             consumed: [t10],
         });
-        should.deepEqual(Blockchain.consumeCurrency([t5,t20,t10], 10), {
+        should.deepEqual(OyaChain.consumeCurrency([t5,t20,t10], 10), {
             remainder: 0,
             unconsumed: [t5,t20],
             consumed: [t10],
         });
-        should.deepEqual(Blockchain.consumeCurrency([t5,t20,t10], 11), {
+        should.deepEqual(OyaChain.consumeCurrency([t5,t20,t10], 11), {
             remainder: 19,
             unconsumed: [t5],
             consumed: [t10,t20],
         });
 
         // check arguments
-        should.throws(() => Blockchain.consumeCurrency("asdf", 1));
-        should.throws(() => Blockchain.consumeCurrency(123, 1));
-        should.throws(() => Blockchain.consumeCurrency(null, 1));
-        should.throws(() => Blockchain.consumeCurrency(undefined, 1));
-        should.throws(() => Blockchain.consumeCurrency({}, 1));
-        should.throws(() => Blockchain.consumeCurrency([1,2,3], 1));
-        should.throws(() => Blockchain.consumeCurrency([t5,t20,t10], NaN));
-        should.throws(() => Blockchain.consumeCurrency([t5,t20,t10], {}));
-        should.throws(() => Blockchain.consumeCurrency([t5,t20,t10], []));
-        should.throws(() => Blockchain.consumeCurrency([t5,t20,t10], "123"));
-        should.throws(() => Blockchain.consumeCurrency([t5,t20,t10], null));
-        should.throws(() => Blockchain.consumeCurrency([t5,t20,t10], undefined));
-        should.throws(() => Blockchain.consumeCurrency([t5,t20,t10], 100));
-        should.throws(() => Blockchain.consumeCurrency([t5,t20,t10], -100));
-        should.throws(() => Blockchain.consumeCurrency([], 100));
-        should.throws(() => Blockchain.consumeCurrency([], -100));
+        should.throws(() => OyaChain.consumeCurrency("asdf", 1));
+        should.throws(() => OyaChain.consumeCurrency(123, 1));
+        should.throws(() => OyaChain.consumeCurrency(null, 1));
+        should.throws(() => OyaChain.consumeCurrency(undefined, 1));
+        should.throws(() => OyaChain.consumeCurrency({}, 1));
+        should.throws(() => OyaChain.consumeCurrency([1,2,3], 1));
+        should.throws(() => OyaChain.consumeCurrency([t5,t20,t10], NaN));
+        should.throws(() => OyaChain.consumeCurrency([t5,t20,t10], {}));
+        should.throws(() => OyaChain.consumeCurrency([t5,t20,t10], []));
+        should.throws(() => OyaChain.consumeCurrency([t5,t20,t10], "123"));
+        should.throws(() => OyaChain.consumeCurrency([t5,t20,t10], null));
+        should.throws(() => OyaChain.consumeCurrency([t5,t20,t10], undefined));
+        should.throws(() => OyaChain.consumeCurrency([t5,t20,t10], 100));
+        should.throws(() => OyaChain.consumeCurrency([t5,t20,t10], -100));
+        should.throws(() => OyaChain.consumeCurrency([], 100));
+        should.throws(() => OyaChain.consumeCurrency([], -100));
     });
     it("TESTTESTconsumeOne(utxos, value) consumes one UTXO", function() {
         var recipient = "anybody";
@@ -423,20 +423,20 @@
             unconsumed: [t2,t3],
             consumed: [t1],
         }
-        should.deepEqual(Blockchain.consumeOne([t1,t2,t3], "asdf"), expected);
-        should.deepEqual(Blockchain.consumeOne([t1,t2,t3], 123), expected);
-        should.deepEqual(Blockchain.consumeOne([t1,t2,t3], null), expected);
-        should.deepEqual(Blockchain.consumeOne([t1,t2,t3], {}), expected);
-        should.deepEqual(Blockchain.consumeOne([t1,t2,t3], []), expected);
-        should.deepEqual(Blockchain.consumeOne([t1,t2,t3], undefined), expected);
+        should.deepEqual(OyaChain.consumeOne([t1,t2,t3], "asdf"), expected);
+        should.deepEqual(OyaChain.consumeOne([t1,t2,t3], 123), expected);
+        should.deepEqual(OyaChain.consumeOne([t1,t2,t3], null), expected);
+        should.deepEqual(OyaChain.consumeOne([t1,t2,t3], {}), expected);
+        should.deepEqual(OyaChain.consumeOne([t1,t2,t3], []), expected);
+        should.deepEqual(OyaChain.consumeOne([t1,t2,t3], undefined), expected);
 
         // check arguments
-        should.throws(() => Blockchain.consumeOne(null, "anything")); // not UTXOs
-        should.throws(() => Blockchain.consumeOne(undefined, "anything")); // not UTXOs
-        should.throws(() => Blockchain.consumeOne({}, "anything")); // not UTXOs
-        should.throws(() => Blockchain.consumeOne("oops", "anything")); // not UTXOs
-        should.throws(() => Blockchain.consumeOne(42, "anything")); // not UTXOs
-        should.throws(() => Blockchain.consumeOne([1,2,3], "anything")); // not UTXOs
-        should.throws(() => Blockchain.consumeOne([], "anything")); // insufficient
+        should.throws(() => OyaChain.consumeOne(null, "anything")); // not UTXOs
+        should.throws(() => OyaChain.consumeOne(undefined, "anything")); // not UTXOs
+        should.throws(() => OyaChain.consumeOne({}, "anything")); // not UTXOs
+        should.throws(() => OyaChain.consumeOne("oops", "anything")); // not UTXOs
+        should.throws(() => OyaChain.consumeOne(42, "anything")); // not UTXOs
+        should.throws(() => OyaChain.consumeOne([1,2,3], "anything")); // not UTXOs
+        should.throws(() => OyaChain.consumeOne([], "anything")); // insufficient
     });
 })

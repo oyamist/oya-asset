@@ -20,7 +20,7 @@
 
         createTransaction(value, recipient, srcAccount="wallet", blockchain=this.blockchain) {
             this.validateValue(value);
-            if (!(blockchain instanceof Blockchain)) {
+            if (!(blockchain instanceof OyaChain)) {
                 throw new Error(`Agent.createTransaction() requires a blockchain`);
             }
 
