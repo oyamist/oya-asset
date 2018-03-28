@@ -6,11 +6,12 @@
     const mj = new MerkleJson();
 
     class Output {
-        constructor(recipient, value, transId, account) {
+        constructor(recipient, value, transId, srcAccount, dstAccount) {
             this.id = transId;
             this.recipient = recipient;
             this.value = value;
-            this.account = account;
+            this.srcAccount = srcAccount;
+            this.dstAccount = dstAccount;
         }
     }
 
@@ -30,7 +31,8 @@
             this.recipient = opts.recipient || this.recipient || this.sender;
             (opts.signature) && (this.signature = opts.signature);
             this.value = opts.value || this.value || {};
-            this.account = opts.account || this.account || "wallet";
+            this.srcAccount = opts.srcAccount || this.srcAccount || "wallet";
+            this.dstAccount = opts.dstAccount || this.dstAccount || "wallet";
             (opts.id) && (this.id = opts.id);
             this.t = opts.t || new Date();
             if (!(this.t instanceof Date)) {
@@ -61,7 +63,13 @@
 
         processTransaction() {
             this.verifySignature();
-            var utxo = new Transaction.Output(this.recipient, this.value, this.id, this.account);
+            var utxo = new Transaction.Output(
+                this.recipient, 
+                this.value, 
+                this.id, 
+                this.srcAccount, 
+                this.dstAccount
+            );
             this.outputs.push(utxo);
             return true;
         }
@@ -71,7 +79,8 @@
                 sender: this.sender,
                 recipient: this.recipient,
                 value: this.value,
-                account: this.account,
+                srcAccount: this.srcAccount,
+                dstAccount: this.dstAccount,
                 t: this.t,
             });
         }

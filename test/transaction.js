@@ -28,14 +28,16 @@
         var sender = agent.publicKey;
         var recipient = 'Alice';
         var value = 'A tomato';
-        var account = 'A001';
+        var srcAccount = 'A001';
+        var dstAccount = 'A002';
         var t = new Date(2018,1,12);
         var trans = new Transaction({
             sender,
             recipient,
             t,
             value,
-            account,
+            srcAccount,
+            dstAccount,
         });
         var json = JSON.parse(JSON.stringify(trans));
         var trans2 = new Transaction(json);
@@ -45,7 +47,8 @@
             recipient: 'Alice',
             t: new Date(2018,1,12).toJSON(),
             value: 'A tomato',
-            account,
+            srcAccount,
+            dstAccount,
         });
 
         // unsigned transactions are not serializable
@@ -61,7 +64,14 @@
         // serialization is restricted to verifiable properties
         var json = JSON.parse(JSON.stringify(trans));
         should.deepEqual(Object.keys(json).sort(), [
-            "id", "sender", "recipient", "t", "value", "signature", "account",
+            "id", 
+            "sender", 
+            "recipient", 
+            "t", 
+            "value", 
+            "signature", 
+            "srcAccount", 
+            "dstAccount",
         ].sort());
 
     });
@@ -101,13 +111,15 @@
         var sender = agent1.publicKey;
         var recipient = "Bob";
         var value = "a fine day";
-        var account = "banking";
+        var srcAccount = "banking";
+        var dstAccount = "checking";
         var trans = new Transaction({
             sender,
             recipient,
             value,
             t,
-            account,
+            srcAccount,
+            dstAccount,
         });
 
         var signedData = mj.stringify({
@@ -115,7 +127,8 @@
             recipient,
             t,
             value,
-            account,
+            srcAccount,
+            dstAccount,
         });
         should.deepEqual(trans.signedData(), signedData);
 
@@ -133,7 +146,7 @@
             signature: trans.signature,
             t,
         }));
-        should(trans.signature).startWith('737b4f45f4ea0');
+        should(trans.signature.length).equal(256);
         should(trans.verifySignature()).equal(true);
 
         // serialized transaction is still signed
@@ -150,7 +163,8 @@
         var t = new Date(2018, 2, 23);
         var sender = agent.publicKey;
         var recipient = "Bob";
-        var account = "A0001";
+        var srcAccount = "A0001";
+        var dstAccount = "B0001";
         var value = {
             weather: "a fine day",
         };
@@ -159,7 +173,8 @@
             recipient,
             value,
             t,
-            account,
+            srcAccount,
+            dstAccount,
         });
 
         trans.sign(agent.keyPair);
@@ -194,9 +209,13 @@
         should.throws(() => trans.verifySignature());
         trans.id = id;
 
-        trans.account = 'ATTACK' + trans.account;
+        trans.srcAccount = 'ATTACK' + trans.srcAccount;
         should.throws(() => trans.verifySignature());
-        trans.account = account;
+        trans.srcAccount = srcAccount;
+
+        trans.dstAccount = 'ATTACK' + trans.dstAccount;
+        should.throws(() => trans.verifySignature());
+        trans.dstAccount = dstAccount;
 
         should(trans.verifySignature()).equal(true);
     });

@@ -282,7 +282,7 @@
             rsaKeyPath: path.join(__dirname, 'test_rsaKey2.json'),
         });
         var recipient = agent2.publicKey;
-        var account = "A0001";
+        var srcAccount = "A0001";
         var t = new Date(2018,2,12);
         var value = {
             color: 'red',
@@ -290,7 +290,7 @@
         var trans1 = new Transaction({
             sender,
             recipient,
-            account,
+            srcAccount,
             t,
             value,
         });
@@ -304,7 +304,7 @@
         bc.postTransaction(trans1);
         should(bc.findUTXOs(recipient).length).equal(1);
     });
-    it("TESTTESTfindUTXOs(recipient, account) returns matching UTXOs", function() {
+    it("TESTTESTfindUTXOs(recipient, srcAccount, dstAccount) returns matching UTXOs", function() {
         var bc = new Blockchain();
         var agent1 = new Agent({
             rsaKeyPath: path.join(__dirname, 'test_rsaKey.json'),
@@ -313,19 +313,21 @@
         var agent2 = new Agent({
             rsaKeyPath: path.join(__dirname, 'test_rsaKey2.json'),
         });
-        var account = "A0001";
+        var srcAccount = "A0001";
         var t = new Date(2018,2,12);
         var trans1 = new Transaction({
             sender,
             recipient: agent2.publicKey,
-            account: "A0001",
+            srcAccount: "A0001",
+            dstAccount: "B0001",
             t,
             value: 123,
         });
         var trans2 = new Transaction({
             sender,
             recipient: agent2.publicKey,
-            account: "A0002",
+            srcAccount: "A0002",
+            dstAccount: "B0002",
             t,
             value: 222,
         });
@@ -334,18 +336,27 @@
         trans2.sign(agent1.keyPair);
         bc.postTransaction(trans2);
 
-        // all accounts for agent2
+        // all srcAccounts for agent2
         var utxos = bc.findUTXOs(agent2.publicKey);
         should(utxos.length).equal(2);
         should(utxos[0]).equal(trans1.outputs[0]);
         should(utxos[1]).equal(trans2.outputs[0]);
 
-        // a specific account for agent2
+        // a specific srcAccount for agent2
         var utxos = bc.findUTXOs(agent2.publicKey, "A0002");
         should(utxos.length).equal(1);
         should(utxos[0]).equal(trans2.outputs[0]);
 
-        // a non-existent account for agent2
+        // a specific dstAccount for agent2
+        var utxos = bc.findUTXOs(agent2.publicKey, null, "B0001");
+        should(utxos.length).equal(1);
+        should(utxos[0]).equal(trans1.outputs[0]);
+
+        // non-existent combination of valid values
+        var utxos = bc.findUTXOs(agent2.publicKey, "AOOO2", "B0001");
+        should(utxos.length).equal(0);
+
+        // a non-existent srcAccount for agent2
         var utxos = bc.findUTXOs(agent2.publicKey, "some other acccount");
         should(utxos.length).equal(0);
 
