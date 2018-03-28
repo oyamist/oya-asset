@@ -29,12 +29,14 @@
         var recipient = 'Alice';
         var value = 'A tomato';
         var dstAccount = 'A002';
+        var srcAccount = 'A001';
         var t = new Date(2018,1,12);
         var trans = new Transaction({
             sender,
             recipient,
             t,
             value,
+            srcAccount,
             dstAccount,
         });
         var json = JSON.parse(JSON.stringify(trans));
@@ -45,6 +47,7 @@
             recipient: 'Alice',
             t: new Date(2018,1,12).toJSON(),
             value: 'A tomato',
+            srcAccount,
             dstAccount,
         });
 
@@ -67,6 +70,7 @@
             "t", 
             "value", 
             "signature", 
+            "srcAccount",
             "dstAccount",
         ].sort());
 

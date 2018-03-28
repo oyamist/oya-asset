@@ -13,14 +13,28 @@
 
     it("TESTTESTBlockchain() creates a blockchain", function() {
         var t = new Date(Date.UTC(2018,2,10));
+        var agent = new Agent();
         var bc = new Blockchain({
-            genesis: "fluffy bunnies", // genesis block text
+            genesis: 1000, // the currency pool
             t, // genesis block timestamp
         });
+        should(bc.consumeValue).equal(Blockchain.consumeCurrency);
         should(bc.chain).instanceOf(Array);
         should(bc.chain.length).equal(1);
         should.deepEqual(bc.chain[0], bc.createGenesis());
-        should.deepEqual(bc.chain[0], bc.createGenesis("fluffy bunnies"));
+        should.deepEqual(bc.chain[0], bc.createGenesis(1000));
+        should(bc.t).equal(t);
+        should(bc.t).equal(bc.chain[0].t);
+        should(bc.chain[0].t.getTime()).equal(t.getTime());
+        should.deepEqual(bc.agent, agent);
+
+        var bc = new Blockchain({
+            consumeValue: Blockchain.consumeOne,
+        });
+        should(bc.consumeValue).equal(Blockchain.consumeOne);
+        should.deepEqual(bc.chain[0], bc.createGenesis());
+        should.deepEqual(bc.chain[0], bc.createGenesis("Genesis block"));
+        should(bc.chain[0].t.getTime()).equal(0);
     });
     it("TESTTESTvalidate() validates blockchain", function() {
         var t = new Date(Date.UTC(2018,2,10));
@@ -354,5 +368,75 @@
         // all accounts for agent1
         var utxos = bc.findUTXOs(agent1.publicKey);
         should(utxos.length).equal(0);
+    });
+    it("TESTTESTconsumeCurrency(utxos, value) consumes UTXOs up to value", function() {
+        var recipient = "anybody";
+        var account = "a recipient account";
+        var t10 = new Transaction.Output(recipient, 10, "T10", account);
+        var t20 = new Transaction.Output(recipient, 20, "T20", account);
+        var t5 = new Transaction.Output(recipient, 5, "T5", account);
+
+        should.deepEqual(Blockchain.consumeCurrency([t5,t20,t10], 6), {
+            remainder: 4,
+            unconsumed: [t5,t20],
+            consumed: [t10],
+        });
+        should.deepEqual(Blockchain.consumeCurrency([t5,t20,t10], 10), {
+            remainder: 0,
+            unconsumed: [t5,t20],
+            consumed: [t10],
+        });
+        should.deepEqual(Blockchain.consumeCurrency([t5,t20,t10], 11), {
+            remainder: 19,
+            unconsumed: [t5],
+            consumed: [t10,t20],
+        });
+
+        // check arguments
+        should.throws(() => Blockchain.consumeCurrency("asdf", 1));
+        should.throws(() => Blockchain.consumeCurrency(123, 1));
+        should.throws(() => Blockchain.consumeCurrency(null, 1));
+        should.throws(() => Blockchain.consumeCurrency(undefined, 1));
+        should.throws(() => Blockchain.consumeCurrency({}, 1));
+        should.throws(() => Blockchain.consumeCurrency([1,2,3], 1));
+        should.throws(() => Blockchain.consumeCurrency([t5,t20,t10], NaN));
+        should.throws(() => Blockchain.consumeCurrency([t5,t20,t10], {}));
+        should.throws(() => Blockchain.consumeCurrency([t5,t20,t10], []));
+        should.throws(() => Blockchain.consumeCurrency([t5,t20,t10], "123"));
+        should.throws(() => Blockchain.consumeCurrency([t5,t20,t10], null));
+        should.throws(() => Blockchain.consumeCurrency([t5,t20,t10], undefined));
+        should.throws(() => Blockchain.consumeCurrency([t5,t20,t10], 100));
+        should.throws(() => Blockchain.consumeCurrency([t5,t20,t10], -100));
+        should.throws(() => Blockchain.consumeCurrency([], 100));
+        should.throws(() => Blockchain.consumeCurrency([], -100));
+    });
+    it("TESTTESTconsumeOne(utxos, value) consumes one UTXO", function() {
+        var recipient = "anybody";
+        var account = "a recipient account";
+        var value = "any value";
+        var t1 = new Transaction.Output(recipient, value, "T1", account);
+        var t2 = new Transaction.Output(recipient, value, "T2", account);
+        var t3 = new Transaction.Output(recipient, value, "T3", account);
+
+        var expected = {
+            remainder: null,
+            unconsumed: [t2,t3],
+            consumed: [t1],
+        }
+        should.deepEqual(Blockchain.consumeOne([t1,t2,t3], "asdf"), expected);
+        should.deepEqual(Blockchain.consumeOne([t1,t2,t3], 123), expected);
+        should.deepEqual(Blockchain.consumeOne([t1,t2,t3], null), expected);
+        should.deepEqual(Blockchain.consumeOne([t1,t2,t3], {}), expected);
+        should.deepEqual(Blockchain.consumeOne([t1,t2,t3], []), expected);
+        should.deepEqual(Blockchain.consumeOne([t1,t2,t3], undefined), expected);
+
+        // check arguments
+        should.throws(() => Blockchain.consumeOne(null, "anything")); // not UTXOs
+        should.throws(() => Blockchain.consumeOne(undefined, "anything")); // not UTXOs
+        should.throws(() => Blockchain.consumeOne({}, "anything")); // not UTXOs
+        should.throws(() => Blockchain.consumeOne("oops", "anything")); // not UTXOs
+        should.throws(() => Blockchain.consumeOne(42, "anything")); // not UTXOs
+        should.throws(() => Blockchain.consumeOne([1,2,3], "anything")); // not UTXOs
+        should.throws(() => Blockchain.consumeOne([], "anything")); // insufficient
     });
 })

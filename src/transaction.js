@@ -5,12 +5,20 @@
     const SerializedKeyPair = require('./serialized-key-pair');
     const mj = new MerkleJson();
 
+    class Input {
+        constructor(transId, account) {
+            this.id = transId;
+            this.account= account;
+            this.UTXO = null;
+        }
+    }
+
     class Output {
-        constructor(recipient, value, transId, dstAccount) {
+        constructor(recipient, value, transId, account) {
             this.id = transId;
             this.recipient = recipient;
             this.value = value;
-            this.dstAccount = dstAccount;
+            this.account = account;
         }
     }
 
@@ -20,6 +28,7 @@
         }
 
         static get Output() { return Output; }
+        static get Input() { return Input; }
 
         update(opts={}) {
             opts.sender && (this.sender = opts.sender);
@@ -30,7 +39,8 @@
             this.recipient = opts.recipient || this.recipient || this.sender;
             (opts.signature) && (this.signature = opts.signature);
             this.value = opts.value || this.value || {};
-            this.dstAccount = opts.dstAccount || this.dstAccount || "wallet";
+            this.srcAccount = opts.srcAccount || this.srcAccount || "wallet";
+            this.dstAccount = opts.dstAccount || this.dstAccount || this.srcAccount;
             (opts.id) && (this.id = opts.id);
             this.t = opts.t || new Date();
             if (!(this.t instanceof Date)) {
