@@ -6,11 +6,10 @@
     const mj = new MerkleJson();
 
     class Output {
-        constructor(recipient, value, transId, srcAccount, dstAccount) {
+        constructor(recipient, value, transId, dstAccount) {
             this.id = transId;
             this.recipient = recipient;
             this.value = value;
-            this.srcAccount = srcAccount;
             this.dstAccount = dstAccount;
         }
     }
@@ -31,7 +30,6 @@
             this.recipient = opts.recipient || this.recipient || this.sender;
             (opts.signature) && (this.signature = opts.signature);
             this.value = opts.value || this.value || {};
-            this.srcAccount = opts.srcAccount || this.srcAccount || "wallet";
             this.dstAccount = opts.dstAccount || this.dstAccount || "wallet";
             (opts.id) && (this.id = opts.id);
             this.t = opts.t || new Date();
@@ -67,7 +65,6 @@
                 this.recipient, 
                 this.value, 
                 this.id, 
-                this.srcAccount, 
                 this.dstAccount
             );
             this.outputs.push(utxo);
@@ -79,7 +76,6 @@
                 sender: this.sender,
                 recipient: this.recipient,
                 value: this.value,
-                srcAccount: this.srcAccount,
                 dstAccount: this.dstAccount,
                 t: this.t,
             });

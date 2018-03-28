@@ -28,7 +28,6 @@
         var sender = agent.publicKey;
         var recipient = 'Alice';
         var value = 'A tomato';
-        var srcAccount = 'A001';
         var dstAccount = 'A002';
         var t = new Date(2018,1,12);
         var trans = new Transaction({
@@ -36,7 +35,6 @@
             recipient,
             t,
             value,
-            srcAccount,
             dstAccount,
         });
         var json = JSON.parse(JSON.stringify(trans));
@@ -47,7 +45,6 @@
             recipient: 'Alice',
             t: new Date(2018,1,12).toJSON(),
             value: 'A tomato',
-            srcAccount,
             dstAccount,
         });
 
@@ -70,7 +67,6 @@
             "t", 
             "value", 
             "signature", 
-            "srcAccount", 
             "dstAccount",
         ].sort());
 
@@ -111,14 +107,12 @@
         var sender = agent1.publicKey;
         var recipient = "Bob";
         var value = "a fine day";
-        var srcAccount = "banking";
         var dstAccount = "checking";
         var trans = new Transaction({
             sender,
             recipient,
             value,
             t,
-            srcAccount,
             dstAccount,
         });
 
@@ -127,7 +121,6 @@
             recipient,
             t,
             value,
-            srcAccount,
             dstAccount,
         });
         should.deepEqual(trans.signedData(), signedData);
@@ -163,7 +156,6 @@
         var t = new Date(2018, 2, 23);
         var sender = agent.publicKey;
         var recipient = "Bob";
-        var srcAccount = "A0001";
         var dstAccount = "B0001";
         var value = {
             weather: "a fine day",
@@ -173,7 +165,6 @@
             recipient,
             value,
             t,
-            srcAccount,
             dstAccount,
         });
 
@@ -208,10 +199,6 @@
         trans.id = 'ATTACK' + trans.id;
         should.throws(() => trans.verifySignature());
         trans.id = id;
-
-        trans.srcAccount = 'ATTACK' + trans.srcAccount;
-        should.throws(() => trans.verifySignature());
-        trans.srcAccount = srcAccount;
 
         trans.dstAccount = 'ATTACK' + trans.dstAccount;
         should.throws(() => trans.verifySignature());

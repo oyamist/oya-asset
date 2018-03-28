@@ -42,14 +42,13 @@
             trans.outputs.forEach(utxo => (this.UTXOs[utxo.id] = utxo));
         }
 
-        findUTXOs(recipient, srcAccount, dstAccount) {
+        findUTXOs(recipient, dstAccount) {
             var ids = Object.keys(this.UTXOs);
             return ids.reduce((acc, id) => {
                 var utxo = this.UTXOs[id];
                 var recMatch = utxo == null || utxo.recipient === recipient;
-                var srcMatch = srcAccount == null || srcAccount === utxo.srcAccount;
                 var dstMatch = dstAccount == null || dstAccount === utxo.dstAccount;
-                if (recMatch && srcMatch && dstMatch) {
+                if (recMatch && dstMatch) {
                     acc.push(utxo);
                 }
                 return acc;

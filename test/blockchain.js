@@ -304,7 +304,7 @@
         bc.postTransaction(trans1);
         should(bc.findUTXOs(recipient).length).equal(1);
     });
-    it("TESTTESTfindUTXOs(recipient, srcAccount, dstAccount) returns matching UTXOs", function() {
+    it("TESTTESTfindUTXOs(recipient, dstAccount) returns matching UTXOs", function() {
         var bc = new Blockchain();
         var agent1 = new Agent({
             rsaKeyPath: path.join(__dirname, 'test_rsaKey.json'),
@@ -342,19 +342,10 @@
         should(utxos[0]).equal(trans1.outputs[0]);
         should(utxos[1]).equal(trans2.outputs[0]);
 
-        // a specific srcAccount for agent2
-        var utxos = bc.findUTXOs(agent2.publicKey, "A0002");
-        should(utxos.length).equal(1);
-        should(utxos[0]).equal(trans2.outputs[0]);
-
         // a specific dstAccount for agent2
-        var utxos = bc.findUTXOs(agent2.publicKey, null, "B0001");
+        var utxos = bc.findUTXOs(agent2.publicKey, "B0001");
         should(utxos.length).equal(1);
         should(utxos[0]).equal(trans1.outputs[0]);
-
-        // non-existent combination of valid values
-        var utxos = bc.findUTXOs(agent2.publicKey, "AOOO2", "B0001");
-        should(utxos.length).equal(0);
 
         // a non-existent srcAccount for agent2
         var utxos = bc.findUTXOs(agent2.publicKey, "some other acccount");
