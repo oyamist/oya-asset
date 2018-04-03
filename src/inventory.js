@@ -7,6 +7,7 @@
     const path = require('path');
     const winston = require('winston');
     const MerkleJson = require('merkle-json').MerkleJson;
+    const FOLDER_PREFIX = 2;
     var mj = new MerkleJson();
 
     class Inventory {
@@ -17,7 +18,7 @@
             }
             Object.defineProperty(this, 'ivpath', {
                 writable: true,
-                value: path.join(local, 'assets', 'inventory.json'),
+                value: path.join(local, 'inventory.json'),
             });
             Object.defineProperty(this, 'isOpen', {
                 writable: true,
@@ -101,17 +102,30 @@
                 var self = this;
                 var async = function*() {
                     try {
-                        var r = null;
-                        r = yield fs.readdir(self.assetDir, (err, files) => {
-                            async.next(err || files);
-                        });
-                        if (r instanceof Error) {
-                            throw r;
+                        var objects = path.join(self.assetDir, 'objects');
+                        var files = [];
+                        if (fs.existsSync(objects)) {
+                            var r = yield fs.readdir(objects, (err, folders) => {
+                                async.next(err || folders);
+                            });
+                            if (r instanceof Error) {
+                                throw r;
+                            }
+                            var folders = r || [];
+                            for (var i = 0; i < folders.length; i++) {
+                                var folder = path.join(objects, folders[i]);
+                                var r = yield fs.readdir(folder, (err, folderFiles) => {
+                                    async.next(err || folderFiles);
+                                });
+                                if (r instanceof Error) {
+                                    throw r;
+                                }
+                                files = files.concat(r);
+                            }
                         }
-                        var files = r || [];
-                        r = null;
+                        var r = null;
                         for (var i = 0; i < files.length; i++) {
-                            var guid = files[i].split('.json')[0];
+                            var guid = files[i];
                             r = yield self.loadAsset(guid).then(r=>async.next(r)).catch(e=>async.next(e));
                             if (r instanceof Error) {
                                 throw r;
@@ -177,11 +191,16 @@
             });
         }
 
+        assetPath(guid) {
+            var folder = guid.substr(0,FOLDER_PREFIX);
+            return path.join(this.assetDir, 'objects', folder, guid);
+        }
+
         loadAsset(guid) {
             return new Promise((resolve, reject) => {
-                var assetPath = path.join(this.assetDir, `${guid}.json`);
+                var assetPath = this.assetPath(guid);
                 if (!fs.existsSync(assetPath)) {
-                    var err = new Error(`Inventory.loadAsset() no asset with guid:${guid}`);
+                    var err = new Error(`Inventory.loadAsset() no asset:${assetPath}`);
                     winston.error(err.stack);
                     return reject(err);
                 }
@@ -203,7 +222,18 @@
             }
             return new Promise((resolve, reject) => {
                 try {
-                    var assetPath = path.join(this.assetDir, `${asset.guid}.json`);
+                    var guid = asset.guid;
+                    var assetPath = this.assetPath(guid);
+                    if (!fs.existsSync(assetPath)) {
+                        var folderPath = path.dirname(assetPath);
+                        if (!fs.existsSync(folderPath)) {
+                            var objectsPath = path.dirname(folderPath);
+                            if (!fs.existsSync(objectsPath)) {
+                                fs.mkdirSync(objectsPath);
+                            }
+                            fs.mkdirSync(folderPath);
+                        }
+                    }
                     var json = JSON.stringify(asset, null, 2);
                     fs.writeFile(assetPath, json, (err) => {
                         if (err) {

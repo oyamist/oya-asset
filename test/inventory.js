@@ -130,7 +130,7 @@
         should(assets.length).equal(1);
         should(assets[0]).equal(plant1);
     });
-    it("assetOf(asset) is an asset factor", function() {
+    it("assetOf(asset) is an asset factory", function() {
         var iv = new Inventory();
         var t1 = new Date(2018, 1, 2);
         var asset = iv.assetOf({
@@ -268,7 +268,7 @@
             try {
                 var testAssetDir = path.join(__dirname, '..', 'local', 'test-assets');
                 var guid = 'GUID_tent1';
-                var assetPath = path.join(testAssetDir, `${guid}.json`);
+                var assetPath = path.join(testAssetDir, `objects`, `${guid.substr(0,2)}`,`${guid}`);
                 var t1 = new Date(2018, 1, 2);
                 if (fs.existsSync(assetPath)) {
                     fs.unlinkSync(assetPath);
@@ -284,6 +284,7 @@
                 var r = yield iv.saveAsset(asset).then(r=>async.next(r)).catch(e=>async.throw(e));
                 should(r).equal(true);
                 should(fs.existsSync(assetPath)).equal(true);
+                should(iv.assetPath(guid)).equal(assetPath);
                 done();
             } catch(e) {
                 done(e);
