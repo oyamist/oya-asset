@@ -48,7 +48,7 @@
                             reject(e);
                         });
                         that.inventory = new Inventory({
-                            path: that.inventoryPath,
+                            ivpath: that.inventoryPath,
                         });
                         that.inventory.open().then(r=>resolve()).catch(e=>reject(e));
                     } catch (e) {

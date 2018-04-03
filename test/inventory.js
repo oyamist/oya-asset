@@ -177,9 +177,12 @@
     it("open(path) opens existing inventory", function(done) {
         var async = function *() {
             try {
+                var local = path.join(__dirname, '..', 'local');
                 var ivpath = path.join(__dirname, '..', 'test', 'test-inventory.json');
                 fs.existsSync(ivpath) && fs.unlinkSync(ivpath);
-                var iv = new Inventory();
+                var iv = new Inventory({
+                    assetDir: path.join(__dirname, '..', 'local', 'test-assets'),
+                });
                 should(iv.isOpen).equal(false);
                 var r = yield iv.open(ivpath).then(r=>async.next(r)).catch(e=>async.throw(e));
                 should(iv.isOpen).equal(true);
@@ -189,12 +192,14 @@
                 should.deepEqual(json, {
                     type: 'Inventory',
                     assetMap: {},
+                    assetDir: path.join(local, 'test-assets'),
                 });
 
                 iv.addAsset({
                     type: 'plant',
                     id: 'A0001',
                     name: 'tomato01',
+                    guid: 'GUID_A0001',
                     size: 'large',
                 });
                 var r = yield iv.commit().then(r=>async.next(r)).catch(e=>async.throw(e));
@@ -204,7 +209,7 @@
                 should(r).equal(iv);
 
                 iv = new Inventory({
-                    path: ivpath,
+                    ivpath,
                 });
                 var r = yield iv.open().then(r=>async.next(r)).catch(e=>async.throw(e));
                 should(r).equal(iv);
@@ -231,7 +236,7 @@
                 var ivpath = path.join(__dirname, '..', 'test', 'test-inventory.json');
                 fs.existsSync(ivpath) && fs.unlinkSync(ivpath);
                 var iv = new Inventory({
-                    path: ivpath,
+                    ivpath,
                 });
 
                 // open() must be called before commit()
@@ -251,6 +256,57 @@
                 var json = JSON.parse(fs.readFileSync(backupPath));
                 should.deepEqual(json, JSON.parse(JSON.stringify(iv)));
 
+                done();
+            } catch(e) {
+                done(e);
+            }
+        }();
+        async.next();
+    });
+    it("saveAsset(asset) saves an asset", function(done) {
+        var async = function*() {
+            try {
+                var testAssetDir = path.join(__dirname, '..', 'local', 'test-assets');
+                var guid = 'GUID_tent1';
+                var assetPath = path.join(testAssetDir, `${guid}.json`);
+                var t1 = new Date(2018, 1, 2);
+                if (fs.existsSync(assetPath)) {
+                    fs.unlinkSync(assetPath);
+                }
+                var asset = new Asset({
+                    name: 'tent1',
+                    type: Asset.T_ENCLOSURE,
+                    guid,
+                });
+                var iv = new Inventory({
+                    assetDir: testAssetDir, 
+                });
+                var r = yield iv.saveAsset(asset).then(r=>async.next(r)).catch(e=>async.throw(e));
+                should(r).equal(true);
+                should(fs.existsSync(assetPath)).equal(true);
+                done();
+            } catch(e) {
+                done(e);
+            }
+        }();
+        async.next();
+    });
+    it("loadAsset(guid) load an asset", function(done) {
+        var async = function*() {
+            try {
+                var testAssetDir = path.join(__dirname, '..', 'local', 'test-assets');
+                var guid = 'GUID_tent1';
+                var assetPath = path.join(testAssetDir, `${guid}.json`);
+                var iv = new Inventory({
+                    assetDir: testAssetDir, 
+                });
+                var asset = yield iv.loadAsset(guid).then(r=>async.next(r)).catch(e=>async.throw(e));
+                should(asset).instanceOf(Asset);
+                should(asset).properties({
+                    guid,
+                    name: 'tent1',
+                    type: Asset.T_ENCLOSURE,
+                });
                 done();
             } catch(e) {
                 done(e);

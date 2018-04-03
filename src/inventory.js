@@ -6,6 +6,8 @@
     const fs = require('fs');
     const path = require('path');
     const winston = require('winston');
+    const MerkleJson = require('merkle-json').MerkleJson;
+    var mj = new MerkleJson();
 
     class Inventory {
         constructor(opts={}) {
@@ -13,9 +15,9 @@
             if (!fs.existsSync(local)) {
                 fs.mkdirSync(local);
             }
-            Object.defineProperty(this, 'path', {
+            Object.defineProperty(this, 'ivpath', {
                 writable: true,
-                value: path.join(local, 'inventory.json'),
+                value: path.join(local, 'assets', 'inventory.json'),
             });
             Object.defineProperty(this, 'isOpen', {
                 writable: true,
@@ -28,7 +30,13 @@
 
         update(opts={}) {
             this.assetMap = opts.assetMap || this.assetMap || {};
-            this.path = opts.path || this.path;
+            var local = path.join(__dirname, '..', 'local');
+            this.assetDir = opts.assetDir || path.join(local, 'assets');
+            if (!fs.existsSync(this.assetDir)) {
+                winston.info(`Inventory.update() creating assets directory: ${this.assetDir}`);
+                fs.mkdirSync(this.assetDir);
+            }
+            this.ivpath = opts.ivpath || this.ivpath;
             var keys = Object.keys(this.assetMap);
             for (var i = 0; i < keys.length; i++) {
                 var key = keys[i];
@@ -42,7 +50,7 @@
             return undefined; // TBD
         }
 
-        save(savePath=this.path, backup=true) {
+        save(savePath=this.ivpath, backup=true) {
             return new Promise((resolve, reject) => {
                 try {
                     var indent = savePath.match(/test-/) ? 2 : 0;
@@ -85,39 +93,68 @@
             });
         }
 
-        open(ivpath=this.path) {
+        open(ivpath=this.ivpath) {
             if (this.isOpen) {
                 return Promise.resolve(this);
             }
             return new Promise((resolve, reject) => {
-                try {
-                    this.path = ivpath;
-                    if (fs.existsSync(ivpath)) {
-                        fs.readFile(ivpath, (e,data) => {
-                            if (e) {
-                                reject(e);
-                            } else {
-                                try {
-                                    var json = JSON.parse(data);
-                                    this.update(json);
-                                    this.isOpen = true;
-                                    resolve(this);
-                                } catch (e) {
-                                    winston.error(e.stack);
-                                    reject(e);
-                                }
-                            }
+                var self = this;
+                var async = function*() {
+                    try {
+                        var r = null;
+                        r = yield fs.readdir(self.assetDir, (err, files) => {
+                            async.next(err || files);
                         });
-                    } else {
-                        this.save(ivpath).then(r=> {
-                            this.isOpen = true;
-                            resolve(this);
-                        }).catch(e=>reject(e));
+                        if (r instanceof Error) {
+                            throw r;
+                        }
+                        var files = r || [];
+                        r = null;
+                        for (var i = 0; i < files.length; i++) {
+                            var guid = files[i].split('.json')[0];
+                            r = yield self.loadAsset(guid).then(r=>async.next(r)).catch(e=>async.next(e));
+                            if (r instanceof Error) {
+                                throw r;
+                            }
+                            r = null;
+                        }
+
+                        if (r == null) {
+                            self.ivpath = ivpath;
+                            if (fs.existsSync(ivpath)) {
+                                var r = yield fs.readFile(ivpath, (e,data) => {
+                                    if (e) {
+                                        async.next(e);
+                                    } else {
+                                        try {
+                                            var json = JSON.parse(data);
+                                            self.update(json);
+                                            self.isOpen = true;
+                                            async.next(self);
+                                        } catch (e) {
+                                            winston.error(e.stack);
+                                            async.next(e);
+                                        }
+                                    }
+                                });
+                            } else {
+                                var r = yield self.save(ivpath).then(r=> {
+                                    self.isOpen = true;
+                                    var r = self;
+                                    async.next(self);
+                                }).catch(e=>async.next(e));
+                            }
+                        }
+                        if (r instanceof Error) {
+                            throw r;
+                        }
+                        resolve(self);
+                    } catch (e) {
+                        winston.error(e.stack);
+                        reject(e);
                     }
-                } catch (e) {
-                    winston.error(e.stack);
-                    reject(e);
-                }
+                }();
+                async.next();
             });
         }
 
@@ -129,7 +166,52 @@
             }
             return new Promise((resolve, reject) => {
                 try {
-                    this.save(this.path,backup).then(r=>resolve(this)).catch(e=>reject(e));
+                    this.assets().forEach(asset => {
+                        this.saveAsset(asset);
+                    });
+                    this.save(this.ivpath,backup).then(r=>resolve(this)).catch(e=>reject(e));
+                } catch (e) {
+                    winston.error(e.stack);
+                    reject(e);
+                }
+            });
+        }
+
+        loadAsset(guid) {
+            return new Promise((resolve, reject) => {
+                var assetPath = path.join(this.assetDir, `${guid}.json`);
+                if (!fs.existsSync(assetPath)) {
+                    var err = new Error(`Inventory.loadAsset() no asset with guid:${guid}`);
+                    winston.error(err.stack);
+                    return reject(err);
+                }
+                fs.readFile(assetPath, (err, data) => {
+                    if (err) {
+                        winston.error(err.stack);
+                        return reject(err);
+                    }
+                    var json = JSON.parse(data);
+                    resolve(new Asset(json));
+                });
+            });
+        }
+
+        saveAsset(asset) {
+            if (!(asset instanceof Asset)) {
+                var err = new Error(`Inventory.saveAsset() eapected:Asset actual:${JSON.stringify(asset)}`);
+                return Promise.reject(err);
+            }
+            return new Promise((resolve, reject) => {
+                try {
+                    var assetPath = path.join(this.assetDir, `${asset.guid}.json`);
+                    var json = JSON.stringify(asset, null, 2);
+                    fs.writeFile(assetPath, json, (err) => {
+                        if (err) {
+                            winston.error(assetPath, err.stack);
+                            return promise.reject(err);
+                        }
+                        resolve(true);
+                    });
                 } catch (e) {
                     winston.error(e.stack);
                     reject(e);
@@ -157,7 +239,8 @@
         }
 
         assetOfGuid(guid) {
-            return this.assetMap[guid];
+            var asset =  this.assetMap[guid];
+            return asset;
         }
 
         assetOfId(id, t=new Date()) {
