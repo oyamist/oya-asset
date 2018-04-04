@@ -314,11 +314,16 @@
                             value: id,
                             t,
                         });
-                        var assets = self.assets(tvf);
-                        if (assets.length > 1) {
+
+                        var assetGen = self.assets(tvf);
+                        var {
+                            value,
+                            done,
+                        } = assetGen.next();
+                        if (!(assetGen.next().done)) {
                             throw new Error(`Data integrity error: ${assets.length} assets have same id: ${id}`);
                         }
-                        resolve(assets[0] || null);
+                        resolve(value || null);
                     } catch(e) {
                         winston.error(e.stack);
                         reject(e);
@@ -329,21 +334,35 @@
         }
 
         assets(filter) {
-            // TODO: Promise
             if (!this.isOpen) {
                 var e = new Error("Inventory.assets() inventory must be open()'d");
                 winston.warn(e.stack);
                 throw e;
             }
+            var self = this;
+            var gen = function*() {
+                var guids = Object.keys(self.assetMap);
+                var allAssets = guids.map(guid=>self.assetMap[guid]);
+                var assets = filter ? allAssets.filter(a=>filter.matches(a)) : allAssets;
+                for (var i = 0; i < assets.length; i++) {
+                    var asset = assets[i];
+                    yield asset;
+                }
+            }
+            return gen();
+            /*
             //var guids = Object.keys(this.assetMap).sort();
             var guids = Object.keys(this.assetMap);
             var assets =  guids.map(guid=>this.assetMap[guid]);
             return filter ? assets.filter(a=>filter.matches(a)) : assets;
+            */
         }
 
         guidify(snapshot) {
             var idGuidMap = {};
-            this.assets().forEach(asset => idGuidMap[asset.id.toUpperCase()] = asset.guid);
+            for (let asset of this.assets()) {
+                idGuidMap[asset.id.toUpperCase()] = asset.guid;
+            }
             return Object.keys(snapshot).reduce((acc,key) => {
                 var value = snapshot[key];
                 var v = (typeof value === 'string') && value.toUpperCase() || value;

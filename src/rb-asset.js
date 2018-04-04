@@ -25,8 +25,8 @@
             Object.defineProperty(this, "handlers", {
                 value: super.handlers.concat([
                     this.resourceMethod("get", "asset/snapshot/:id", this.getAsset),
-                    this.resourceMethod("get", "inventory/snapshots/:date", this.getAssets),
-                    this.resourceMethod("get", "inventory/snapshots", this.getAssets),
+                    this.resourceMethod("get", "inventory/snapshots/:date", this.getSnapshots),
+                    this.resourceMethod("get", "inventory/snapshots", this.getSnapshots),
                     this.resourceMethod("post", "asset/snapshot", this.postAsset),
                 ]),
             });
@@ -134,12 +134,15 @@
             });
         }
 
-        getAssets(req, res, next) {
+        getSnapshots(req, res, next) {
             var date = req.params.date ? new Date(req.params.date) : new Date();
-            var assets = this.inventory.assets().map(asset=>asset.snapshot(date));
+            var snapshots = [];
+            for (var asset of this.inventory.assets()) {
+                snapshots.push(asset.snapshot(date));
+            }
             return {
                 date,
-                assets: this.inventory.assets().map(asset=>asset.snapshot(date)),
+                assets: snapshots,
             };
         }
 

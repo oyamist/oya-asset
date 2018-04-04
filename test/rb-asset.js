@@ -72,7 +72,7 @@
                 yield rb.initialize().then(r=>async.next(r)).catch(e=>done(e));
                 yield rb.inventory.load(sampleInventory).then(r=>async.next(r)).catch(e=>done(e));
                 should(rb.inventory).instanceOf(Inventory);
-                var assets = rb.inventory.assets();
+                var assets = [...rb.inventory.assets()];
                 should(assets.length).above(2);
                 should(assets[0]).properties({
                     type: 'plant',
@@ -93,7 +93,7 @@
                 if (!inventory.isOpen) {
                     yield inventory.open().then(r=>async.next()).catch(e=>done(e));
                 }
-                var assets = inventory.assets();
+                var assets = [...inventory.assets()];
                 should(assets.length).above(2);
 
                 done();
@@ -231,7 +231,7 @@
                     name: 'bucketA',
                     size: '5 gallon',
                 };
-                var initialAssetCount = inventory.assets().length;
+                var initialAssetCount = inventory.assetCount();
                 var t1 = new Date(2018, 1, 1);
                 var t2 = new Date(2018, 1, 2);
                 var url = `/test/asset/snapshot`;
@@ -252,7 +252,7 @@
                     should(res.body.id).equal(`${asset.guid.substr(0,7)}`);
                     should.deepEqual(res.body, asset.snapshot()); // snapshot() of updated asset
                 }).end((e,r) => e ? async.throw(e) : async.next(r));
-                should(rbtest().inventory.assets().length).equal(initialAssetCount+1);
+                should(rbtest().inventory.assetCount()).equal(initialAssetCount+1);
 
                 // size was set at creation, so it is a mutable non-temporal property
                 should(asset.get('size', TValue.RETROACTIVE)).equal('5 gallon'); 
@@ -285,7 +285,7 @@
                     id: 'A1002',
                 }).then(r=>async.next(r)).catch(e=>done(e));
 
-                var initialAssetCount = inventory.assets().length;
+                var initialAssetCount = inventory.assetCount();
                 var t1 = new Date(2018, 1, 1);
                 var t2 = new Date(2018, 1, 2);
                 var url = `/test/asset/snapshot`;
@@ -304,7 +304,7 @@
                 var asset = yield rbtest().inventory.loadAsset(a1002.guid).then(r=>async.next(r))
                     .catch(e=>done(e));
                 should.deepEqual(res.body, asset.snapshot()); // snapshot() of updated asset
-                should(rbtest().inventory.assets().length).equal(initialAssetCount);
+                should(rbtest().inventory.assetCount()).equal(initialAssetCount);
 
                 // color was set after creation, so it is a temporal property
                 should(asset.get('color', t1)).equal(undefined); // color is temporal
@@ -346,7 +346,7 @@
                     name: 'tent1003',
                     id: 'A1003',
                 }).then(r=>async.next(r)).catch(e=>done(e));
-                var initialAssetCount = inventory.assets().length;
+                var initialAssetCount = inventory.assetCount();
 
                 // update asset with new temporal property, 'color'
                 var command = {
@@ -365,7 +365,7 @@
                 should.deepEqual(res.body, asset.snapshot()); // snapshot() of updated asset
                 should(asset.get('color', TValue.RETROACTIVE)).equal('white'); // color is retroactive
                 should(asset.get('color')).equal('white');
-                should(rbtest().inventory.assets().length).equal(initialAssetCount);
+                should(rbtest().inventory.assetCount()).equal(initialAssetCount);
                 // color was set after creation, so it is a temporal property
                 should.deepEqual(asset.describeProperty('color'), {
                     mutable: true,

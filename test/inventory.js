@@ -92,7 +92,7 @@
         }();
         async.next();
     });
-    it("TESTTESTassets(filter) returns matching assets", function(done) {
+    it("TESTTESTassets(filter) returns iterator for matching assets", function(done) {
         var async = function*() {
             var iv = new Inventory({
                 assetDir
@@ -132,9 +132,8 @@
             });
             should(tvf.matches(plant1)).equal(true);
             should(tvf.matches(plant2)).equal(false);
-            var assets = iv.assets(tvf);
-            should(assets.length).equal(1);
-            should(assets[0]).equal(plant1);
+            var assets = [...iv.assets(tvf)];
+            should.deepEqual(assets,[plant1]);
 
             // match current id
             var tvf = new Filter.TValueFilter(Filter.OP_EQ, {
@@ -143,9 +142,8 @@
             });
             should(tvf.matches(plant2)).equal(true);
             should(tvf.matches(plant1)).equal(false);
-            var assets = iv.assets(tvf);
-            should(assets.length).equal(1);
-            should(assets[0]).equal(plant2);
+            var assets = [...iv.assets(tvf)];
+            should.deepEqual(assets, [plant2]);
 
             // match historical id
             var tvf = new Filter.TValueFilter(Filter.OP_EQ, {
@@ -155,9 +153,9 @@
             });
             should(tvf.matches(plant1)).equal(true);
             should(tvf.matches(plant2)).equal(false);
-            var assets = iv.assets(tvf);
-            should(assets.length).equal(1);
-            should(assets[0]).equal(plant1);
+            var assets = [...iv.assets(tvf)];
+            should.deepEqual(assets, [plant1]);
+
             done();
         }();
         async.next();

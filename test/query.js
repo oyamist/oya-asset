@@ -189,7 +189,7 @@
             });
 
             // By default, return all assets
-            var assets = td.inventory.assets();
+            var assets = [...td.inventory.assets()];
             should.deepEqual(
                 assets.map(a=>a.guid).sort(),
                 td.assets.map(a=>a.guid).sort(),
@@ -200,7 +200,7 @@
                 tag: TValue.T_LOCATION,
                 value: td.tent1.guid,
             });
-            var assets = td.inventory.assets(tent1Filter);
+            var assets = [...td.inventory.assets(tent1Filter)];
             should.deepEqual(assets.map(a=>a.guid), [td.bucket1.guid]);
 
             // at t[0], both buckets were in tent1 
@@ -209,7 +209,7 @@
                 value: td.tent1.guid,
                 t: td.t[0],
             });
-            var assets = td.inventory.assets(tent1Filter);
+            var assets = [...td.inventory.assets(tent1Filter)];
             should.deepEqual(assets.map(a=>a.guid).sort(), [
                 td.bucket1.guid,
                 td.bucket2.guid,

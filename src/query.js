@@ -64,7 +64,10 @@
             srcGuids.length || (srcGuids = [null,undefined]); // orphans
             srcGuids.forEach(guid => (isAncestor[guid] = true));
 
-            var candidates = this.inventory.assets();
+            var candidates = [];
+            for (let asset of this.inventory.assets()) {
+                candidates.push(asset);
+            }
             var result = [];
             var step = 0;
 
