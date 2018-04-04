@@ -188,12 +188,12 @@
                 inventory: td.inventory
             });
 
-            // By default, return all assets, ordered by guid, ascending
+            // By default, return all assets
             var assets = td.inventory.assets();
-            should.deepEqual(assets.map(a=>a.guid), td.assets.map(a=>a.guid));
-            for (var i = 0; i< assets.length-1; i++) {
-                should(assets[i].guid).below(assets[i+1].guid);
-            }
+            should.deepEqual(
+                assets.map(a=>a.guid).sort(),
+                td.assets.map(a=>a.guid).sort(),
+            );
 
             // currently, only bucket1 is in tent1 
             var tent1Filter = new Filter.TValueFilter(Filter.OP_EQ, {
@@ -210,7 +210,7 @@
                 t: td.t[0],
             });
             var assets = td.inventory.assets(tent1Filter);
-            should.deepEqual(assets.map(a=>a.guid), [
+            should.deepEqual(assets.map(a=>a.guid).sort(), [
                 td.bucket1.guid,
                 td.bucket2.guid,
             ].sort());

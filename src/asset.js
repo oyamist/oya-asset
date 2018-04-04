@@ -80,6 +80,18 @@
         static get T_RESERVOIR() { return "reservoir"; }
         static get T_SENSOR() { return "sensor"; }
 
+        static compareId(a,b) {
+            if (a.id < b.id) {
+                return -1;
+            }
+            return  (a.id === b.id) ? 0 : 1;
+        }
+        static compareGuid(a,b) {
+            if (a.guid < b.guid) {
+                return -1;
+            }
+            return  (a.guid === b.guid) ? 0 : 1;
+        }
         static assetTypes() {
             return [
                 Asset.T_ACTUATOR,

@@ -335,7 +335,8 @@
                 winston.warn(e.stack);
                 throw e;
             }
-            var guids = Object.keys(this.assetMap).sort();
+            //var guids = Object.keys(this.assetMap).sort();
+            var guids = Object.keys(this.assetMap);
             var assets =  guids.map(guid=>this.assetMap[guid]);
             return filter ? assets.filter(a=>filter.matches(a)) : assets;
         }

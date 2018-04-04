@@ -104,22 +104,22 @@
                 name: 'plant1',
                 plant: Plant.P_TOMATO,
                 cultivar: Plant.C_CHOCOLATE_STRIPES,
-                id: 'A0001',
-                guid: 'GUID0001',
+                id: 'A1001',
+                guid: 'GUID1001',
             });
-            should(plant1.id).equal('A0001');
-            plant1.set(TValue.T_ID, 'A0004', t2);
-            should(plant1.id).equal('A0004');
+            should(plant1.id).equal('A1001');
+            plant1.set(TValue.T_ID, 'A1004', t2);
+            should(plant1.id).equal('A1004');
             var plant2 = new Plant({
                 name: 'plant2',
-                id: 'A0002',
-                guid: 'GUID0002',
+                id: 'A1002',
+                guid: 'GUID1002',
             });
             var tent1 = new Asset({
                 name: 'tent1',
                 type: Asset.T_ENCLOSURE,
-                id: 'A0003',
-                guid: 'GUID0003',
+                id: 'A1003',
+                guid: 'GUID1003',
             });
             var asset = yield iv.saveAsset(plant1).then(r=>async.next(r)).catch(e=>done(e));
             var asset = yield iv.saveAsset(plant2).then(r=>async.next(r)).catch(e=>done(e));
@@ -128,7 +128,7 @@
             // match current id
             var tvf = new Filter.TValueFilter(Filter.OP_EQ, {
                 tag: TValue.T_ID,
-                value: 'A0004',
+                value: 'A1004',
             });
             should(tvf.matches(plant1)).equal(true);
             should(tvf.matches(plant2)).equal(false);
@@ -139,7 +139,7 @@
             // match current id
             var tvf = new Filter.TValueFilter(Filter.OP_EQ, {
                 tag: TValue.T_ID,
-                value: 'A0002',
+                value: 'A1002',
             });
             should(tvf.matches(plant2)).equal(true);
             should(tvf.matches(plant1)).equal(false);
@@ -150,7 +150,7 @@
             // match historical id
             var tvf = new Filter.TValueFilter(Filter.OP_EQ, {
                 tag: TValue.T_ID,
-                value: 'A0001',
+                value: 'A1001',
                 t: t1,
             });
             should(tvf.matches(plant1)).equal(true);
