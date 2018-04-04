@@ -20,10 +20,6 @@
                 writable: true,
                 value: path.join(local, 'assets'),
             });
-            Object.defineProperty(this, 'ivpath', {
-                writable: true,
-                value: path.join(local, 'inventory.json'),
-            });
             Object.defineProperty(this, 'isOpen', {
                 writable: true,
                 value: false,
@@ -41,7 +37,6 @@
                 winston.info(`Inventory.update() creating assets directory: ${this.assetDir}`);
                 fs.mkdirSync(this.assetDir);
             }
-            this.ivpath = opts.ivpath || this.ivpath;
             var keys = Object.keys(this.assetMap);
             for (var i = 0; i < keys.length; i++) {
                 var key = keys[i];
@@ -96,42 +91,23 @@
             });
         }
 
-        save(savePath=this.ivpath, backup=true) {
+        save(savePath) {
+            if (typeof savePath !== string || !savePath.length) {
+                var e = new Error(`Inventory.save() file path is required`);
+                return Promise.reject(e);
+            }
             return new Promise((resolve, reject) => {
                 try {
-                    var indent = savePath.match(/test-/) ? 2 : 0;
+                    var indent = savePath.match(/test-/) ? 4 : 0;
                     var json =JSON.stringify(this,undefined,indent);
-                    var saveJson = () => {
-                        fs.writeFile(savePath, json, (e) => {
-                            if (e) {
-                                winston.error(stack); 
-                                reject(e); 
-                                return;
-                            }
-                            resolve(this);
-                        });
-                    };
-                    if (backup) {
-                        var archivePath = path.join(path.dirname(savePath), 'archive');
-                        if (!fs.existsSync(archivePath)) {
-                            fs.mkdirSync(archivePath);
+                    fs.writeFile(savePath, json, (e) => {
+                        if (e) {
+                            winston.error(stack); 
+                            reject(e); 
+                            return;
                         }
-                        var yyyymmdd = new Date().toJSON().split('T')[0];
-                        var backupPrefix = path.basename(savePath).split('.')[0];
-                        var backupFile = `${backupPrefix}-${yyyymmdd}.json`;
-                        var backupPath = path.join(archivePath, backupFile);
-                        this.save(backupPath, false).catch(e=>e); // error already handled
-                        fs.writeFile(backupPath, json, (e) => {
-                            if (e) {
-                                winston.error(stack); 
-                                reject(e); 
-                                return;
-                            } 
-                            saveJson();
-                        });
-                    } else {
-                        saveJson();
-                    }
+                        resolve(this);
+                    });
                 } catch (e) {
                     winston.error(e.stack);
                     reject(e);
@@ -139,7 +115,7 @@
             });
         }
 
-        open(ivpath=this.ivpath) {
+        open() {
             if (this.isOpen) {
                 return Promise.resolve(this);
             }
@@ -178,26 +154,6 @@
                             r = null;
                         }
 
-                        if (false && r == null) {
-                            self.ivpath = ivpath;
-                            if (fs.existsSync(ivpath)) {
-                                var r = yield fs.readFile(ivpath, (e,data) => {
-                                    if (e) {
-                                        async.next(e);
-                                    } else {
-                                        try {
-                                            var json = JSON.parse(data);
-                                            self.update(json);
-                                            self.isOpen = true;
-                                            async.next(self);
-                                        } catch (e) {
-                                            winston.error(e.stack);
-                                            async.next(e);
-                                        }
-                                    }
-                                });
-                            }
-                        }
                         if (r instanceof Error) {
                             throw r;
                         }
@@ -209,26 +165,6 @@
                     }
                 }();
                 async.next();
-            });
-        }
-
-
-        commit(backup=true) {
-            if (!this.isOpen) {
-                var e = new Error("Inventory.commit() inventory must be open()'d");
-                winston.warn(e.stack);
-                return Promise.reject(e);
-            }
-            return new Promise((resolve, reject) => {
-                try {
-                    this.assets().forEach(asset => {
-                        this.saveAsset(asset);
-                    });
-                    this.save(this.ivpath,backup).then(r=>resolve(this)).catch(e=>reject(e));
-                } catch (e) {
-                    winston.error(e.stack);
-                    reject(e);
-                }
             });
         }
 
@@ -260,7 +196,7 @@
 
         saveAsset(asset) {
             if (!this.isOpen) {
-                var e = new Error("Inventory.commit() inventory must be open()'d");
+                var e = new Error("Inventory.saveAsset() inventory must be open()'d");
                 winston.warn(e.stack);
                 return Promise.reject(e);
             }
@@ -314,13 +250,12 @@
         }
 
         close() {
-            var promise = this.commit();
-            winston.warn(`Inventory.close() closing...`);
-            promise.then(r=>{
+            var self = this;
+            return new Promise((resolve,reject) => {
                 winston.warn(`Inventory.close() closed`);
                 this.isOpen = false;
+                resolve(self);
             });
-            return promise;
         }
 
         assetOf(asset) {
@@ -336,7 +271,7 @@
 
         assetOfGuid(guid) {
             if (!this.isOpen) {
-                var e = new Error("Inventory.commit() inventory must be open()'d");
+                var e = new Error("Inventory.assetOfGuid() inventory must be open()'d");
                 winston.warn(e.stack);
                 return Promise.reject(e);
             }
@@ -347,7 +282,7 @@
         assetOfId(id, t=new Date()) {
             var self = this;
             if (!self.isOpen) {
-                var e = new Error("Inventory.commit() inventory must be open()'d");
+                var e = new Error("Inventory.assetOfId() inventory must be open()'d");
                 winston.warn(e.stack);
                 return Promise.reject(e);
             }
@@ -404,7 +339,7 @@
 
         addAsset(asset) {
             if (!this.isOpen) {
-                var e = new Error("Inventory.commit() inventory must be open()'d");
+                var e = new Error("Inventory.addAsset() inventory must be open()'d");
                 winston.warn(e.stack);
                 return Promise.reject(e);
             }
