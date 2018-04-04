@@ -88,7 +88,6 @@
                 });
 
                 // server.js ctor for 'test' service
-                should(rbtest().inventoryPath).equal(path.join('/tmp', 'inventory.json'));
                 var inventory = rbtest().inventory;
                 should(inventory.assetDir).equal(assetDir);
                 if (!inventory.isOpen) {

@@ -50,6 +50,13 @@
             return undefined; // TBD
         }
 
+        assetCount() {
+            if (!this.isOpen) {
+                throw new Error(`Inventory.assetCount() inventory must be open()'d`);
+            }
+            return Object.keys(this.assetMap).length;
+        }
+
         load(ivpath) {
             if (!this.isOpen) {
                 var e = new Error("Inventory.load() inventory must be open()'d");

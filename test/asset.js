@@ -405,7 +405,7 @@
             var asset = new Asset();
             var assetOld = new Asset(asset);
             var snapBase = asset.snapshot();
-            yield setTimeout(() => (async.next()), 1);
+            yield setTimeout(() => (async.next()), 10);
             var t1 = new Date();
 
             asset.updateSnapshot({
@@ -461,7 +461,7 @@
             });
             var assetOld = new Asset(asset);
             var snapBase = asset.snapshot();
-            yield setTimeout(() => (async.next()), 1);
+            yield setTimeout(() => (async.next()), 10);
             var t1 = new Date();
 
             asset.updateSnapshot({

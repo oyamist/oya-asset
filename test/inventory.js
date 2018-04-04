@@ -11,16 +11,20 @@
     const fs = require('fs');
     const path = require('path');
     const child_process = require('child_process');
+    const assetDir = path.join(__dirname, '..', 'local', 'test-inventory');
 
-    it("Inventory(opts) creates an asset inventory", function() {
-        var iv = new Inventory();
-        should(typeof iv.assetMap).equal('object');
-        should(Object.keys(iv.assetMap).length).equal(0);
+    it("Inventory(opts) creates an asset inventory", function(done) {
+        var async = function*() {
+            var iv = new Inventory();
+            should(typeof iv.assetMap).equal('object');
+            should(iv.assetDir).equal(path.join(__dirname, '..', 'local', 'assets'));
+            done();
+        }();
+        async.next();
     });
     it("addAsset(asset) adds asset to inventory", function() {
         var async = function*() {
             var local = path.join(__dirname, '..', 'local');
-            var assetDir = path.join(local, 'test-inventory');
             if (fs.existsSync(assetDir)) {
                 var cmd = `rm -rf ${assetDir}`;
                 console.log(cmd);
@@ -87,9 +91,12 @@
         }();
         async.next();
     });
-    it("assets(filter) returns matching assets", function() {
+    it("assets(filter) returns matching assets", function(done) {
         var async = function*() {
-            var iv = new Inventory();
+            var iv = new Inventory({
+                assetDir
+            });
+            yield(iv.open()).then(r=>async.next(r)).catch(e=>done(e));
             var t1 = new Date(2018,1,1);
             var t2 = new Date(2018,1,2);
             var plant1 = new Plant({
@@ -147,6 +154,7 @@
             var assets = iv.assets(tvf);
             should(assets.length).equal(1);
             should(assets[0]).equal(plant1);
+            done();
         }();
         async.next();
     });
@@ -182,18 +190,22 @@
             location: "GUID003",
         });
     });
-    it("guidify(snapshot) updates id references to guids", function() {
+    it("guidify(snapshot) updates id references to guids", function(done) {
         var async = function*() {
-            var iv = new Inventory();
+            var iv = new Inventory({
+                assetDir,
+            });
             var a1 = new Asset({
                 id: "A0001",
             });
+            yield(iv.open()).then(r=>async.next(r)).catch(e=>done(e));
             var asset = yield iv.addAsset(a1).then(r=>async.next(r)).catch(e=>done(e));
             var snapshot = a1.snapshot();
             snapshot.test = 'a0001'; // ignores case
             should.deepEqual(iv.guidify(snapshot), Object.assign({}, snapshot, {
                 test: a1.guid,
             }));
+            done();
         }();
         async.next();
     });
@@ -201,7 +213,6 @@
         var async = function *() {
             try {
                 var local = path.join(__dirname, '..', 'local');
-                var assetDir = path.join(local, 'test-assets');
                 if (fs.existsSync(assetDir)) {
                     var cmd = `rm -rf ${assetDir}`;
                     console.log(cmd);
@@ -253,9 +264,8 @@
     it("saveAsset(asset) saves an asset", function(done) {
         var async = function*() {
             try {
-                var testAssetDir = path.join(__dirname, '..', 'local', 'test-assets');
                 var guid = 'GUID_tent1';
-                var assetPath = path.join(testAssetDir, `objects`, `${guid.substr(0,2)}`,`${guid}`);
+                var assetPath = path.join(assetDir, `objects`, `${guid.substr(0,2)}`,`${guid}`);
                 var t1 = new Date(2018, 1, 2);
                 if (fs.existsSync(assetPath)) {
                     fs.unlinkSync(assetPath);
@@ -266,7 +276,7 @@
                     guid,
                 });
                 var iv = new Inventory({
-                    assetDir: testAssetDir, 
+                    assetDir,
                 });
                 yield(iv.open()).then(r=>async.next(r)).catch(e=>done(e));
                 var r = yield iv.saveAsset(asset).then(r=>async.next(r)).catch(e=>done(e));
@@ -283,11 +293,9 @@
     it("loadAsset(guid) load an asset", function(done) {
         var async = function*() {
             try {
-                var testAssetDir = path.join(__dirname, '..', 'local', 'test-assets');
                 var guid = 'GUID_tent1';
-                var assetPath = path.join(testAssetDir, `${guid}.json`);
                 var iv = new Inventory({
-                    assetDir: testAssetDir, 
+                    assetDir,
                 });
                 var asset = yield iv.loadAsset(guid).then(r=>async.next(r)).catch(e=>async.throw(e));
                 should(asset).instanceOf(Asset);
@@ -296,6 +304,25 @@
                     name: 'tent1',
                     type: Asset.T_ENCLOSURE,
                 });
+                done();
+            } catch(e) {
+                done(e);
+            }
+        }();
+        async.next();
+    });
+    it("assetCount() returns number of assets", function(done) {
+        var async = function*() {
+            try {
+                var iv = new Inventory({
+                    assetDir,
+                });
+                should.throws(() => iv.assetCount());
+                yield iv.open().then(r=>async.next(r)).catch(e=>done(e));
+
+                // preceding tests should have created some assets
+                should(iv.assetCount()).above(0);
+
                 done();
             } catch(e) {
                 done(e);

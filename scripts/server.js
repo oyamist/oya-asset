@@ -41,21 +41,16 @@ let async = function*() {
         var serviceName = argv.reduce((acc, arg, i) =>  {
             return acc==null && i>1 && arg[0]!=='-' ? arg : acc;
         }, null) || 'test';
-        var inventoryPath;
-        if (serviceName === 'test') {
-            var json = fs.readFileSync(path.join(__dirname, '..', 'test', 'sample-inventory.json'));
-            inventoryPath = '/tmp/inventory.json';
-            fs.writeFileSync(inventoryPath, json);
-        } else {
-            inventoryPath = path.join(__dirname, '..', 'local', 'inventory.json');
-        }
-
-        winston.info(`server.js RbAsset(${serviceName}) ${inventoryPath}`);
+        winston.info(`server.js RbAsset(${serviceName})`);
         var rbasset = new RbAsset(serviceName, {
             emitter: oyaEmitter,
-            inventoryPath,
         });
         yield rbasset.initialize().then(r=>async.next(r)).catch(e=>async.throw(e));
+        if (true) {
+            var sampleInventory = path.join(__dirname, '..', 'test', 'sample-inventory.json');
+            winston.info(`server.js loading inventory: ${sampleInventory}`);
+            rbasset.inventory.load(sampleInventory);
+        }
         restBundles.push(rbasset);
 
         // declare ports
