@@ -16,7 +16,7 @@
             <v-text-field append-icon="search" label="Search" single-line clearable
                 :change="searchChanged()" hide-details v-model="search" ></v-text-field>
             <v-spacer/>
-            <v-btn primary @click="addAsset()">Add</v-btn>
+            <v-btn primary @click="saveAsset()">Add</v-btn>
         </v-card-title>
         <v-data-table v-bind:headers="headers" :items="assets" hide-actions 
             :custom-filter="assetFilter"
@@ -209,8 +209,8 @@ export default {
             }
             (sourceHint !== newAsset.sourceHint) && Vue.set(newAsset, 'sourceHint', sourceHint);
         },
-        addAsset() {
-            console.log("addAsset");
+        saveAsset() {
+            console.log("saveAsset");
             this.showAddDialog = true;
             this.newAsset = this.createNewAsset();
         },

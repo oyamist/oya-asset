@@ -202,6 +202,11 @@
         }
 
         saveAsset(asset) {
+            if (asset == null) {
+                var e = new Error(`Inventory.saveAsset() asset is required`);
+                winston.warn(e.stack);
+                return Promise.reject(e);
+            }
             if (!this.isOpen) {
                 var e = new Error("Inventory.saveAsset() inventory must be open()'d");
                 winston.warn(e.stack);
@@ -272,6 +277,9 @@
             if (asset.type === Asset.T_PLANT) {
                 return new Plant(asset);
             } 
+            if (Asset.assetTypes().indexOf(asset.type) < 0) {
+                throw new Error(`Inventory.assetOf() invalid asset type:${asset.type}`);
+            }
 
             return new Asset(asset);
         }
@@ -344,21 +352,6 @@
             }, {});
         }
 
-        addAsset(asset) {
-            if (!this.isOpen) {
-                var e = new Error("Inventory.addAsset() inventory must be open()'d");
-                winston.warn(e.stack);
-                return Promise.reject(e);
-            }
-            if (asset == null) {
-                throw new Error(`Inventory.addAsset() asset is required`);
-            }
-            if (Asset.assetTypes().indexOf(asset.type) < 0) {
-                throw new Error(`Inventory.addAsset() invalid asset type:${asset.type}`);
-            }
-            var a = this.assetOf(asset);
-            return this.saveAsset(a);
-        }
     }
 
     module.exports = exports.Inventory = Inventory;

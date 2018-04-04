@@ -70,12 +70,12 @@
                     bucket1.set(TValue.T_LOCATION, tent1.guid, t[0]);
                     bucket2.set(TValue.T_LOCATION, tent1.guid, t[0]);
                     bucket2.set(TValue.T_LOCATION, tent2.guid, t[1]);
-                    yield inventory.addAsset(tomato1).then(r=>async.next(r)).catch(e=>reject(e));
-                    yield inventory.addAsset(tomato2).then(r=>async.next(r)).catch(e=>reject(e));
-                    yield inventory.addAsset(bucket1).then(r=>async.next(r)).catch(e=>reject(e));
-                    yield inventory.addAsset(bucket2).then(r=>async.next(r)).catch(e=>reject(e));
-                    yield inventory.addAsset(tent1).then(r=>async.next(r)).catch(e=>reject(e));
-                    yield inventory.addAsset(tent2).then(r=>async.next(r)).catch(e=>reject(e));
+                    yield inventory.saveAsset(tomato1).then(r=>async.next(r)).catch(e=>reject(e));
+                    yield inventory.saveAsset(tomato2).then(r=>async.next(r)).catch(e=>reject(e));
+                    yield inventory.saveAsset(bucket1).then(r=>async.next(r)).catch(e=>reject(e));
+                    yield inventory.saveAsset(bucket2).then(r=>async.next(r)).catch(e=>reject(e));
+                    yield inventory.saveAsset(tent1).then(r=>async.next(r)).catch(e=>reject(e));
+                    yield inventory.saveAsset(tent2).then(r=>async.next(r)).catch(e=>reject(e));
                     var assets = [
                         tomato1,
                         tomato2,

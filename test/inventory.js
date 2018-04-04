@@ -23,7 +23,7 @@
         }();
         async.next();
     });
-    it("addAsset(asset) adds asset to inventory", function() {
+    it("saveAsset(asset) adds asset to inventory", function() {
         var async = function*() {
             var local = path.join(__dirname, '..', 'local');
             if (fs.existsSync(assetDir)) {
@@ -45,11 +45,11 @@
                 type: Asset.T_ENCLOSURE,
             });
             yield iv.open().then(r=>asnc.next(r)).catch(e=>done(e));
-            var asset = yield iv.addAsset(plant1).then(r=>async.next(r)).catch(e=>done(e));
+            var asset = yield iv.saveAsset(plant1).then(r=>async.next(r)).catch(e=>done(e));
             should(asset).equal(plant1);
-            var asset = yield iv.addAsset(plant2).then(r=>async.next(r)).catch(e=>done(e));
+            var asset = yield iv.saveAsset(plant2).then(r=>async.next(r)).catch(e=>done(e));
             should(asset).equal(plant2);
-            var asset = yield iv.addAsset(tent1).then(r=>async.next(r)).catch(e=>done(e));
+            var asset = yield iv.saveAsset(tent1).then(r=>async.next(r)).catch(e=>done(e));
             should.deepEqual(iv.assetOfGuid(plant1.guid), plant1);
             should.deepEqual(iv.assetOfGuid(plant2.guid), plant2);
             should.deepEqual(iv.assetOfGuid(tent1.guid), tent1);
@@ -80,9 +80,9 @@
                 name: 'tent1',
                 type: Asset.T_ENCLOSURE,
             });
-            var asset = yield iv.addAsset(plant1).then(r=>async.next(r)).catch(e=>done(e));
-            var asset = yield iv.addAsset(plant2).then(r=>async.next(r)).catch(e=>done(e));
-            var asset = yield iv.addAsset(tent1).then(r=>async.next(r)).catch(e=>done(e));
+            var asset = yield iv.saveAsset(plant1).then(r=>async.next(r)).catch(e=>done(e));
+            var asset = yield iv.saveAsset(plant2).then(r=>async.next(r)).catch(e=>done(e));
+            var asset = yield iv.saveAsset(tent1).then(r=>async.next(r)).catch(e=>done(e));
             should(iv.assetMap[plant1.guid]).equal(plant1);
 
             var json = JSON.parse(JSON.stringify(iv));
@@ -92,7 +92,7 @@
         }();
         async.next();
     });
-    it("assets(filter) returns matching assets", function(done) {
+    it("TESTTESTassets(filter) returns matching assets", function(done) {
         var async = function*() {
             var iv = new Inventory({
                 assetDir
@@ -105,6 +105,7 @@
                 plant: Plant.P_TOMATO,
                 cultivar: Plant.C_CHOCOLATE_STRIPES,
                 id: 'A0001',
+                guid: 'GUID0001',
             });
             should(plant1.id).equal('A0001');
             plant1.set(TValue.T_ID, 'A0004', t2);
@@ -112,15 +113,17 @@
             var plant2 = new Plant({
                 name: 'plant2',
                 id: 'A0002',
+                guid: 'GUID0002',
             });
             var tent1 = new Asset({
                 name: 'tent1',
                 type: Asset.T_ENCLOSURE,
                 id: 'A0003',
+                guid: 'GUID0003',
             });
-            var asset = yield iv.addAsset(plant1).then(r=>async.next(r)).catch(e=>done(e));
-            var asset = yield iv.addAsset(plant2).then(r=>async.next(r)).catch(e=>done(e));
-            var asset = yield iv.addAsset(tent1).then(r=>async.next(r)).catch(e=>done(e));
+            var asset = yield iv.saveAsset(plant1).then(r=>async.next(r)).catch(e=>done(e));
+            var asset = yield iv.saveAsset(plant2).then(r=>async.next(r)).catch(e=>done(e));
+            var asset = yield iv.saveAsset(tent1).then(r=>async.next(r)).catch(e=>done(e));
 
             // match current id
             var tvf = new Filter.TValueFilter(Filter.OP_EQ, {
@@ -200,7 +203,7 @@
                 id: "A0001",
             });
             yield(iv.open()).then(r=>async.next(r)).catch(e=>done(e));
-            var asset = yield iv.addAsset(a1).then(r=>async.next(r)).catch(e=>done(e));
+            var asset = yield iv.saveAsset(a1).then(r=>async.next(r)).catch(e=>done(e));
             var snapshot = a1.snapshot();
             snapshot.test = 'a0001'; // ignores case
             should.deepEqual(iv.guidify(snapshot), Object.assign({}, snapshot, {
@@ -227,7 +230,7 @@
                 should(iv.isOpen).equal(true);
                 should(r).equal(iv);
 
-                var r = yield iv.addAsset({
+                var r = yield iv.saveAsset({
                     type: 'plant',
                     id: 'A0001',
                     name: 'tomato01',

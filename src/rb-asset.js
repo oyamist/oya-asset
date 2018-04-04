@@ -109,7 +109,7 @@
                         }
                         if (!asset) {
                             asset = self.inventory.assetOf(upsert);
-                            yield self.inventory.addAsset(asset).then(r=>async.next(r))
+                            yield self.inventory.saveAsset(asset).then(r=>async.next(r))
                                 .catch(e => {
                                     winston.error(e.stack);
                                     reject(e);
