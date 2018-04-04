@@ -16,6 +16,10 @@
             if (!fs.existsSync(local)) {
                 fs.mkdirSync(local);
             }
+            Object.defineProperty(this, 'assetDir', {
+                writable: true,
+                value: path.join(local, 'assets'),
+            });
             Object.defineProperty(this, 'ivpath', {
                 writable: true,
                 value: path.join(local, 'inventory.json'),
@@ -32,7 +36,7 @@
         update(opts={}) {
             this.assetMap = opts.assetMap || this.assetMap || {};
             var local = path.join(__dirname, '..', 'local');
-            this.assetDir = opts.assetDir || path.join(local, 'assets');
+            opts.assetDir && (this.assetDir = opts.assetDir);
             if (!fs.existsSync(this.assetDir)) {
                 winston.info(`Inventory.update() creating assets directory: ${this.assetDir}`);
                 fs.mkdirSync(this.assetDir);
@@ -49,6 +53,47 @@
                 }
             }
             return undefined; // TBD
+        }
+
+        load(ivpath) {
+            if (!this.isOpen) {
+                var e = new Error("Inventory.load() inventory must be open()'d");
+                winston.warn(e.stack);
+                return Promise.reject(e);
+            }
+            var ereject = new Error(`Inventory.load() no file:${ivpath}`);
+            if (!fs.existsSync(ivpath)) {
+                return Promise.reject(ereject);
+            }
+            var self = this;
+            return new Promise((resolve, reject) => {
+                fs.readFile(ivpath, (e,data) => {
+                    if (e) {
+                        winston.error(e.message, ereject.stack);
+                        return reject(e);
+                    } 
+                    var async = function*() {
+                        try {
+                            var json = JSON.parse(data);
+                            var keys = Object.keys(json.assetMap);
+                            for (var i = 0; i < keys.length; i++) {
+                                var key = keys[i];
+                                var asset = self.assetOf(json.assetMap[key]);
+                                yield self.saveAsset(asset).then(r=>async.next(r))
+                                    .catch(e=> {
+                                        reject(e); 
+                                        async.throw(e);
+                                    });
+                            };
+                            resolve(self);
+                        } catch (e) {
+                            winston.error(e.message, ereject.stack);
+                            reject(e);
+                        }
+                    }();
+                    async.next();
+                });
+            });
         }
 
         save(savePath=this.ivpath, backup=true) {
@@ -133,7 +178,7 @@
                             r = null;
                         }
 
-                        if (r == null) {
+                        if (false && r == null) {
                             self.ivpath = ivpath;
                             if (fs.existsSync(ivpath)) {
                                 var r = yield fs.readFile(ivpath, (e,data) => {
@@ -151,17 +196,12 @@
                                         }
                                     }
                                 });
-                            } else {
-                                var r = yield self.save(ivpath).then(r=> {
-                                    self.isOpen = true;
-                                    var r = self;
-                                    async.next(self);
-                                }).catch(e=>async.next(e));
                             }
                         }
                         if (r instanceof Error) {
                             throw r;
                         }
+                        self.isOpen = true;
                         resolve(self);
                     } catch (e) {
                         winston.error(e.stack);
@@ -171,6 +211,7 @@
                 async.next();
             });
         }
+
 
         commit(backup=true) {
             if (!this.isOpen) {
@@ -210,25 +251,46 @@
                         return reject(err);
                     }
                     var json = JSON.parse(data);
-                    resolve(new Asset(json));
+                    var asset = this.assetOf(json);
+                    this.assetMap[asset.guid] = asset;
+                    resolve(asset);
                 });
             });
         }
 
         saveAsset(asset) {
+            if (!this.isOpen) {
+                var e = new Error("Inventory.commit() inventory must be open()'d");
+                winston.warn(e.stack);
+                return Promise.reject(e);
+            }
             if (!(asset instanceof Asset)) {
-                var err = new Error(`Inventory.saveAsset() eapected:Asset actual:${JSON.stringify(asset)}`);
-                return Promise.reject(err);
+                try {
+                    asset = this.assetOf(asset);
+                } catch (e) {
+                    winston.error(e.stack);
+                    return Promise.reject(e);
+                }
+            }
+            var guid = asset.guid;
+            if (typeof guid !== 'string') {
+                return Promise.reject(new Error(`Expected string for asset guid:${guid}`));
+            }
+            if (guid.length < 5) {
+                return Promise.reject(new Error(`Invalid guid:${guid}`));
             }
             return new Promise((resolve, reject) => {
                 try {
-                    var guid = asset.guid;
                     var assetPath = this.assetPath(guid);
                     if (!fs.existsSync(assetPath)) {
                         var folderPath = path.dirname(assetPath);
                         if (!fs.existsSync(folderPath)) {
                             var objectsPath = path.dirname(folderPath);
                             if (!fs.existsSync(objectsPath)) {
+                                var assetDir = path.dirname(objectsPath);
+                                if (!fs.existsSync(assetDir)) {
+                                    fs.mkdirSync(assetDir);
+                                }
                                 fs.mkdirSync(objectsPath);
                             }
                             fs.mkdirSync(folderPath);
@@ -238,9 +300,11 @@
                     fs.writeFile(assetPath, json, (err) => {
                         if (err) {
                             winston.error(assetPath, err.stack);
-                            return promise.reject(err);
+                            return reject(err);
                         }
-                        resolve(true);
+                        this.assetMap[guid] = asset;
+                        winston.info(`Inventory.saveAsset() saved asset guid:${asset.guid}`);
+                        resolve(asset);
                     });
                 } catch (e) {
                     winston.error(e.stack);
@@ -251,7 +315,9 @@
 
         close() {
             var promise = this.commit();
+            winston.warn(`Inventory.close() closing...`);
             promise.then(r=>{
+                winston.warn(`Inventory.close() closed`);
                 this.isOpen = false;
             });
             return promise;
@@ -269,27 +335,56 @@
         }
 
         assetOfGuid(guid) {
+            if (!this.isOpen) {
+                var e = new Error("Inventory.commit() inventory must be open()'d");
+                winston.warn(e.stack);
+                return Promise.reject(e);
+            }
             var asset =  this.assetMap[guid];
             return asset;
         }
 
         assetOfId(id, t=new Date()) {
+            var self = this;
+            if (!self.isOpen) {
+                var e = new Error("Inventory.commit() inventory must be open()'d");
+                winston.warn(e.stack);
+                return Promise.reject(e);
+            }
             if (id == null) {
-                throw new Error("id is required");
+                var e = new Error("id is required");
+                winston.warn(e.stack);
+                return Promise.reject(e);
             }
-            var tvf = new Filter.TValueFilter(Filter.OP_EQ, {
-                tag: TValue.T_ID,
-                value: id,
-                t,
+            return new Promise((resolve, reject) => {
+                var async = function*() {
+                    try {
+                        var tvf = new Filter.TValueFilter(Filter.OP_EQ, {
+                            tag: TValue.T_ID,
+                            value: id,
+                            t,
+                        });
+                        var assets = self.assets(tvf);
+                        if (assets.length > 1) {
+                            throw new Error(`Data integrity error: ${assets.length} assets have same id: ${id}`);
+                        }
+                        resolve(assets[0] || null);
+                    } catch(e) {
+                        winston.error(e.stack);
+                        reject(e);
+                    }
+                }();
+                async.next();
             });
-            var assets =  this.assets(tvf);
-            if (assets.length > 1) {
-                throw new Error(`Data integrity error: ${assets.length} assets have same id: ${id}`);
-            }
-            return assets[0];
         }
 
         assets(filter) {
+            // TODO: Promise
+            if (!this.isOpen) {
+                var e = new Error("Inventory.assets() inventory must be open()'d");
+                winston.warn(e.stack);
+                throw e;
+            }
             var guids = Object.keys(this.assetMap).sort();
             var assets =  guids.map(guid=>this.assetMap[guid]);
             return filter ? assets.filter(a=>filter.matches(a)) : assets;
@@ -308,6 +403,11 @@
         }
 
         addAsset(asset) {
+            if (!this.isOpen) {
+                var e = new Error("Inventory.commit() inventory must be open()'d");
+                winston.warn(e.stack);
+                return Promise.reject(e);
+            }
             if (asset == null) {
                 throw new Error(`Inventory.addAsset() asset is required`);
             }
@@ -315,7 +415,7 @@
                 throw new Error(`Inventory.addAsset() invalid asset type:${asset.type}`);
             }
             var a = this.assetOf(asset);
-            return (this.assetMap[a.guid] = a);
+            return this.saveAsset(a);
         }
     }
 

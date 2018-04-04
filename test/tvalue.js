@@ -23,6 +23,10 @@
         should(evt2.text).equal('asdf');
         should(evt2.value).equal('purple');
     });
+    it("RETROACTIVE is the timestamp for retroactive values", function() {
+        // Retroactive date is JS minimum date. So there.
+        should(TValue.RETROACTIVE.toJSON()).equal("-271821-04-20T00:00:00.000Z");
+    });
     it("valueTags returns tvalue tags", function() {
         should.deepEqual(TValue.valueTags(), [
             "(none)",

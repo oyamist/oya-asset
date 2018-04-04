@@ -35,6 +35,8 @@
         update(opts={}) {
             this.inventoryPath = opts.inventoryPath || 
                 path.join(global.__appdir, 'local', 'inventory.json');
+            this.assetDir = opts.assetDir ||
+                path.join(global.__appdir, 'local', 'assets');
         }
 
         initialize() {
@@ -48,6 +50,7 @@
                             reject(e);
                         });
                         that.inventory = new Inventory({
+                            assetDir: that.assetDir,
                             ivpath: that.inventoryPath,
                         });
                         that.inventory.open().then(r=>resolve()).catch(e=>reject(e));
@@ -61,36 +64,74 @@
         }
 
         getAsset(req, res, next) {
-            try {
-                var asset =  this.inventory.assetOfId(req.params.id);
-                return asset ? asset.snapshot() : {};
-            } catch (e) {
-                winston.warn(e.stack);
-                return Promise.reject(e);
-            }
+            var self = this;
+            return new Promise((resolve, reject) => {
+                var async = function*() {
+                    try {
+                        var asset = yield self.inventory.assetOfId(req.params.id)
+                            .then(r=>async.next(r))
+                            .catch(e=>{
+                                reject(e);
+                                async.throw(e);
+                            });
+                        resolve(asset ? asset.snapshot() : {});
+                    } catch (e) {
+                        winston.warn(e.stack);
+                        reject(e);
+                    }
+                }();
+                async.next();
+            });
         }
         
         postAsset(req, res, next) {
-            try {
-                var command = req.body;
-                var t = command.t ? new Date(command.t) : new Date();
-                if (!command.upsert) {
-                    throw new Error(`RbAsset.postAsset() no asset to upsert`);
-                }
-                var upsert = this.inventory.guidify(command.upsert);
-                var guid = upsert.guid;
-                var asset = guid && this.inventory.assetOfGuid(guid);
-                if (!asset) {
-                    asset = this.inventory.assetOf(upsert);
-                    this.inventory.addAsset(asset);
-                    winston.info(`RbAsset.postAsset() created asset ${asset.name}`);
-                }
-                asset.updateSnapshot(upsert,t);
-                return asset.snapshot();
-            } catch (e) {
-                winston.warn(e.stack);
-                return Promise.reject(e);
-            }
+            return new Promise((resolve, reject) => {
+                var self = this;
+                var async = function*() {
+                    try {
+                        var command = req.body;
+                        var t = command.t ? new Date(command.t) : new Date();
+                        if (!command.upsert) {
+                            var e = new Error(`RbAsset.postAsset() no asset to upsert`);
+                            winston.error(e.stack);
+                            return reject(e);
+                        }
+                        var upsert = self.inventory.guidify(command.upsert);
+                        var guid = upsert.guid;
+                        var asset = null;
+                        if (guid) {
+                            asset = yield self.inventory.loadAsset(guid).then(r=>async.next(r))
+                                .catch(e=>{
+                                    winston.error(e.stack);
+                                    reject(e);
+                                    async.throw(e);
+                                });
+                        }
+                        if (!asset) {
+                            asset = self.inventory.assetOf(upsert);
+                            yield self.inventory.addAsset(asset).then(r=>async.next(r))
+                                .catch(e => {
+                                    winston.error(e.stack);
+                                    reject(e);
+                                    async.throw(e);
+                                });
+                            winston.info(`RbAsset.postAsset() created asset ${asset.name}`);
+                        }
+                        asset.updateSnapshot(upsert,t);
+                        yield self.inventory.saveAsset(asset).then(r=>async.next(r))
+                            .catch(e => {
+                                winston.error(e.stack);
+                                reject(e);
+                                async.throw(e);
+                            });
+                        resolve( asset.snapshot() );
+                    } catch (e) {
+                        winston.warn(e.stack);
+                        return reject(e);
+                    }
+                }();
+                async.next();
+            });
         }
 
         getAssets(req, res, next) {

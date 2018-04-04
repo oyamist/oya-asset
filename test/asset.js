@@ -7,6 +7,51 @@
         AssetDefs,
         TValue,
     } = require("../index");
+    function immutable(name) {
+        return {
+            name,
+            mutable: false,
+            temporal: false,
+            retroactive: false,
+            own: true,
+        };
+    }
+    function retroactive(name) {
+        return {
+            name,
+            mutable: true,
+            temporal: true,
+            retroactive: true,
+            own: false,
+        };
+    }
+    function mutable(name) {
+        return {
+            name,
+            mutable: true,
+            temporal: false,
+            retroactive: false,
+            own: true,
+        };
+    }
+    function unused(name) {
+        return {
+            name,
+            mutable: true,
+            temporal: false,
+            retroactive: false,
+            own: false,
+        };
+    }
+    function temporal(name) {
+        return {
+            name,
+            mutable: true,
+            temporal: true,
+            retroactive: false,
+            own: false,
+        };
+    }
 
     it("Asset(opts) creates an asset", function() {
         // Default ctor
@@ -16,12 +61,12 @@
         should(asset.get(TValue.T_NAME)).equal(`asset_${asset.guid.substr(0,7)}`); // Default name
         should.deepEqual(asset.tvalues, [
             new TValue({
-                t: new Date(0), // retroactive to 1/1/1970
+                t: TValue.RETROACTIVE,
                 tag: 'id',
                 value: asset.guid.substr(0,7),
             }),
             new TValue({
-                t: new Date(0), // retroactive to 1/1/1970
+                t: TValue.RETROACTIVE,
                 tag: 'name',
                 value: `asset_${asset.guid.substr(0,7)}`,
             }),
@@ -56,7 +101,7 @@
         });
         should.deepEqual(asset.name, `TomatoA`);
         should.deepEqual(asset.id, `A0001`); // current id
-        should(asset.get(TValue.T_ID, new Date(0))).equal('A0001'); // id is retroactive
+        should(asset.get(TValue.T_ID, TValue.RETROACTIVE)).equal('A0001'); // id is retroactive
 
         // the "begin" option sets non-temporal property
         var begin = new Date(2018,1,10);
@@ -121,11 +166,11 @@
             type: 'plant',
             guid: asset.guid,
             tvalues:[{
-                t: new Date(0).toJSON(),
+                t: TValue.RETROACTIVE.toJSON(),
                 tag: 'id',
                 value: 'A0001',
             },{
-                t: new Date(0).toJSON(),
+                t: TValue.RETROACTIVE.toJSON(),
                 tag: 'name',
                 value: 'tomatoA',
             }]
@@ -337,7 +382,7 @@
                 type: Asset.T_PLANT,
                 id: 'A0001',
             });
-            var t0 = new Date(0);
+            var t0 = TValue.RETROACTIVE;
             var t1 = new Date();
             should(asset.id).equal('A0001');
             should(asset.get(TValue.T_ID, t0)).equal('A0001'); // retroactive
@@ -371,7 +416,7 @@
             should.deepEqual(asset.tvalues.length, 3);
             should.deepEqual(asset.valueHistory('id'), [
                 new TValue({
-                    t:new Date(0),
+                    t:TValue.RETROACTIVE,
                     tag: 'id',
                     value: `${asset.guid.substr(0,7)}`,
                 }), 
@@ -441,7 +486,7 @@
     it("snapshots map true to assignment date", function(done) {
         var async = function*() {
             var asset = new Asset();
-            var t0 = new Date(0);
+            var t0 = TValue.RETROACTIVE;
             var t1 = new Date(2018, 1, 1);
             var tv1 = new TValue({
                 tag: TValue.T_ACTIVATED,
@@ -539,51 +584,15 @@
         var asset = new Asset({
             size: 'large',
         });
-        function immutable(name) {
-            return {
-                name,
-                mutable: false,
-                temporal: false,
-                retroactive: false,
-                own: true,
-            };
-        }
-        function retroactive(name) {
-            return {
-                name,
-                mutable: true,
-                temporal: true,
-                retroactive: true,
-                own: false,
-            };
-        }
-        function mutable(name) {
-            return {
-                name,
-                mutable: true,
-                temporal: false,
-                retroactive: false,
-                own: true,
-            };
-        }
-        function unused(name) {
-            return {
-                name,
-                mutable: true,
-                temporal: false,
-                retroactive: false,
-                own: false,
-            };
-        }
-        function temporal(name) {
-            return {
-                name,
-                mutable: true,
-                temporal: true,
-                retroactive: false,
-                own: false,
-            };
-        }
+        should.deepEqual(asset.describeProperty('guid'), immutable('guid'));
+        should.deepEqual(asset.describeProperty('type'), immutable('type'));
+        should.deepEqual(asset.describeProperty('id'), retroactive('id'));
+        should.deepEqual(asset.describeProperty('size'), mutable('size'));
+        should.deepEqual(asset.describeProperty('asdf'), unused('asdf'));
+        should.deepEqual(asset.describeProperty('location'), unused('location'));
+        should.deepEqual(asset.describeProperty('color'), unused('color'));
+
+        // create a temporal property
         asset.set("location", "SFO");
         should.deepEqual(asset.describeProperty('guid'), immutable('guid'));
         should.deepEqual(asset.describeProperty('type'), immutable('type'));
@@ -591,6 +600,26 @@
         should.deepEqual(asset.describeProperty('size'), mutable('size'));
         should.deepEqual(asset.describeProperty('asdf'), unused('asdf'));
         should.deepEqual(asset.describeProperty('location'), temporal('location'));
-    });
+        should.deepEqual(asset.describeProperty('color'), unused('color'));
 
+        // create retroactive property
+        asset.set("color", 'red', TValue.RETROACTIVE);
+        should.deepEqual(asset.describeProperty('guid'), immutable('guid'));
+        should.deepEqual(asset.describeProperty('type'), immutable('type'));
+        should.deepEqual(asset.describeProperty('id'), retroactive('id'));
+        should.deepEqual(asset.describeProperty('size'), mutable('size'));
+        should.deepEqual(asset.describeProperty('asdf'), unused('asdf'));
+        should.deepEqual(asset.describeProperty('location'), temporal('location'));
+        should.deepEqual(asset.describeProperty('color'), retroactive('color'));
+
+        // serialized asset has same property definitions
+        var asset = new Asset(JSON.parse(JSON.stringify(asset)));
+        should.deepEqual(asset.describeProperty('guid'), immutable('guid'));
+        should.deepEqual(asset.describeProperty('type'), immutable('type'));
+        should.deepEqual(asset.describeProperty('id'), retroactive('id'));
+        should.deepEqual(asset.describeProperty('size'), mutable('size'));
+        should.deepEqual(asset.describeProperty('asdf'), unused('asdf'));
+        should.deepEqual(asset.describeProperty('location'), temporal('location'));
+        should.deepEqual(asset.describeProperty('color'), retroactive('color'));
+    });
 })

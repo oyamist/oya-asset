@@ -30,7 +30,9 @@
         static get T_LOCATION() { return "location"; } 
 
         static get TIME_RESOLUTION_MS() { return 2; }
-        static get RETROACTIVE() { return new Date(0); }
+        static get RETROACTIVE() { 
+            return new Date(-8640000000000000); // Javascript minimum date
+        }
 
         static valueTags() {
             return [
