@@ -12,6 +12,7 @@
     const path = require('path');
     const child_process = require('child_process');
     const assetDir = path.join(__dirname, '..', 'local', 'test-inventory');
+    winston.level = 'warn';
 
     it("Inventory(opts) creates an asset inventory", function(done) {
         var async = function*() {
@@ -329,5 +330,30 @@
             }
         }();
         async.next();
+    });
+    it("generator", function(done) {
+        var generator = function*() {
+            var i = 0;
+            while (i < 10) {
+                yield(i);
+                i += 2;
+            }
+        }();
+        var g = null;
+        for (var i = 0; i < 10; i++) {
+            g = generator.next();
+            if (i*2 < 10) {
+                should.deepEqual(g, {
+                    value: i*2,
+                    done: false,
+                });
+            } else {
+                should.deepEqual(g, {
+                    value: undefined,
+                    done: true,
+                });
+            }
+        }
+        done();
     });
 })
