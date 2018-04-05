@@ -12,20 +12,60 @@
     const path = require('path');
     const child_process = require('child_process');
     const assetDir = path.join(__dirname, '..', 'local', 'test-inventory');
+    const local = path.join(__dirname, '..', 'local');
+    const sampleInventory = path.join(__dirname, 'sample-inventory.json');
     winston.level = 'warn';
 
     it("Inventory(opts) creates an asset inventory", function(done) {
         var async = function*() {
             var iv = new Inventory();
             should(typeof iv.assetMap).equal('object');
-            should(iv.assetDir).equal(path.join(__dirname, '..', 'local', 'assets'));
+            should(iv.assetDir).equal(path.join(local, 'assets'));
             done();
         }();
         async.next();
     });
-    it("saveAsset(asset) adds asset to inventory", function() {
+    it("TESTTESTsaveAsset(asset) and loadAsset(guid) handle asset files", function(done) {
         var async = function*() {
-            var local = path.join(__dirname, '..', 'local');
+            try {
+                if (fs.existsSync(assetDir)) {
+                    var cmd = `rm -rf ${assetDir}`;
+                    child_process.execSync(cmd);
+                }
+                var iv = new Inventory({
+                    assetDir,
+                });
+                yield iv.open().then(r=>async.next(r)).catch(e=>done(e));
+                var plant1 = new Plant({
+                    name: 'plant1',
+                });
+                // save asset
+                var asset = yield iv.saveAsset(plant1).then(r=>async.next(r)).catch(e=>done(e));
+                should(asset).equal(plant1);
+                var asset = yield iv.assetOfGuid(plant1.guid).then(r=>async.next(r)).catch(e=>done(e));
+                should.deepEqual(asset, plant1);
+
+                // loadAsset reads asset from disk
+                var asset = yield iv.loadAsset(plant1.guid).then(r=>async.next(r)).catch(e=>done(e));
+                should.deepEqual(asset, plant1);
+
+                // if we remove the file, it won't load
+                fs.unlinkSync(iv.assetPath(plant1.guid));
+                winston.warn('EXPECTED ERROR: BEGIN');
+                var r = yield iv.loadAsset(plant1.guid).then(r=>async.next(r)).catch(e=>async.next(e));
+                winston.warn('EXPECTED ERROR: END');
+                should(r).instanceOf(Error);
+                should(r.message).match(/.*no asset.*/);
+                
+                done();
+            } catch(e){
+                done(e);
+            }
+        }();
+        async.next();
+    });
+    it("TESTTESTis serializable", function(done) {
+        var async = function*() {
             if (fs.existsSync(assetDir)) {
                 var cmd = `rm -rf ${assetDir}`;
                 child_process.execSync(cmd);
@@ -33,62 +73,20 @@
             var iv = new Inventory({
                 assetDir,
             });
-            var plant1 = new Plant({
-                name: 'plant1',
-            });
-            var plant2 = new Plant({
-                name: 'plant2',
-            });
-            var tent1 = new Asset({
-                name: 'tent1',
-                type: Asset.T_ENCLOSURE,
-            });
-            yield iv.open().then(r=>asnc.next(r)).catch(e=>done(e));
-            var asset = yield iv.saveAsset(plant1).then(r=>async.next(r)).catch(e=>done(e));
-            should(asset).equal(plant1);
-            var asset = yield iv.saveAsset(plant2).then(r=>async.next(r)).catch(e=>done(e));
-            should(asset).equal(plant2);
-            var asset = yield iv.saveAsset(tent1).then(r=>async.next(r)).catch(e=>done(e));
-            should.deepEqual(iv.assetOfGuid(plant1.guid), plant1);
-            should.deepEqual(iv.assetOfGuid(plant2.guid), plant2);
-            should.deepEqual(iv.assetOfGuid(tent1.guid), tent1);
-
-            var json = JSON.parse(JSON.stringify(iv));
-            var iv2 = new Inventory(json);
-            should.deepEqual(iv2, iv);
-            should.deepEqual(iv2.assetOfGuid(plant1.guid), plant1);
-            should.deepEqual(iv2.assetOfGuid(plant2.guid), plant2);
-            should.deepEqual(iv2.assetOfGuid(tent1.guid), tent1);
-            should(iv2.assetOfGuid(tent1.guid).name).equal('tent1');
-            
-        }();
-        async.next();
-    });
-    it("is serializable", function(done) {
-        var async = function*() {
-            var iv = new Inventory();
             yield iv.open().then(r=>async.next(r)).catch(e=>done(e));
             var plant1 = new Plant({
                 name: 'plant1',
                 plant: Plant.P_TOMATO,
                 cultivar: Plant.C_CHOCOLATE_STRIPES,
             });
-            var plant2 = new Plant({
-                name: 'plant2',
-            });
-            var tent1 = new Asset({
-                name: 'tent1',
-                type: Asset.T_ENCLOSURE,
-            });
             var asset = yield iv.saveAsset(plant1).then(r=>async.next(r)).catch(e=>done(e));
-            var asset = yield iv.saveAsset(plant2).then(r=>async.next(r)).catch(e=>done(e));
-            var asset = yield iv.saveAsset(tent1).then(r=>async.next(r)).catch(e=>done(e));
-            should(iv.assetMap[plant1.guid]).equal(plant1);
 
             var json = JSON.parse(JSON.stringify(iv));
             var ivcopy = new Inventory(json);
             should.deepEqual(ivcopy, iv);
-            should(ivcopy.assetMap[plant1.guid]).instanceOf(Plant);
+            var asset = yield iv.assetOfGuid(plant1.guid).then(r=>async.next(r)).catch(e=>done(e));
+            should.deepEqual(asset, plant1);
+
             done();
         }();
         async.next();
@@ -212,10 +210,9 @@
         }();
         async.next();
     });
-    it("open(path) opens existing inventory", function(done) {
+    it("TESTTESTopen(path) opens existing inventory", function(done) {
         var async = function *() {
             try {
-                var local = path.join(__dirname, '..', 'local');
                 if (fs.existsSync(assetDir)) {
                     var cmd = `rm -rf ${assetDir}`;
                     child_process.execSync(cmd);
@@ -227,14 +224,7 @@
                 var r = yield iv.open().then(r=>async.next(r)).catch(e=>async.throw(e));
                 should(iv.isOpen).equal(true);
                 should(r).equal(iv);
-
-                var r = yield iv.saveAsset({
-                    type: 'plant',
-                    id: 'A0001',
-                    name: 'tomato01',
-                    guid: 'GUID_A0001',
-                    size: 'large',
-                }).then(r=>async.next(r)).catch(e=>done(e));
+                yield iv.load(sampleInventory).then(r=>async.next(r)).catch(e=>async.throw(e));
                 var r = yield iv.close().then(r=>async.next(r)).catch(e=>async.throw(e));;
                 should(r).equal(iv);
 
@@ -242,18 +232,10 @@
                     assetDir,
                 });
                 var r = yield iv2.open().then(r=>async.next(r)).catch(e=>async.throw(e));
-                should(r).equal(iv2);
-
                 var a1 = yield iv2.assetOfId('A0001').then(r=>async.next(r))
                     .catch(e=>done(e));
                 should(a1).instanceOf(Asset);
-                should(a1.name).equal('tomato01');
-                should(iv2.assetOfGuid(a1.guid)).equal(a1);
-                should(a1.id).equal('A0001');
-                should(a1.size).equal('large');
-
-                var r = yield iv2.close().then(r=>async.next(r)).catch(e=>async.throw(e));;
-                should(r).equal(iv2);
+                should(a1.name).equal('Tomato1');
 
                 done();
             } catch(e) {
@@ -291,19 +273,21 @@
         }();
         async.next();
     });
-    it("loadAsset(guid) load an asset", function(done) {
+    it("TESTTESTloadAsset(guid) load an asset", function(done) {
         var async = function*() {
             try {
-                var guid = 'GUID_tent1';
+                var guid = 'GUID001';
                 var iv = new Inventory({
                     assetDir,
                 });
-                var asset = yield iv.loadAsset(guid).then(r=>async.next(r)).catch(e=>async.throw(e));
+                yield iv.open().then(r=>async.next(r)).catch(e=>done(e));
+                yield iv.load(sampleInventory).then(r=>async.next(r)).catch(e=>done(e));
+                var asset = yield iv.loadAsset(guid).then(r=>async.next(r)).catch(e=>done(e));
                 should(asset).instanceOf(Asset);
                 should(asset).properties({
                     guid,
-                    name: 'tent1',
-                    type: Asset.T_ENCLOSURE,
+                    name: 'Tomato1',
+                    type: Asset.T_PLANT,
                 });
                 done();
             } catch(e) {

@@ -223,7 +223,7 @@
         }();
         async.next();
     });
-    it("POST /inventory/snapshot creates an asset", function(done) {
+    it("TESTTESTPOST /inventory/snapshot creates an asset", function(done) {
         var async = function* () {
             try {
                 var inventory = rbtest().inventory;
@@ -243,16 +243,16 @@
                     t: t2,
                 };
                 var asset = null; // the new inventory asset
-                var response = yield supertest(app).post(url).send(command).expect((res) => {
-                    should(res).not.equal(null);
-                    res.statusCode.should.equal(200);
-                    should(res.body).properties(assetProps);
-                    var oldasset = asset;
-                    asset = rbtest().inventory.assetOfGuid(res.body.guid);
-                    should(res.body.guid).equal(asset.guid);
-                    should(res.body.id).equal(`${asset.guid.substr(0,7)}`);
-                    should.deepEqual(res.body, asset.snapshot()); // snapshot() of updated asset
+                var res = yield supertest(app).post(url).send(command).expect((res) => {
                 }).end((e,r) => e ? async.throw(e) : async.next(r));
+                should(res).not.equal(null);
+                res.statusCode.should.equal(200);
+                should(res.body).properties(assetProps);
+                var oldasset = asset;
+                asset = yield inventory.assetOfGuid(res.body.guid).then(r=>async.next(r)).catch(e=>done(e));
+                should(res.body.guid).equal(asset.guid);
+                should(res.body.id).equal(`${asset.guid.substr(0,7)}`);
+                should.deepEqual(res.body, asset.snapshot()); // snapshot() of updated asset
                 should(rbtest().inventory.assetCount()).equal(initialAssetCount+1);
 
                 // size was set at creation, so it is a mutable non-temporal property

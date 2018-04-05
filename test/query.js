@@ -1,4 +1,6 @@
 (typeof describe === 'function') && describe("Query", function() {
+    return "DEPRECATED";
+
     const winston = require('winston');
     const should = require("should");
     const child_process = require("child_process");
@@ -182,7 +184,7 @@
             done();
         }).catch(e=>done(e));
     });
-    it("assets(filter) returns assets matching filter", function(done) {
+    it("TESTTESTassets(filter) returns assets matching filter", function(done) {
         testData().then(td => {
             var query = new Query({
                 inventory: td.inventory

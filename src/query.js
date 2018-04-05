@@ -1,4 +1,6 @@
 (function(exports) {
+    return "DEPRECATED"; // keep for algorithm reference
+
     const Asset = require('./asset');
     const Inventory = require('./inventory');
     const Plant = require('./plant');

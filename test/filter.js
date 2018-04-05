@@ -6,7 +6,6 @@
         Filter,
         Inventory,
         Plant,
-        Query,
         TValue,
 
     } = require("../index");

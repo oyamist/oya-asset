@@ -19,6 +19,7 @@
             if (!(p instanceof Promise)) {
                 throw new Error(`Cache.update() fetch must return a Promise`);
             }
+            p.catch(e=>null); // ignore error
             this.maxSize = opts.maxSize || 1000;
             this.cull = opts.cull || Cache.CULL_LRU;
         }

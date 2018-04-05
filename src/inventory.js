@@ -1,6 +1,7 @@
 (function(exports) {
     const Asset = require('./asset');
     const Plant = require('./plant');
+    const Cache = require('./cache');
     const Filter = require('./filter');
     const TValue = require('./tvalue');
     const fs = require('fs');
@@ -18,6 +19,7 @@
             }
             Object.defineProperty(this, 'assetDir', {
                 writable: true,
+                enumerable: true,
                 value: path.join(local, 'assets'),
             });
             Object.defineProperty(this, 'isOpen', {
@@ -30,6 +32,7 @@
         }
 
         update(opts={}) {
+            var self = this;
             this.assetMap = opts.assetMap || this.assetMap || {};
             var local = path.join(__dirname, '..', 'local');
             opts.assetDir && (this.assetDir = opts.assetDir);
@@ -46,6 +49,19 @@
                 } else {
                     this.assetMap[key] = this.assetOf(asset);
                 }
+            }
+            if (opts.guidCache instanceof Cache) {
+                this.guidCache = opts.guidCache;
+            } else {
+                var cacheOpts = Object.assign({
+                    fetch: guid=>{
+                        return new Promise((resolve,reject) => {
+                            self.loadAsset(guid).then(r=>resolve(r.snapshot()))
+                                .catch(e=>reject(e));
+                        });
+                    },
+                }, opts.guidCache);
+                this.guidCache = new Cache(cacheOpts);
             }
             return undefined; // TBD
         }
@@ -81,6 +97,7 @@
                             for (var i = 0; i < keys.length; i++) {
                                 var key = keys[i];
                                 var asset = self.assetOf(json.assetMap[key]);
+                                asset && self.guidCache.put(asset.guid, asset.snapshot());
                                 yield self.saveAsset(asset).then(r=>async.next(r))
                                     .catch(e=> {
                                         reject(e); 
@@ -177,28 +194,41 @@
         }
 
         assetPath(guid) {
+            if (typeof guid !== 'string') {
+                var e = new Error(`Inventory.assetPath() invalid guid:${guid}`);
+                throw e;
+            }
             var folder = guid.substr(0,FOLDER_PREFIX);
             return path.join(this.assetDir, 'objects', folder, guid);
         }
 
         loadAsset(guid) {
+            if (guid == null) {
+                var e = new Error(`Invalid guid:${guid}`);
+                return Promise.reject(e);
+            }
             return new Promise((resolve, reject) => {
-                var assetPath = this.assetPath(guid);
-                if (!fs.existsSync(assetPath)) {
-                    var err = new Error(`Inventory.loadAsset() no asset:${assetPath}`);
-                    winston.error(err.stack);
-                    return reject(err);
-                }
-                fs.readFile(assetPath, (err, data) => {
-                    if (err) {
-                        winston.error(err.stack);
+                try {
+                    var assetPath = this.assetPath(guid);
+                    if (!fs.existsSync(assetPath)) {
+                        var err = new Error(`Inventory.loadAsset() no asset:${assetPath}`);
+                        winston.warn(err.stack);
                         return reject(err);
                     }
-                    var json = JSON.parse(data);
-                    var asset = this.assetOf(json);
-                    this.assetMap[asset.guid] = asset;
-                    resolve(asset);
-                });
+                    fs.readFile(assetPath, (err, data) => {
+                        if (err) {
+                            winston.error(err.stack);
+                            return reject(err);
+                        }
+                        var json = JSON.parse(data);
+                        var asset = this.assetOf(json);
+                        this.assetMap[asset.guid] = asset;
+                        resolve(asset);
+                    });
+                } catch(e) {
+                    winston.error(e.stack);
+                    reject(e);
+                }
             });
         }
 
@@ -291,8 +321,10 @@
                 winston.warn(e.stack);
                 return Promise.reject(e);
             }
-            var asset =  this.assetMap[guid];
-            return asset;
+            return new Promise((resolve, reject) => {
+                var asset =  this.assetMap[guid];
+                resolve(asset);
+            });
         }
 
         assetOfId(id, t=new Date()) {
