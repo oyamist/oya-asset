@@ -25,7 +25,7 @@
         }();
         async.next();
     });
-    it("TESTTESTsaveAsset(asset) and loadAsset(guid) handle asset files", function(done) {
+    it("saveAsset(asset) and loadAsset(guid) handle asset files", function(done) {
         var async = function*() {
             try {
                 if (fs.existsSync(assetDir)) {
@@ -64,7 +64,7 @@
         }();
         async.next();
     });
-    it("TESTTESTis serializable", function(done) {
+    it("is serializable", function(done) {
         var async = function*() {
             if (fs.existsSync(assetDir)) {
                 var cmd = `rm -rf ${assetDir}`;
@@ -210,7 +210,7 @@
         }();
         async.next();
     });
-    it("TESTTESTopen(path) opens existing inventory", function(done) {
+    it("open(path) opens existing inventory", function(done) {
         var async = function *() {
             try {
                 if (fs.existsSync(assetDir)) {
@@ -273,7 +273,7 @@
         }();
         async.next();
     });
-    it("TESTTESTloadAsset(guid) load an asset", function(done) {
+    it("loadAsset(guid) load an asset", function(done) {
         var async = function*() {
             try {
                 var guid = 'GUID001';

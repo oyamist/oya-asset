@@ -156,7 +156,7 @@
         }();
         async.next();
     });
-    it("TESTTESTGET /inventory/snapshots/:date returns asset snapshot for date", function(done) {
+    it("GET /inventory/snapshots/:date returns asset snapshot for date", function(done) {
         var async = function* () {
             try {
                 // tomato1 is in bucket1; tomato2 is in bucket2
@@ -223,7 +223,7 @@
         }();
         async.next();
     });
-    it("TESTTESTPOST /inventory/snapshot creates an asset", function(done) {
+    it("POST /inventory/snapshot creates an asset", function(done) {
         var async = function* () {
             try {
                 var inventory = rbtest().inventory;
