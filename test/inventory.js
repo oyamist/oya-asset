@@ -28,7 +28,6 @@
             var local = path.join(__dirname, '..', 'local');
             if (fs.existsSync(assetDir)) {
                 var cmd = `rm -rf ${assetDir}`;
-                console.log(cmd);
                 child_process.execSync(cmd);
             }
             var iv = new Inventory({
@@ -65,9 +64,10 @@
         }();
         async.next();
     });
-    it("Inventory is serializable", function() {
+    it("is serializable", function(done) {
         var async = function*() {
             var iv = new Inventory();
+            yield iv.open().then(r=>async.next(r)).catch(e=>done(e));
             var plant1 = new Plant({
                 name: 'plant1',
                 plant: Plant.P_TOMATO,
@@ -89,10 +89,11 @@
             var ivcopy = new Inventory(json);
             should.deepEqual(ivcopy, iv);
             should(ivcopy.assetMap[plant1.guid]).instanceOf(Plant);
+            done();
         }();
         async.next();
     });
-    it("TESTTESTassets(filter) returns iterator for matching assets", function(done) {
+    it("assets(filter) returns iterator for matching assets", function(done) {
         var async = function*() {
             var iv = new Inventory({
                 assetDir
@@ -217,7 +218,6 @@
                 var local = path.join(__dirname, '..', 'local');
                 if (fs.existsSync(assetDir)) {
                     var cmd = `rm -rf ${assetDir}`;
-                    console.log(cmd);
                     child_process.execSync(cmd);
                 }
                 var iv = new Inventory({
@@ -243,7 +243,6 @@
                 });
                 var r = yield iv2.open().then(r=>async.next(r)).catch(e=>async.throw(e));
                 should(r).equal(iv2);
-                console.log(iv2.assetMap);
 
                 var a1 = yield iv2.assetOfId('A0001').then(r=>async.next(r))
                     .catch(e=>done(e));

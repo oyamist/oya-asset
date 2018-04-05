@@ -43,6 +43,7 @@
             var inventory = rbtest().inventory;
             if (inventory.assetDir !== assetDir) {
                 inventory.assetDir = assetDir;
+                yield inventory.close().then(r=>async.next(r)).catch(e=>done(e));
                 yield inventory.open().then(r=>async.next(r)).catch(e=>done(e));
                 var sampleFile = path.join(__dirname, 'sample-inventory.json');
                 yield inventory.load(sampleFile).then(r=>async.next(r)).catch(e=>done(e));
@@ -155,7 +156,7 @@
         }();
         async.next();
     });
-    it("GET /assets/:date returns asset snapshot for date", function(done) {
+    it("TESTTESTGET /inventory/snapshots/:date returns asset snapshot for date", function(done) {
         var async = function* () {
             try {
                 // tomato1 is in bucket1; tomato2 is in bucket2

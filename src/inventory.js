@@ -128,6 +128,7 @@
             }
             return new Promise((resolve, reject) => {
                 var self = this;
+                self.assetMap = {};
                 var async = function*() {
                     try {
                         var objects = path.join(self.assetDir, 'objects');
@@ -264,7 +265,7 @@
         close() {
             var self = this;
             return new Promise((resolve,reject) => {
-                winston.warn(`Inventory.close() closed`);
+                winston.info(`Inventory.close() closed`);
                 this.isOpen = false;
                 resolve(self);
             });
@@ -350,12 +351,6 @@
                 }
             }
             return gen();
-            /*
-            //var guids = Object.keys(this.assetMap).sort();
-            var guids = Object.keys(this.assetMap);
-            var assets =  guids.map(guid=>this.assetMap[guid]);
-            return filter ? assets.filter(a=>filter.matches(a)) : assets;
-            */
         }
 
         guidify(snapshot) {
