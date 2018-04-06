@@ -342,6 +342,21 @@
             });
         }
 
+        guids(ivpath = this.inventoryPath) {
+            var objectsPath = path.join(ivpath, 'objects');
+            if (!fs.existsSync(objectsPath)) {
+                var err = new Error(`Inventory.guids() non-existent inventory:${ivpath}`);
+                throw err;
+            }
+            return function*() {
+                var folders = fs.readdirSync(objectsPath);
+                for (let folder of folders) {
+                    var files = fs.readdirSync(path.join(objectsPath, folder));
+                    yield* files;
+                }
+            }();
+        }
+
         assets(filter) {
             if (!this.isOpen) {
                 var e = new Error("Inventory.assets() inventory must be open()'d");

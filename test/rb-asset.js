@@ -128,6 +128,18 @@
         }();
         async.next();
     });
+    it("GET /inventory/guids returns asset guids", function(done) {
+        (async function() { 
+            try {
+                var res = await supertest(app).get("/test/inventory/guids");
+                res.statusCode.should.equal(200);
+                var guids = [...rbtest().inventory.guids()];
+                should.deepEqual(res.body, guids);
+
+                done();
+            } catch(err){done(err);} 
+        })();
+    });
     it("GET /asset/snapshot/:id returns asset snapshot for id", function(done) {
         var async = function*() {
             try {

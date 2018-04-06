@@ -340,4 +340,30 @@
         }
         done();
     });
+    it("guids(ivpath) returns iterator over all asset guids", function(done) {
+        (async function() { try{
+            var iv = new Inventory({
+                inventoryPath,
+            });
+            var r = await iv.open();
+            var r = await iv.import(sampleInventory);
+            should(iv.guids()).iterable();
+            var guids = [...iv.guids()];
+            should.deepEqual(guids.sort(), [
+                'GUID001',
+                'GUID002',
+                'GUID003',
+                'GUID004',
+                'GUID_tent1',
+            ].sort());
+
+            // inventory path can be specified
+            should.deepEqual([...iv.guids(inventoryPath)], guids);
+
+            // error handling
+            should.throws(()=>iv.guids('badpath'));
+
+            done();
+        } catch(e){done(e);} })();
+    });
 })

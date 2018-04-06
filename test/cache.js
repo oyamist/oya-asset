@@ -131,7 +131,7 @@
         }();
         async.next();
     });
-    it("TESTTESTLRU objects are culled to maintain maxSize", function(done) {
+    it("LRU objects are culled to maintain maxSize", function(done) {
         var async = function*() {
             try {
                 var cache = new Cache({

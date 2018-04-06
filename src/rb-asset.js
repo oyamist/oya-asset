@@ -24,6 +24,7 @@
             winston.info(`RbAsset.ctor(${name})`);
             Object.defineProperty(this, "handlers", {
                 value: super.handlers.concat([
+                    this.resourceMethod("get", "inventory/guids", this.getGuids),
                     this.resourceMethod("get", "asset/snapshot/:id", this.getAsset),
                     this.resourceMethod("get", "inventory/snapshots/:date", this.getSnapshots),
                     this.resourceMethod("get", "inventory/snapshots", this.getSnapshots),
@@ -129,6 +130,10 @@
                 }();
                 async.next();
             });
+        }
+
+        getGuids(req, res, next) {
+            return [...this.inventory.guids()];
         }
 
         getSnapshots(req, res, next) {
