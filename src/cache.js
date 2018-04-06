@@ -67,7 +67,7 @@
             return removed;
         }
 
-        entry(key) {
+        entryOf(key) {
             return this.map[key];
         }
 

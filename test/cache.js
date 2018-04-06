@@ -179,19 +179,19 @@
         }();
         async.next();
     });
-    it("entry(key) returns cache entry", function() {
+    it("entryOf(key) returns cache entry", function() {
         var cache = new Cache();
 
         // entry for something in cache
         cache.put(assets[0].guid, assets[0], t[0]);
-        should.deepEqual(cache.entry(assets[0].guid), {
+        should.deepEqual(cache.entryOf(assets[0].guid), {
             key: assets[0].guid,
             obj: assets[0],
             t: t[0],
         });
 
         // entry for non-existent objecdt
-        should.deepEqual(cache.entry('nobody'), undefined);
+        should.deepEqual(cache.entryOf('nobody'), undefined);
     });
     it("is iterable", function() {
         // empty cache
@@ -220,48 +220,49 @@
         }].sort(Cache.COMPARE_ENTRY_KEY));
     });
     it("is serializable", function(done) {
-        var async = function*() {
+        (async function() {
             try {
                 var fetches = 0;
                 function myFetch(guid) {
                     return new Promise((resolve, reject) => {
                         fetches++;
-                        resolve( 
-                            assets.reduce((acc,asset) => {
-                                return acc || (asset.guid === guid) && asset;
-                            }, undefined)
-                        );
+                        resolve(assets.reduce((acc,asset) => 
+                            (acc || (asset.guid === guid) && asset), 
+                            undefined));
                     });
                 }
                 var cache = new Cache({
                     fetch: myFetch,
                 });
                 cache.put(assets[0].guid, assets[0], t[0]);
-                var asset = yield cache.get(assets[0].guid).then(r=>async.next(r)).catch(e=>done(e));
+                var asset = await cache.get(assets[0].guid);
                 should.deepEqual(asset, assets[0]);
-                var entry0 = cache.entry(assets[0].guid);
+                var entry0 = cache.entryOf(assets[0].guid);
                 var json = JSON.parse(JSON.stringify(cache));
                 should.deepEqual(Object.keys(json).sort(), [
                     "map",
                     "maxSize",
                 ].sort());
 
+                // Deserialized caches have unresolved entries because
+                // serialization of cache objects is a client concern.
                 var cache2 = new Cache(Object.assign({
                     fetch: myFetch,
                 },json));
-                should.deepEqual(cache2.entry(assets[0].guid), {
-                    key: assets[0].guid,
-                    t: entry0.t,
-                });
-                var asset = yield cache2.get(assets[0].guid)
-                    .then(r=>async.next(r)).catch(e=>done(e));
+                var entry0_2 = cache2.entryOf(assets[0].guid);
+                should(entry0_2.key).equal(entry0.key);
+                should(entry0_2.obj).equal(undefined);
+                should(entry0_2.t).eql(entry0.t);
+
+                // Cache resolves entries on demand using client fetch mothod.
+                var asset = await cache2.get(assets[0].guid)
                 should.deepEqual(asset, assets[0]);
+                var entry0_2 = cache2.entryOf(assets[0].guid);
+                should(entry0_2.obj).equal(assets[0]);
+
                 done();
-            } catch(e) {
-                done(e);
-            }
-        }();
-        async.next();
+            } catch(e) { done(e); }
+        })();
     });
     
 })

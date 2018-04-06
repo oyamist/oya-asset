@@ -25,10 +25,12 @@
             Object.defineProperty(this, "handlers", {
                 value: super.handlers.concat([
                     this.resourceMethod("get", "inventory/guids", this.getGuids),
-                    this.resourceMethod("get", "asset/snapshot/:id", this.getAsset),
+                    this.resourceMethod("get", "asset/guid/:guid", this.getAsset),
+                    this.resourceMethod("get", "asset/snapshot/:id", this.getSnapshot),
                     this.resourceMethod("get", "inventory/snapshots/:date", this.getSnapshots),
                     this.resourceMethod("get", "inventory/snapshots", this.getSnapshots),
                     this.resourceMethod("post", "asset/snapshot", this.postAsset),
+                    this.resourceMethod("put", "asset/guid/:guid", this.putAsset),
                 ]),
             });
         }
@@ -64,24 +66,37 @@
         getAsset(req, res, next) {
             var self = this;
             return new Promise((resolve, reject) => {
-                var async = function*() {
+                (async function() { 
                     try {
-                        var asset = yield self.inventory.assetOfId(req.params.id)
-                            .then(r=>async.next(r))
-                            .catch(e=>{
-                                reject(e);
-                                async.throw(e);
-                            });
+                        var asset = await self.inventory.assetOfGuid(req.params.guid);
+                        resolve(asset);
+                    } catch (e) {
+                        winston.warn(e.stack);
+                        reject(e);
+                    }
+                })();
+            });
+        }
+
+        getSnapshot(req, res, next) {
+            var self = this;
+            return new Promise((resolve, reject) => {
+                (async function() { 
+                    try {
+                        var asset = await self.inventory.assetOfId(req.params.id);
                         resolve(asset ? asset.snapshot() : {});
                     } catch (e) {
                         winston.warn(e.stack);
                         reject(e);
                     }
-                }();
-                async.next();
+                })();
             });
         }
         
+        putAsset(req, res, next) {
+            return this.inventory.saveAsset(req.body);
+        }
+
         postAsset(req, res, next) {
             return new Promise((resolve, reject) => {
                 var self = this;

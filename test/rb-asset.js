@@ -140,32 +140,90 @@
             } catch(err){done(err);} 
         })();
     });
-    it("GET /asset/snapshot/:id returns asset snapshot for id", function(done) {
-        var async = function*() {
+    it("GET /asset/guid/:guid returns asset for guid", function(done) {
+        (async function() {
             try {
-                var date = new Date();
-                var url = `/test/asset/snapshot/A0001`;
-                var response = yield supertest(app).get(url).expect((res) => {
-                    res.statusCode.should.equal(200);
-                    var asset = res.body;
-                    should(asset).properties({
-                        end: null,
-                        type: 'plant',
-                        cultivar: 'Chocolate Stripes',
-                        id: 'A0001',
-                        location: 'GUID003',
-                        plant: 'tomato',
-                        guid: 'GUID001',
-                        name: 'Tomato1',
-                    });
-                }).end((e,r) => e ? async.throw(e) : async.next(r));
+                var inventory = rbtest().inventory;
+                var a0001 = await inventory.assetOfGuid('GUID001');
+                should(a0001).instanceOf(Asset);
+                var url = `/test/asset/guid/GUID001`;
+
+                var res = await supertest(app).get(url);
+                res.statusCode.should.equal(200);
+                should.deepEqual(res.body, JSON.parse(JSON.stringify(a0001)));
+                
                 done();
             } catch(err) {
                 winston.error(err.stack);
                 done(err);
             }
-        }();
-        async.next();
+        })();
+    });
+    it("TESTTESTPUT /asset/guid/:guid upserts asset for guid", function(done) {
+        (async function() {
+            try {
+                var inventory = rbtest().inventory;
+                var a0001 = await inventory.assetOfGuid('GUID001');
+                var a0001copy = new Asset(a0001);
+                a0001copy.set('color', 'red');
+                should(a0001.get('color')).equal(undefined);
+                should(a0001copy.get('color')).equal('red');
+                var url = `/test/asset/guid/GUID001`;
+
+                var res = await supertest(app).put(url).send(a0001copy);
+                res.statusCode.should.equal(200);
+
+                // in-memory instance may not have changed
+                should(a0001.get('color')).equal(undefined);
+
+                // persistent asset is updated
+                var a0001 = await inventory.assetOfGuid('GUID001');
+                should.deepEqual(res.body, JSON.parse(JSON.stringify(a0001)));
+                should(a0001.get('color')).equal('red');
+                
+                done();
+            } catch(err) {
+                winston.error(err.stack);
+                done(err);
+            }
+        })();
+    });
+    it("GET /asset/guid/:guid returns asset for guid", function(done) {
+        (async function() {
+            try {
+                var inventory = rbtest().inventory;
+                var a0001 = await inventory.assetOfGuid('GUID001');
+                should(a0001).instanceOf(Asset);
+                var url = `/test/asset/guid/GUID001`;
+
+                var res = await supertest(app).get(url);
+                res.statusCode.should.equal(200);
+                should.deepEqual(res.body, JSON.parse(JSON.stringify(a0001)));
+                
+                done();
+            } catch(err) {
+                winston.error(err.stack);
+                done(err);
+            }
+        })();
+    });
+    it("GET /asset/snapshot/:id returns asset snapshot for id", function(done) {
+        (async function() {
+            try {
+                var inventory = rbtest().inventory;
+                var a0001 = await inventory.assetOfId('A0001');
+                var url = `/test/asset/snapshot/A0001`;
+
+                var res = await supertest(app).get(url);
+                res.statusCode.should.equal(200);
+                should.deepEqual(res.body, a0001.snapshot());
+                
+                done();
+            } catch(err) {
+                winston.error(err.stack);
+                done(err);
+            }
+        })();
     });
     it("GET /inventory/snapshots/:date returns asset snapshot for date", function(done) {
         var async = function* () {

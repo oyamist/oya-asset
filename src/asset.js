@@ -24,6 +24,7 @@
                 this.type = Asset.T_ASSET;
             }
             Object.defineProperty(this, "tvalues", {
+                enumerable: true,
                 writable: true,
                 value: (opts.tvalues || []).map(tv =>
                     (tv instanceof TValue ? tv : new TValue(tv))),
@@ -250,9 +251,7 @@
         }
 
         toJSON() {
-            return Object.assign({
-                tvalues: this.tvalues,
-            }, this);
+            return this;
         }
 
         valueHistory(tag) {

@@ -78,6 +78,7 @@
             "end",
             "guid",
             "type",
+            "tvalues",
         ].sort());
 
         // Asset name is generated if not provided
