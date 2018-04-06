@@ -264,5 +264,21 @@
             } catch(e) { done(e); }
         })();
     });
+    it("clear() removes all entries", function() {
+        var cache = new Cache();
+        var t = new Date(2018,2,1);
+        cache.put('a', 'asdf',t);
+        should.deepEqual(cache.entryOf('a'), {
+            key: 'a',
+            obj: 'asdf',
+            t,
+        });
+        should(cache.size()).equal(1);
+
+        // remove all entries
+        cache.clear();
+        should(cache.entryOf('a')).equal(undefined);
+        should(cache.size()).equal(0);
+    });
     
 })

@@ -17,10 +17,9 @@
             if (!fs.existsSync(local)) {
                 fs.mkdirSync(local);
             }
-            Object.defineProperty(this, 'inventoryPath', {
+            Object.defineProperty(this, 'isDirty', {
                 writable: true,
-                enumerable: true,
-                value: path.join(local, 'assets'),
+                value: false,
             });
             Object.defineProperty(this, 'isOpen', {
                 writable: true,
@@ -35,7 +34,7 @@
             var self = this;
             this.assetMap = opts.assetMap || this.assetMap || {};
             var local = path.join(__dirname, '..', 'local');
-            opts.inventoryPath && (this.inventoryPath = opts.inventoryPath);
+            this.inventoryPath = opts.inventoryPath ||  path.join(local, 'assets');
             if (!fs.existsSync(this.inventoryPath)) {
                 winston.info(`Inventory.update() creating assets directory: ${this.inventoryPath}`);
                 fs.mkdirSync(this.inventoryPath);
@@ -90,7 +89,7 @@
                         winston.error(e.message, ereject.stack);
                         return reject(e);
                     } 
-                    var async = function*() {
+                    (async function() {
                         try {
                             var json = JSON.parse(data);
                             var keys = Object.keys(json.assetMap);
@@ -98,19 +97,14 @@
                                 var key = keys[i];
                                 var asset = self.assetOf(json.assetMap[key]);
                                 asset && self.guidCache.put(asset.guid, asset.snapshot());
-                                yield self.saveAsset(asset).then(r=>async.next(r))
-                                    .catch(e=> {
-                                        reject(e); 
-                                        async.throw(e);
-                                    });
+                                await self.saveAsset(asset);
                             };
                             resolve(self);
                         } catch (e) {
                             winston.error(e.message, ereject.stack);
                             reject(e);
                         }
-                    }();
-                    async.next();
+                    })();
                 });
             });
         }
@@ -159,6 +153,7 @@
                             throw r;
                         }
                         self.isOpen = true;
+                        self.isDirty = false;
                         resolve(self);
                     } catch (e) {
                         winston.error(e.stack);
@@ -198,8 +193,9 @@
                         }
                         var json = JSON.parse(data);
                         var asset = this.assetOf(json);
-                        this.assetMap[asset.guid] = asset;
-                        this.guidCache.put(asset.guid, asset);
+                        this.assetMap[guid] = asset;
+                        this.isDirty = this.isDirty || !this.guidCache.entryOf(guid);
+                        this.guidCache.put(guid, asset);
                         resolve(asset);
                     });
                 } catch(e) {
@@ -258,6 +254,7 @@
                             winston.error(assetPath, err.stack);
                             return reject(err);
                         }
+                        this.isDirty = this.isDirty || !this.guidCache.entryOf(guid);
                         this.assetMap[guid] = asset;
                         this.guidCache.put(asset.guid, asset);
                         winston.info(`Inventory.saveAsset() saved asset guid:${asset.guid}`);
@@ -332,7 +329,7 @@
                             done,
                         } = assetGen.next();
                         if (!(assetGen.next().done)) {
-                            throw new Error(`Data integrity error: ${assets.length} assets have same id: ${id}`);
+                            throw new Error(`Data integrity error: multiple assets have same id: ${id}`);
                         }
                         resolve(value || null);
                     } catch(e) {
@@ -367,11 +364,13 @@
             }
             var self = this;
             var gen = function*() {
-                var guids = Object.keys(self.assetMap);
+                var guids = [...self.guids()];
                 var allAssets = guids.map(guid=>self.assetMap[guid]);
                 var assets = filter ? allAssets.filter(a=>filter.matches(a)) : allAssets;
                 for (var i = 0; i < assets.length; i++) {
                     var asset = assets[i];
+                    self.isDirty = self.isDirty || !(self.guidCache.entryOf(asset.guid));
+                    self.guidCache.put(asset.guid, asset);
                     yield asset;
                 }
             }

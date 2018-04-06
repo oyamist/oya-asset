@@ -24,6 +24,10 @@
             this.cull = opts.cull || Cache.CULL_LRU;
         }
 
+        clear() {
+            this.map = {};
+        }
+
         size() {
             return Object.keys(this.map).length;
         }

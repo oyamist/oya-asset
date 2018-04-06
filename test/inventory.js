@@ -316,11 +316,11 @@
         }();
         async.next();
     });
-    it("generator", function(done) {
-        var generator = function*() {
+    it("TESTTESTgenerator", function(done) {
+        var generator = function* () {
             var i = 0;
             while (i < 10) {
-                yield(i);
+                yield i;
                 i += 2;
             }
         }();
@@ -366,5 +366,35 @@
 
             done();
         } catch(e){done(e);} })();
+    });
+    it("TESTTESTisDirty is true if inventory has changed", function(done) {
+        (async function(){ try {
+            var iv = new Inventory({
+                inventoryPath,
+            });
+
+            // A newly opened inventory is not dirty
+            var r = await iv.open();
+            should(iv.isDirty).equal(false);
+
+            // Adding a new asset will mark inventory as dirty
+            var plant = new Plant({
+                name: 'testdirty',
+            });
+            var asset = await iv.saveAsset(plant);
+            should(iv.isDirty).equal(true);
+            var asset = await iv.assetOfId(plant.id);
+            should.deepEqual(asset, plant);
+
+            // clear cache
+            iv.guidCache.clear();
+            iv.isDirty = false;
+            should(iv.isDirty).equal(false);
+            var asset = await iv.assetOfId(plant.id);
+            should.deepEqual(asset, plant);
+            should(iv.isDirty).equal(true);
+
+            done();
+        } catch (e) {done(e)} })();
     });
 })
