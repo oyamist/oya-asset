@@ -21,13 +21,13 @@
             var async = function*() {
                 try {
                     var local = path.join(__dirname, '..', 'local');
-                    var assetDir = path.join(local, 'test-query');
-                    if (fs.existsSync(assetDir)) {
-                        var cmd = `rm -rf ${assetDir}`;
+                    var inventoryPath = path.join(local, 'test-query');
+                    if (fs.existsSync(inventoryPath)) {
+                        var cmd = `rm -rf ${inventoryPath}`;
                         child_process.execSync(cmd);
                     }
                     var inventory = new Inventory({
-                        assetDir,
+                        inventoryPath,
                     });
                     yield inventory.open().then(r=>async.next()).catch(e=>reject(e));
                     var t = [

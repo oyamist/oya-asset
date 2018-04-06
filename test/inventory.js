@@ -11,7 +11,7 @@
     const fs = require('fs');
     const path = require('path');
     const child_process = require('child_process');
-    const assetDir = path.join(__dirname, '..', 'local', 'test-inventory');
+    const inventoryPath = path.join(__dirname, '..', 'local', 'test-inventory');
     const local = path.join(__dirname, '..', 'local');
     const sampleInventory = path.join(__dirname, 'sample-inventory.json');
     winston.level = 'warn';
@@ -20,7 +20,7 @@
         var async = function*() {
             var iv = new Inventory();
             should(typeof iv.assetMap).equal('object');
-            should(iv.assetDir).equal(path.join(local, 'assets'));
+            should(iv.inventoryPath).equal(path.join(local, 'assets'));
             done();
         }();
         async.next();
@@ -28,12 +28,12 @@
     it("saveAsset(asset) and loadAsset(guid) handle asset files", function(done) {
         var async = function*() {
             try {
-                if (fs.existsSync(assetDir)) {
-                    var cmd = `rm -rf ${assetDir}`;
+                if (fs.existsSync(inventoryPath)) {
+                    var cmd = `rm -rf ${inventoryPath}`;
                     child_process.execSync(cmd);
                 }
                 var iv = new Inventory({
-                    assetDir,
+                    inventoryPath,
                 });
                 yield iv.open().then(r=>async.next(r)).catch(e=>done(e));
                 var plant1 = new Plant({
@@ -66,12 +66,12 @@
     });
     it("is serializable", function(done) {
         var async = function*() {
-            if (fs.existsSync(assetDir)) {
-                var cmd = `rm -rf ${assetDir}`;
+            if (fs.existsSync(inventoryPath)) {
+                var cmd = `rm -rf ${inventoryPath}`;
                 child_process.execSync(cmd);
             }
             var iv = new Inventory({
-                assetDir,
+                inventoryPath,
             });
             yield iv.open().then(r=>async.next(r)).catch(e=>done(e));
             var plant1 = new Plant({
@@ -94,7 +94,7 @@
     it("assets(filter) returns iterator for matching assets", function(done) {
         var async = function*() {
             var iv = new Inventory({
-                assetDir
+                inventoryPath
             });
             yield(iv.open()).then(r=>async.next(r)).catch(e=>done(e));
             var t1 = new Date(2018,1,1);
@@ -194,7 +194,7 @@
     it("guidify(snapshot) updates id references to guids", function(done) {
         var async = function*() {
             var iv = new Inventory({
-                assetDir,
+                inventoryPath,
             });
             var a1 = new Asset({
                 id: "A0001",
@@ -213,12 +213,12 @@
     it("open(path) opens existing inventory", function(done) {
         var async = function *() {
             try {
-                if (fs.existsSync(assetDir)) {
-                    var cmd = `rm -rf ${assetDir}`;
+                if (fs.existsSync(inventoryPath)) {
+                    var cmd = `rm -rf ${inventoryPath}`;
                     child_process.execSync(cmd);
                 }
                 var iv = new Inventory({
-                    assetDir,
+                    inventoryPath,
                 });
                 should(iv.isOpen).equal(false);
                 var r = yield iv.open().then(r=>async.next(r)).catch(e=>async.throw(e));
@@ -229,7 +229,7 @@
                 should(r).equal(iv);
 
                 iv2 = new Inventory({
-                    assetDir,
+                    inventoryPath,
                 });
                 var r = yield iv2.open().then(r=>async.next(r)).catch(e=>async.throw(e));
                 var a1 = yield iv2.assetOfId('A0001').then(r=>async.next(r))
@@ -248,7 +248,7 @@
         var async = function*() {
             try {
                 var guid = 'GUID_tent1';
-                var assetPath = path.join(assetDir, `objects`, `${guid.substr(0,2)}`,`${guid}`);
+                var assetPath = path.join(inventoryPath, `objects`, `${guid.substr(0,2)}`,`${guid}`);
                 var t1 = new Date(2018, 1, 2);
                 if (fs.existsSync(assetPath)) {
                     fs.unlinkSync(assetPath);
@@ -259,7 +259,7 @@
                     guid,
                 });
                 var iv = new Inventory({
-                    assetDir,
+                    inventoryPath,
                 });
                 yield(iv.open()).then(r=>async.next(r)).catch(e=>done(e));
                 var r = yield iv.saveAsset(asset).then(r=>async.next(r)).catch(e=>done(e));
@@ -278,7 +278,7 @@
             try {
                 var guid = 'GUID001';
                 var iv = new Inventory({
-                    assetDir,
+                    inventoryPath,
                 });
                 yield iv.open().then(r=>async.next(r)).catch(e=>done(e));
                 yield iv.import(sampleInventory).then(r=>async.next(r)).catch(e=>done(e));
@@ -300,7 +300,7 @@
         var async = function*() {
             try {
                 var iv = new Inventory({
-                    assetDir,
+                    inventoryPath,
                 });
                 should.throws(() => iv.assetCount());
                 yield iv.open().then(r=>async.next(r)).catch(e=>done(e));

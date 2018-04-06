@@ -28,9 +28,9 @@
     }
 
     var local = path.join(__dirname, '..', 'local');
-    var assetDir = path.join(local, 'test-rb-asset');
-    if (fs.existsSync(assetDir)) {
-        var cmd = `rm -rf ${assetDir}`;
+    var inventoryPath = path.join(local, 'test-rb-asset');
+    if (fs.existsSync(inventoryPath)) {
+        var cmd = `rm -rf ${inventoryPath}`;
         child_process.execSync(cmd);
     }
 
@@ -41,8 +41,8 @@
             }
             winston.info("test suite initialized");
             var inventory = rbtest().inventory;
-            if (inventory.assetDir !== assetDir) {
-                inventory.assetDir = assetDir;
+            if (inventory.inventoryPath !== inventoryPath) {
+                inventory.inventoryPath = inventoryPath;
                 yield inventory.close().then(r=>async.next(r)).catch(e=>done(e));
                 yield inventory.open().then(r=>async.next(r)).catch(e=>done(e));
                 var sampleFile = path.join(__dirname, 'sample-inventory.json');
@@ -57,17 +57,17 @@
             try {
                 // default ctor
                 var rb = new RbAsset('test-ctor', {
-                    assetDir,
+                    inventoryPath,
                 });
                 yield rb.initialize().then(r=>async.next(r)).catch(e=>async.throw(e));
                 should(rb).properties({
-                    assetDir,
+                    inventoryPath,
                 });
 
                 // import custom inventory
                 var sampleInventory = path.join(__dirname, 'sample-inventory.json');
                 var rb = new RbAsset('test-ctor', {
-                    assetDir,
+                    inventoryPath,
                 });
                 yield rb.initialize().then(r=>async.next(r)).catch(e=>done(e));
                 yield rb.inventory.import(sampleInventory).then(r=>async.next(r)).catch(e=>done(e));
@@ -89,7 +89,7 @@
 
                 // server.js ctor for 'test' service
                 var inventory = rbtest().inventory;
-                should(inventory.assetDir).equal(assetDir);
+                should(inventory.inventoryPath).equal(inventoryPath);
                 if (!inventory.isOpen) {
                     yield inventory.open().then(r=>async.next()).catch(e=>done(e));
                 }

@@ -17,7 +17,7 @@
             if (!fs.existsSync(local)) {
                 fs.mkdirSync(local);
             }
-            Object.defineProperty(this, 'assetDir', {
+            Object.defineProperty(this, 'inventoryPath', {
                 writable: true,
                 enumerable: true,
                 value: path.join(local, 'assets'),
@@ -35,10 +35,10 @@
             var self = this;
             this.assetMap = opts.assetMap || this.assetMap || {};
             var local = path.join(__dirname, '..', 'local');
-            opts.assetDir && (this.assetDir = opts.assetDir);
-            if (!fs.existsSync(this.assetDir)) {
-                winston.info(`Inventory.update() creating assets directory: ${this.assetDir}`);
-                fs.mkdirSync(this.assetDir);
+            opts.inventoryPath && (this.inventoryPath = opts.inventoryPath);
+            if (!fs.existsSync(this.inventoryPath)) {
+                winston.info(`Inventory.update() creating assets directory: ${this.inventoryPath}`);
+                fs.mkdirSync(this.inventoryPath);
             }
             var keys = Object.keys(this.assetMap);
             for (var i = 0; i < keys.length; i++) {
@@ -124,7 +124,7 @@
                 self.assetMap = {};
                 var async = function*() {
                     try {
-                        var objects = path.join(self.assetDir, 'objects');
+                        var objects = path.join(self.inventoryPath, 'objects');
                         var files = [];
                         if (fs.existsSync(objects)) {
                             var r = yield fs.readdir(objects, (err, folders) => {
@@ -175,7 +175,7 @@
                 throw e;
             }
             var folder = guid.substr(0,FOLDER_PREFIX);
-            return path.join(this.assetDir, 'objects', folder, guid);
+            return path.join(this.inventoryPath, 'objects', folder, guid);
         }
 
         loadAsset(guid) {
@@ -242,9 +242,9 @@
                         if (!fs.existsSync(folderPath)) {
                             var objectsPath = path.dirname(folderPath);
                             if (!fs.existsSync(objectsPath)) {
-                                var assetDir = path.dirname(objectsPath);
-                                if (!fs.existsSync(assetDir)) {
-                                    fs.mkdirSync(assetDir);
+                                var inventoryPath = path.dirname(objectsPath);
+                                if (!fs.existsSync(inventoryPath)) {
+                                    fs.mkdirSync(inventoryPath);
                                 }
                                 fs.mkdirSync(objectsPath);
                             }
