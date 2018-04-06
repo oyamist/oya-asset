@@ -73,13 +73,13 @@
             return Object.keys(this.assetMap).length;
         }
 
-        load(ivpath) {
+        import(ivpath) {
             if (!this.isOpen) {
-                var e = new Error("Inventory.load() inventory must be open()'d");
+                var e = new Error("Inventory.import() inventory must be open()'d");
                 winston.warn(e.stack);
                 return Promise.reject(e);
             }
-            var ereject = new Error(`Inventory.load() no file:${ivpath}`);
+            var ereject = new Error(`Inventory.import() no file:${ivpath}`);
             if (!fs.existsSync(ivpath)) {
                 return Promise.reject(ereject);
             }
@@ -112,30 +112,6 @@
                     }();
                     async.next();
                 });
-            });
-        }
-
-        save(savePath) {
-            if (typeof savePath !== string || !savePath.length) {
-                var e = new Error(`Inventory.save() file path is required`);
-                return Promise.reject(e);
-            }
-            return new Promise((resolve, reject) => {
-                try {
-                    var indent = savePath.match(/test-/) ? 4 : 0;
-                    var json =JSON.stringify(this,undefined,indent);
-                    fs.writeFile(savePath, json, (e) => {
-                        if (e) {
-                            winston.error(stack); 
-                            reject(e); 
-                            return;
-                        }
-                        resolve(this);
-                    });
-                } catch (e) {
-                    winston.error(e.stack);
-                    reject(e);
-                }
             });
         }
 

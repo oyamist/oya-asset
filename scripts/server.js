@@ -49,7 +49,7 @@ let async = function*() {
         if (true) {
             var sampleInventory = path.join(__dirname, '..', 'test', 'sample-inventory.json');
             winston.info(`server.js loading inventory: ${sampleInventory}`);
-            rbasset.inventory.load(sampleInventory);
+            rbasset.inventory.import(sampleInventory);
         }
         restBundles.push(rbasset);
 

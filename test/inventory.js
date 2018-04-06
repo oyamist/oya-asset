@@ -224,7 +224,7 @@
                 var r = yield iv.open().then(r=>async.next(r)).catch(e=>async.throw(e));
                 should(iv.isOpen).equal(true);
                 should(r).equal(iv);
-                yield iv.load(sampleInventory).then(r=>async.next(r)).catch(e=>async.throw(e));
+                yield iv.import(sampleInventory).then(r=>async.next(r)).catch(e=>async.throw(e));
                 var r = yield iv.close().then(r=>async.next(r)).catch(e=>async.throw(e));;
                 should(r).equal(iv);
 
@@ -281,7 +281,7 @@
                     assetDir,
                 });
                 yield iv.open().then(r=>async.next(r)).catch(e=>done(e));
-                yield iv.load(sampleInventory).then(r=>async.next(r)).catch(e=>done(e));
+                yield iv.import(sampleInventory).then(r=>async.next(r)).catch(e=>done(e));
                 var asset = yield iv.loadAsset(guid).then(r=>async.next(r)).catch(e=>done(e));
                 should(asset).instanceOf(Asset);
                 should(asset).properties({

@@ -46,7 +46,7 @@
                 yield inventory.close().then(r=>async.next(r)).catch(e=>done(e));
                 yield inventory.open().then(r=>async.next(r)).catch(e=>done(e));
                 var sampleFile = path.join(__dirname, 'sample-inventory.json');
-                yield inventory.load(sampleFile).then(r=>async.next(r)).catch(e=>done(e));
+                yield inventory.import(sampleFile).then(r=>async.next(r)).catch(e=>done(e));
             }
             done();
         }();
@@ -65,13 +65,13 @@
                     assetDir,
                 });
 
-                // load custom inventory
+                // import custom inventory
                 var sampleInventory = path.join(__dirname, 'sample-inventory.json');
                 var rb = new RbAsset('test-ctor', {
                     assetDir,
                 });
                 yield rb.initialize().then(r=>async.next(r)).catch(e=>done(e));
-                yield rb.inventory.load(sampleInventory).then(r=>async.next(r)).catch(e=>done(e));
+                yield rb.inventory.import(sampleInventory).then(r=>async.next(r)).catch(e=>done(e));
                 should(rb.inventory).instanceOf(Inventory);
                 var assets = [...rb.inventory.assets()];
                 should(assets.length).above(2);
