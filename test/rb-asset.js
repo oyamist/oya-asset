@@ -159,7 +159,7 @@
             }
         })();
     });
-    it("TESTTESTPUT /asset/guid/:guid upserts asset for guid", function(done) {
+    it("PUT /asset/guid/:guid upserts asset for guid", function(done) {
         (async function() {
             try {
                 var inventory = rbtest().inventory;

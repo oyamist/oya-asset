@@ -316,7 +316,7 @@
         }();
         async.next();
     });
-    it("TESTTESTgenerator", function(done) {
+    it("generator", function(done) {
         var generator = function* () {
             var i = 0;
             while (i < 10) {
@@ -367,7 +367,7 @@
             done();
         } catch(e){done(e);} })();
     });
-    it("TESTTESTisDirty is true if inventory has changed", function(done) {
+    it("isDirty is true if inventory has changed", function(done) {
         (async function(){ try {
             var iv = new Inventory({
                 inventoryPath,
