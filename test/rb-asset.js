@@ -61,7 +61,6 @@
                 });
                 yield rb.initialize().then(r=>async.next(r)).catch(e=>async.throw(e));
                 should(rb).properties({
-                    inventoryPath: path.join(__dirname, '..', 'local', 'inventory.json'),
                     assetDir,
                 });
 

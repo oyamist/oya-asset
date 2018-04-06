@@ -33,8 +33,6 @@
         }
 
         update(opts={}) {
-            this.inventoryPath = opts.inventoryPath || 
-                path.join(global.__appdir, 'local', 'inventory.json');
             this.assetDir = opts.assetDir ||
                 path.join(global.__appdir, 'local', 'assets');
         }
@@ -51,7 +49,6 @@
                         });
                         that.inventory = new Inventory({
                             assetDir: that.assetDir,
-                            ivpath: that.inventoryPath,
                         });
                         that.inventory.open().then(r=>resolve()).catch(e=>reject(e));
                     } catch (e) {
