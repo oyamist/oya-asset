@@ -28,7 +28,7 @@
             return Object.keys(this.map).length;
         }
 
-        static COMPARE_ENTRY(entry1, entry2) {
+        static COMPARE_ENTRY_KEY(entry1, entry2) {
             if (entry1 === entry2) {
                 return 0;
             }
@@ -36,6 +36,16 @@
                 return 0;
             }
             return (entry1.key < entry2.key) ? -1 : 1;
+        }
+
+        static COMPARE_ENTRY_LRU(entry1, entry2) {
+            if (entry1 === entry2) {
+                return COMPARE_ENTRY_KEY(entry1, entry2);
+            }
+            if (entry1.t === entry2.t) {
+                return COMPARE_ENTRY_KEY(entry1, entry2);
+            }
+            return (entry1.t < entry2.t) ? -1 : 1;
         }
 
         static CULL_LRU(n, map) {
@@ -90,6 +100,7 @@
                     var entry = this.map[key];
                     var obj =  entry && entry.obj || undefined;
                     if (obj) {
+                        entry.t = t || new Date(); // update timestamp
                         resolve(obj);
                     } else {
                         this.fetch(key).then(obj=>{
@@ -113,7 +124,7 @@
 
     Cache.prototype[Symbol.iterator] = function*() {
         var entries = [];
-        var keys = Object.keys(this.map).sort();
+        var keys = Object.keys(this.map);
         for (var i = 0; i < keys.length; i++) {
             yield this.map[keys[i]];
         }

@@ -131,18 +131,53 @@
         }();
         async.next();
     });
-    it("objects are removed from cache to maintain maxSize", function() {
-        var cache = new Cache({
-            maxSize: 3,
-        });
+    it("TESTTESTLRU objects are culled to maintain maxSize", function(done) {
+        var async = function*() {
+            try {
+                var cache = new Cache({
+                    maxSize: 3,
+                });
 
-        cache.put(assets[0].guid, assets[0], t[0]);
-        cache.put(assets[1].guid, assets[1], t[1]);
-        cache.put(assets[2].guid, assets[2], t[2]);
-        should(cache.size()).equal(3);
+                cache.put(assets[0].guid, assets[0]); // GUID0001
+                yield setTimeout(() => async.next(null), 10); // force new timestamp
+                cache.put(assets[1].guid, assets[1]); // GUID0002
+                yield setTimeout(() => async.next(null), 10); // force new timestamp
+                cache.put(assets[2].guid, assets[2]); // GUID0003
+                should(cache.size()).equal(3);
 
-        cache.put(assets[3].guid, assets[3], t[3]);
-        should(cache.size()).equal(3);
+                // COMPARE_ENTRY_LRU sorts cache entries from LRU to MRU
+                should.deepEqual([...cache].sort(Cache.COMPARE_ENTRY_LRU).map(entry=>entry.key), 
+                    ['GUID0001', 'GUID0002', 'GUID0003']);
+
+                // adding a new entry culls LRU entry 
+                yield setTimeout(() => async.next(null), 10); // force new timestamp
+                cache.put(assets[3].guid, assets[3]); // GUID0004
+                should(cache.size()).equal(3);
+                should.deepEqual([...cache].sort(Cache.COMPARE_ENTRY_LRU).map(entry=>entry.key), 
+                    ['GUID0002', 'GUID0003', 'GUID0004']);
+                
+                // retrieving a cached asset updates its timestamp,
+                // which moves it to the end of the LRU queue
+                yield setTimeout(() => async.next(null), 10); // force new timestamp
+                yield cache.get(assets[1].guid).then(r=>async.next(r)).catch(e=>done(e));
+                should(cache.size()).equal(3);
+                should.deepEqual([...cache].sort(Cache.COMPARE_ENTRY_LRU).map(entry=>entry.key), 
+                    ['GUID0003', 'GUID0004', 'GUID0002']);
+
+                // updating a cached asset updates its timestamp,
+                // which moves it to the end of the LRU queue
+                yield setTimeout(() => async.next(null), 10); // force new timestamp
+                cache.put(assets[3].guid, assets[3]);
+                should(cache.size()).equal(3);
+                should.deepEqual([...cache].sort(Cache.COMPARE_ENTRY_LRU).map(entry=>entry.key), 
+                    ['GUID0003', 'GUID0002', 'GUID0004']);
+
+                done();
+            } catch(e) {
+                done(e);
+            }
+        }();
+        async.next();
     });
     it("entry(key) returns cache entry", function() {
         var cache = new Cache();
@@ -174,7 +209,7 @@
 
         // two entries
         cache.put(assets[0].guid, assets[0], t[0]);
-        should.deepEqual([...cache], [{
+        should.deepEqual([...cache].sort(Cache.COMPARE_ENTRY_KEY), [{
             key: assets[0].guid,
             obj: assets[0],
             t: t[0],
@@ -182,7 +217,7 @@
             key: assets[1].guid,
             obj: assets[1],
             t: t[1],
-        }].sort(Cache.COMPARE_ENTRY));
+        }].sort(Cache.COMPARE_ENTRY_KEY));
     });
     it("is serializable", function(done) {
         var async = function*() {
@@ -216,7 +251,7 @@
                 },json));
                 should.deepEqual(cache2.entry(assets[0].guid), {
                     key: assets[0].guid,
-                    t: t[0],
+                    t: entry0.t,
                 });
                 var asset = yield cache2.get(assets[0].guid)
                     .then(r=>async.next(r)).catch(e=>done(e));
