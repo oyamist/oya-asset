@@ -65,99 +65,100 @@
         async.next();
     });
     it("is serializable", function(done) {
-        var async = function*() {
-            if (fs.existsSync(inventoryPath)) {
-                var cmd = `rm -rf ${inventoryPath}`;
-                child_process.execSync(cmd);
-            }
-            var iv = new Inventory({
-                inventoryPath,
-            });
-            yield iv.open().then(r=>async.next(r)).catch(e=>done(e));
-            var plant1 = new Plant({
-                name: 'plant1',
-                plant: Plant.P_TOMATO,
-                cultivar: Plant.C_CHOCOLATE_STRIPES,
-            });
-            var asset = yield iv.saveAsset(plant1).then(r=>async.next(r)).catch(e=>done(e));
+        (async function() {
+            try {
+                if (fs.existsSync(inventoryPath)) {
+                    var cmd = `rm -rf ${inventoryPath}`;
+                    child_process.execSync(cmd);
+                }
+                var iv = new Inventory({
+                    inventoryPath,
+                });
+                await iv.open();
+                var plant1 = new Plant({
+                    name: 'plant1',
+                    plant: Plant.P_TOMATO,
+                    cultivar: Plant.C_CHOCOLATE_STRIPES,
+                });
+                var asset = await iv.saveAsset(plant1);
 
-            var json = JSON.parse(JSON.stringify(iv));
-            var ivcopy = new Inventory(json);
-            should.deepEqual(ivcopy, iv);
-            var asset = yield iv.assetOfGuid(plant1.guid).then(r=>async.next(r)).catch(e=>done(e));
-            should.deepEqual(asset, plant1);
+                var json = JSON.parse(JSON.stringify(iv));
+                var ivcopy = new Inventory(json);
+                var asset = await iv.assetOfGuid(plant1.guid);
+                should.deepEqual(asset, plant1);
 
-            done();
-        }();
-        async.next();
+                done();
+            } catch (e) {done(e);}
+        })();
     });
     it("assets(filter) returns iterator for matching assets", function(done) {
-        var async = function*() {
-            var iv = new Inventory({
-                inventoryPath
-            });
-            yield(iv.open()).then(r=>async.next(r)).catch(e=>done(e));
-            var t1 = new Date(2018,1,1);
-            var t2 = new Date(2018,1,2);
-            var plant1 = new Plant({
-                name: 'plant1',
-                plant: Plant.P_TOMATO,
-                cultivar: Plant.C_CHOCOLATE_STRIPES,
-                id: 'A1001',
-                guid: 'GUID1001',
-            });
-            should(plant1.id).equal('A1001');
-            plant1.set(TValue.T_ID, 'A1004', t2);
-            should(plant1.id).equal('A1004');
-            var plant2 = new Plant({
-                name: 'plant2',
-                id: 'A1002',
-                guid: 'GUID1002',
-            });
-            var tent1 = new Asset({
-                name: 'tent1',
-                type: Asset.T_ENCLOSURE,
-                id: 'A1003',
-                guid: 'GUID1003',
-            });
-            var asset = yield iv.saveAsset(plant1).then(r=>async.next(r)).catch(e=>done(e));
-            var asset = yield iv.saveAsset(plant2).then(r=>async.next(r)).catch(e=>done(e));
-            var asset = yield iv.saveAsset(tent1).then(r=>async.next(r)).catch(e=>done(e));
+        (async function() {
+            try {
+                var iv = new Inventory({
+                    inventoryPath
+                });
+                await iv.open();
+                var t1 = new Date(2018,1,1);
+                var t2 = new Date(2018,1,2);
+                var plant1 = new Plant({
+                    name: 'plant1',
+                    plant: Plant.P_TOMATO,
+                    cultivar: Plant.C_CHOCOLATE_STRIPES,
+                    id: 'A1001',
+                    guid: 'GUID1001',
+                });
+                should(plant1.id).equal('A1001');
+                plant1.set(TValue.T_ID, 'A1004', t2);
+                should(plant1.id).equal('A1004');
+                var plant2 = new Plant({
+                    name: 'plant2',
+                    id: 'A1002',
+                    guid: 'GUID1002',
+                });
+                var tent1 = new Asset({
+                    name: 'tent1',
+                    type: Asset.T_ENCLOSURE,
+                    id: 'A1003',
+                    guid: 'GUID1003',
+                });
+                var asset = await iv.saveAsset(plant1);
+                var asset = await iv.saveAsset(plant2);
+                var asset = await iv.saveAsset(tent1);
 
-            // match current id
-            var tvf = new Filter.TValueFilter(Filter.OP_EQ, {
-                tag: TValue.T_ID,
-                value: 'A1004',
-            });
-            should(tvf.matches(plant1)).equal(true);
-            should(tvf.matches(plant2)).equal(false);
-            var assets = [...iv.assets(tvf)];
-            should.deepEqual(assets,[plant1]);
+                // match current id
+                var tvf = new Filter.TValueFilter(Filter.OP_EQ, {
+                    tag: TValue.T_ID,
+                    value: 'A1004',
+                });
+                should(tvf.matches(plant1)).equal(true);
+                should(tvf.matches(plant2)).equal(false);
+                var assets = [...iv.assets(tvf)];
+                should.deepEqual(assets,[plant1]);
 
-            // match current id
-            var tvf = new Filter.TValueFilter(Filter.OP_EQ, {
-                tag: TValue.T_ID,
-                value: 'A1002',
-            });
-            should(tvf.matches(plant2)).equal(true);
-            should(tvf.matches(plant1)).equal(false);
-            var assets = [...iv.assets(tvf)];
-            should.deepEqual(assets, [plant2]);
+                // match current id
+                var tvf = new Filter.TValueFilter(Filter.OP_EQ, {
+                    tag: TValue.T_ID,
+                    value: 'A1002',
+                });
+                should(tvf.matches(plant2)).equal(true);
+                should(tvf.matches(plant1)).equal(false);
+                var assets = [...iv.assets(tvf)];
+                should.deepEqual(assets, [plant2]);
 
-            // match historical id
-            var tvf = new Filter.TValueFilter(Filter.OP_EQ, {
-                tag: TValue.T_ID,
-                value: 'A1001',
-                t: t1,
-            });
-            should(tvf.matches(plant1)).equal(true);
-            should(tvf.matches(plant2)).equal(false);
-            var assets = [...iv.assets(tvf)];
-            should.deepEqual(assets, [plant1]);
+                // match historical id
+                var tvf = new Filter.TValueFilter(Filter.OP_EQ, {
+                    tag: TValue.T_ID,
+                    value: 'A1001',
+                    t: t1,
+                });
+                should(tvf.matches(plant1)).equal(true);
+                should(tvf.matches(plant2)).equal(false);
+                var assets = [...iv.assets(tvf)];
+                should.deepEqual(assets, [plant1]);
 
-            done();
-        }();
-        async.next();
+                done();
+            } catch (e) {done(e);}
+        })();
     });
     it("assetOf(asset) is an asset factory", function() {
         var iv = new Inventory();

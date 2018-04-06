@@ -199,6 +199,7 @@
                         var json = JSON.parse(data);
                         var asset = this.assetOf(json);
                         this.assetMap[asset.guid] = asset;
+                        this.guidCache.put(asset.guid, asset);
                         resolve(asset);
                     });
                 } catch(e) {
@@ -258,6 +259,7 @@
                             return reject(err);
                         }
                         this.assetMap[guid] = asset;
+                        this.guidCache.put(asset.guid, asset);
                         winston.info(`Inventory.saveAsset() saved asset guid:${asset.guid}`);
                         resolve(asset);
                     });
