@@ -188,11 +188,7 @@
             return path.join(this.inventoryPath, 'objects', folder, guid);
         }
 
-        loadAsset(guid) {
-            if (guid == null) {
-                var e = new Error(`Invalid guid:${guid}`);
-                return Promise.reject(e);
-            }
+        loadAsset(guid, updateCache=true) {
             return new Promise((resolve, reject) => {
                 try {
                     var assetPath = this.assetPath(guid);
@@ -208,9 +204,11 @@
                         }
                         var json = JSON.parse(data);
                         var asset = this.assetOf(json);
-                        this.assetMap[guid] = asset;
-                        this.isDirty = this.isDirty || !this.guidCache.entryOf(guid);
-                        this.guidCache.put(guid, asset);
+                        if (updateCache) {
+                            this.assetMap[guid] = asset;
+                            this.isDirty = this.isDirty || !this.guidCache.entryOf(guid);
+                            this.guidCache.put(guid, asset);
+                        }
                         resolve(asset);
                     });
                 } catch(e) {
@@ -220,7 +218,24 @@
             });
         }
 
-        saveAsset(asset) {
+       createAssetFolder(assetPath) {
+            if (!fs.existsSync(assetPath)) {
+                var folderPath = path.dirname(assetPath);
+                if (!fs.existsSync(folderPath)) {
+                    var objectsPath = path.dirname(folderPath);
+                    if (!fs.existsSync(objectsPath)) {
+                        var inventoryPath = path.dirname(objectsPath);
+                        if (!fs.existsSync(inventoryPath)) {
+                            fs.mkdirSync(inventoryPath);
+                        }
+                        fs.mkdirSync(objectsPath);
+                    }
+                    fs.mkdirSync(folderPath);
+                }
+            }
+        }
+
+        saveAsset(asset, updateCache=true) {
             if (asset == null) {
                 var e = new Error(`Inventory.saveAsset() asset is required`);
                 winston.warn(e.stack);
@@ -249,29 +264,18 @@
             return new Promise((resolve, reject) => {
                 try {
                     var assetPath = this.assetPath(guid);
-                    if (!fs.existsSync(assetPath)) {
-                        var folderPath = path.dirname(assetPath);
-                        if (!fs.existsSync(folderPath)) {
-                            var objectsPath = path.dirname(folderPath);
-                            if (!fs.existsSync(objectsPath)) {
-                                var inventoryPath = path.dirname(objectsPath);
-                                if (!fs.existsSync(inventoryPath)) {
-                                    fs.mkdirSync(inventoryPath);
-                                }
-                                fs.mkdirSync(objectsPath);
-                            }
-                            fs.mkdirSync(folderPath);
-                        }
-                    }
+                    this.createAssetFolder(assetPath);
                     var json = JSON.stringify(asset, null, 2);
                     fs.writeFile(assetPath, json, (err) => {
                         if (err) {
                             winston.error(assetPath, err.stack);
                             return reject(err);
                         }
-                        this.isDirty = this.isDirty || !this.guidCache.entryOf(guid);
-                        this.assetMap[guid] = asset;
-                        this.guidCache.put(asset.guid, asset);
+                        if (updateCache) {
+                            this.isDirty = this.isDirty || !this.guidCache.entryOf(guid);
+                            this.assetMap[guid] = asset;
+                            this.guidCache.put(asset.guid, asset);
+                        }
                         winston.info(`Inventory.saveAsset() saved asset guid:${asset.guid}`);
                         resolve(asset);
                     });
