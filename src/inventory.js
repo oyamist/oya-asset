@@ -189,6 +189,10 @@
         }
 
         loadAsset(guid, updateCache=true) {
+            if (guid == null) {
+                var err = new Error(`Inventory.loadAsset() no asset:${assetPath}`);
+                return Promise.reject(err);
+            }
             return new Promise((resolve, reject) => {
                 try {
                     var assetPath = this.assetPath(guid);

@@ -316,7 +316,7 @@
         }();
         async.next();
     });
-    it("generator", function(done) {
+    it("TESTTESTgenerator", function(done) {
         var generator = function* () {
             var i = 0;
             while (i < 10) {
@@ -406,7 +406,6 @@
         should(iv.idCache.maxSize).equal(2000);
 
         var json = JSON.parse(JSON.stringify(iv));
-        console.log(json);
         var iv2 = new Inventory(json);
         should(iv2.cacheSize).equal(2000);
         should(iv2.guidCache.maxSize).equal(2000);
