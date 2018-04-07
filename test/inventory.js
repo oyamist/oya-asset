@@ -317,29 +317,35 @@
         async.next();
     });
     it("TESTTESTgenerator", function(done) {
-        var generator = function* () {
-            var i = 0;
-            while (i < 10) {
-                yield i;
-                i += 2;
-            }
-        }();
-        var g = null;
-        for (var i = 0; i < 10; i++) {
-            g = generator.next();
-            if (i*2 < 10) {
-                should.deepEqual(g, {
-                    value: i*2,
-                    done: false,
-                });
-            } else {
-                should.deepEqual(g, {
-                    value: undefined,
-                    done: true,
-                });
+        function async(makeGen){
+            return function (...args) {
+                var gen = makeGen.apply(this, args);
+                function handle(result){
+                    return result.done
+                        ? Promise.resolve(result.value)
+                        : Promise.resolve(result.value)
+                            .then(r=>handle(gen.next(r)))
+                            .catch(e=>handle(gen.throw(e)));
+                }
+
+                try {
+                    return handle(gen.next());
+                } catch (ex) {
+                    return Promise.reject(ex);
+                }
             }
         }
-        done();
+        var sum = async(function*(data) {
+            var result = 0;
+            for (let d of data) {
+                result += yield Promise.resolve(d);
+            };
+            return result; // return after all yields are handled
+        });
+        sum([1,2,3]).then(v => {
+            should(v).equal(6);
+            done();
+        }).catch(e=>done(e));
     });
     it("guids(ivpath) returns iterator over all asset guids", function(done) {
         (async function() { try{
