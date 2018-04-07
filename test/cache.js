@@ -242,6 +242,7 @@
                 should.deepEqual(Object.keys(json).sort(), [
                     "map",
                     "maxSize",
+                    "serializeObject",
                 ].sort());
 
                 // Deserialized caches have unresolved entries because
@@ -279,6 +280,26 @@
         cache.clear();
         should(cache.entryOf('a')).equal(undefined);
         should(cache.size()).equal(0);
+    });
+    it("serializeObject toggles object serialization", function(done) {
+        (async function() { try {
+            var cache = new Cache({
+                serializeObject: true,
+            });
+            cache.put('key1', 'object1');
+            cache.put('key2', 'object2');
+            should(await cache.get('key1')).equal('object1');
+            should(await cache.get('key2')).equal('object2');
+
+            // cache is fully serialized
+            var json = JSON.parse(JSON.stringify(cache));
+            var cache2 = new Cache(json);
+            should.deepEqual(cache2, cache); 
+            should(await cache2.get('key1')).equal('object1');
+            should(await cache2.get('key2')).equal('object2');
+
+            done();
+        } catch(e){done(e)} })();
     });
     
 })

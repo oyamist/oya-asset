@@ -15,6 +15,7 @@
                 (entry instanceof Date) || (entry.t = new Date(entry.t));
             }
             this.fetch = opts.fetch || ((key) => Promise.resolve(undefined));
+            this.serializeObject = opts.serializeObject || false;
             var p = this.fetch(null);
             if (!(p instanceof Promise)) {
                 throw new Error(`Cache.update() fetch must return a Promise`);
@@ -76,16 +77,21 @@
         }
 
         toJSON() {
-            var map = {};
-            for (let entry of this) {
-                map[entry.key] = {
-                    key: entry.key,
-                    t: entry.t,
+            if (this.serializeObject) {
+                map = this.map;
+            } else {
+                var map = {};
+                for (let entry of this) {
+                    map[entry.key] = {
+                        key: entry.key,
+                        t: entry.t,
+                    };
                 };
-            };
+            }
             return {
                 map,
                 maxSize: this.maxSize,
+                serializeObject: this.serializeObject,
             }
         }
 
