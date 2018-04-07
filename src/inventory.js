@@ -30,6 +30,16 @@
             this.update(opts);
         }
 
+        get cacheSize() {
+            return Math.min( this.guidCache.maxSize, this.idCache.maxSize);
+        }
+
+        set cacheSize(value) {
+            this.guidCache.maxSize = value;
+            this.idCache.maxSize = value;
+            this.isDirty = true;
+        }
+
         update(opts={}) {
             var self = this;
             this.assetMap = opts.assetMap || this.assetMap || {};
@@ -52,15 +62,20 @@
             if (opts.guidCache instanceof Cache) {
                 this.guidCache = opts.guidCache;
             } else {
-                var cacheOpts = Object.assign({
+                this.guidCache = new Cache(Object.assign({
                     fetch: guid=>{
                         return new Promise((resolve,reject) => {
                             self.loadAsset(guid).then(r=>resolve(r.snapshot()))
                                 .catch(e=>reject(e));
                         });
                     },
-                }, opts.guidCache);
-                this.guidCache = new Cache(cacheOpts);
+                }, opts.guidCache));
+            }
+            if (opts.idCache instanceof Cache) {
+                this.idCache = opts.idCache;
+            } else {
+                this.idCache =  new Cache(Object.assign({
+                }, opts.idCache));
             }
             return undefined; // TBD
         }

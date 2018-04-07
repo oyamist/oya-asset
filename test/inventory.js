@@ -397,4 +397,20 @@
             done();
         } catch (e) {done(e)} })();
     });
+    it("cacheSize property determines working set size", function() {
+        var iv = new Inventory();
+        should(iv.cacheSize).equal(1000);
+        iv.cacheSize = 2000;
+        should(iv.cacheSize).equal(2000);
+        should(iv.guidCache.maxSize).equal(2000);
+        should(iv.idCache.maxSize).equal(2000);
+
+        var json = JSON.parse(JSON.stringify(iv));
+        console.log(json);
+        var iv2 = new Inventory(json);
+        should(iv2.cacheSize).equal(2000);
+        should(iv2.guidCache.maxSize).equal(2000);
+        should(iv2.idCache.maxSize).equal(2000);
+    });
+
 })
