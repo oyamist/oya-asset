@@ -61,22 +61,11 @@
 
         update(opts={}) {
             var self = this;
-            this.assetMap = opts.assetMap || this.assetMap || {};
             var local = path.join(__dirname, '..', 'local');
             this.inventoryPath = opts.inventoryPath ||  path.join(local, 'assets');
             if (!fs.existsSync(this.inventoryPath)) {
                 winston.info(`Inventory.update() creating assets directory: ${this.inventoryPath}`);
                 fs.mkdirSync(this.inventoryPath);
-            }
-            var keys = Object.keys(this.assetMap);
-            for (var i = 0; i < keys.length; i++) {
-                var key = keys[i];
-                var asset = this.assetMap[key];
-                if (asset == null) {
-                    delete this.assetMap[key];
-                } else {
-                    this.assetMap[key] = this.assetOf(asset);
-                }
             }
             if (opts.guidAssetCache instanceof Cache) {
                 this.guidAssetCache = opts.guidAssetCache;
@@ -103,7 +92,7 @@
             if (!this.isOpen) {
                 throw new Error(`Inventory.assetCount() inventory must be open()'d`);
             }
-            return Object.keys(this.assetMap).length;
+            return [...this.guids()].length;
         }
 
         import(ivpath) {
@@ -125,11 +114,9 @@
                     } 
                     (async function() {
                         try {
-                            var json = JSON.parse(data);
-                            var keys = Object.keys(json.assetMap);
-                            for (var i = 0; i < keys.length; i++) {
-                                var key = keys[i];
-                                var asset = self.assetOf(json.assetMap[key]);
+                            var assets = JSON.parse(data);
+                            for (let assetJson of assets) {
+                                var asset = self.assetOf(assetJson);
                                 asset && self.guidAssetCache.put(asset.guid, asset.snapshot());
                                 await self.saveAsset(asset);
                             };
@@ -149,7 +136,6 @@
             }
             return new Promise((resolve, reject) => {
                 var self = this;
-                self.assetMap = {};
                 var async = function*() {
                     try {
                         var objects = path.join(self.inventoryPath, 'objects');
@@ -207,6 +193,16 @@
             return path.join(this.inventoryPath, 'objects', folder, guid);
         }
 
+        loadAssetSync(guid) {
+            var assetPath = this.assetPath(guid);
+            if (!fs.existsSync(assetPath)) {
+                throw new Error(`Inventory.loadAsset() no asset:${assetPath}`);
+            }
+            var data = fs.readFileSync(assetPath);
+            var json = JSON.parse(data);
+            return this.assetOf(json);
+        }
+
         loadAsset(guid, updateCache=true) {
             if (guid == null) {
                 var err = new Error(`Inventory.loadAsset() no asset:${assetPath}`);
@@ -214,27 +210,13 @@
             }
             return new Promise((resolve, reject) => {
                 try {
-                    var assetPath = this.assetPath(guid);
-                    if (!fs.existsSync(assetPath)) {
-                        var err = new Error(`Inventory.loadAsset() no asset:${assetPath}`);
-                        winston.warn(err.stack);
-                        return reject(err);
+                    var asset = this.loadAssetSync(guid);
+                    if (updateCache) {
+                        this.isDirty = true;
+                        this.guidAssetCache.put(guid, asset);
+                        this.idGuidCache.put(asset.id, guid);
                     }
-                    fs.readFile(assetPath, (err, data) => {
-                        if (err) {
-                            winston.error(err.stack);
-                            return reject(err);
-                        }
-                        var json = JSON.parse(data);
-                        var asset = this.assetOf(json);
-                        if (updateCache) {
-                            this.assetMap[guid] = asset;
-                            this.isDirty = true;
-                            this.guidAssetCache.put(guid, asset);
-                            this.idGuidCache.put(asset.id, guid);
-                        }
-                        resolve(asset);
-                    });
+                    resolve(asset);
                 } catch(e) {
                     winston.error(e.stack);
                     reject(e);
@@ -296,9 +278,11 @@
                             return reject(err);
                         }
                         if (updateCache) {
-                            this.isDirty = this.isDirty || !this.guidAssetCache.entryOf(guid);
-                            this.assetMap[guid] = asset;
-                            this.guidAssetCache.put(asset.guid, asset);
+                            this.isDirty = this.isDirty 
+                                || !this.idGuidCache.entryOf(asset.id)
+                                || !this.guidAssetCache.entryOf(guid);
+                            this.guidAssetCache.put(guid, asset);
+                            this.idGuidCache.put(asset.id, guid);
                         }
                         winston.info(`Inventory.saveAsset() saved asset guid:${asset.guid}`);
                         resolve(asset);
@@ -405,28 +389,32 @@
             }
             var self = this;
             var gen = function*() {
-                var guids = [...self.guids()];
-                var allAssets = guids.map(guid=>self.assetMap[guid]);
-                var assets = filter ? allAssets.filter(a=>filter.matches(a)) : allAssets;
-                for (var i = 0; i < assets.length; i++) {
-                    var asset = assets[i];
-                    self.isDirty = self.isDirty || !(self.guidAssetCache.entryOf(asset.guid));
-                    self.guidAssetCache.put(asset.guid, asset);
-                    yield asset;
+                for (let guid of self.guids()) {
+                    var entry = self.guidAssetCache.entryOf(guid);
+                    var cachedAsset = entry && entry.obj;
+                    var asset = cachedAsset || self.loadAssetSync(guid);
+                    if (filter) {
+                        if (filter.matches(asset)) {
+                            if (!cachedAsset) {
+                                this.isDirty = true;
+                                self.guidAssetCache.put(asset.guid, asset);
+                                self.idAssetCache.put(asset.id, asset.guid);
+                            }
+                            yield asset;
+                        }
+                    } else {
+                        yield asset;
+                    }
                 }
             }
             return gen();
         }
 
         guidify(snapshot) {
-            var idGuidMap = {};
-            for (let asset of this.assets()) {
-                idGuidMap[asset.id.toUpperCase()] = asset.guid;
-            }
             return Object.keys(snapshot).reduce((acc,key) => {
                 var value = snapshot[key];
-                var v = (typeof value === 'string') && value.toUpperCase() || value;
-                var guid = idGuidMap[v];
+                var entry = (typeof value === 'string') && this.idGuidCache.entryOf(value);
+                var guid = entry && entry.obj;
                 acc[key] = key !== 'id' && guid ? guid : value;
                 return acc;
             }, {});

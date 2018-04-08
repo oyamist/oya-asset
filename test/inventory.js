@@ -19,7 +19,6 @@
     it("Inventory(opts) creates an asset inventory", function(done) {
         var async = function*() {
             var iv = new Inventory();
-            should(typeof iv.assetMap).equal('object');
             should(iv.inventoryPath).equal(path.join(local, 'assets'));
             done();
         }();
@@ -91,7 +90,7 @@
             } catch (e) {done(e);}
         })();
     });
-    it("assets(filter) returns iterator for matching assets", function(done) {
+    it("TESTTESTassets(filter) returns iterator for matching assets", function(done) {
         (async function() {
             try {
                 var iv = new Inventory({
@@ -133,7 +132,7 @@
                 should(tvf.matches(plant1)).equal(true);
                 should(tvf.matches(plant2)).equal(false);
                 var assets = [...iv.assets(tvf)];
-                should.deepEqual(assets,[plant1]);
+                should.deepEqual(assets.map(a=>a.name),[plant1.name]);
 
                 // match current id
                 var tvf = new Filter.TValueFilter(Filter.OP_EQ, {
@@ -193,23 +192,31 @@
         });
     });
     it("guidify(snapshot) updates id references to guids", function(done) {
-        var async = function*() {
+        (async function() { try {
             var iv = new Inventory({
                 inventoryPath,
             });
             var a1 = new Asset({
                 id: "A0001",
             });
-            yield(iv.open()).then(r=>async.next(r)).catch(e=>done(e));
-            var asset = yield iv.saveAsset(a1).then(r=>async.next(r)).catch(e=>done(e));
+            await iv.open();
+            var asset = await iv.saveAsset(a1);
+            should(iv.idGuidCache.entryOf(a1.id)).properties({
+                obj: a1.guid,
+            });
             var snapshot = a1.snapshot();
-            snapshot.test = 'a0001'; // ignores case
-            should.deepEqual(iv.guidify(snapshot), Object.assign({}, snapshot, {
+            snapshot.test = 'A0001'; 
+            var snapshotExpected = Object.assign({}, snapshot, {
                 test: a1.guid,
-            }));
+            });
+            should.deepEqual(iv.guidify(snapshot), snapshotExpected);
+
+            // guidify is only effective for cached ids
+            iv.idGuidCache.clear();
+            should.deepEqual(iv.guidify(snapshot), snapshot); // no substitution
+
             done();
-        }();
-        async.next();
+        } catch(e){done(e)} })();
     });
     it("open(path) opens existing inventory", function(done) {
         var async = function *() {
