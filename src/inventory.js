@@ -30,13 +30,32 @@
             this.update(opts);
         }
 
+        static asyncGenerator(makeGen){
+            return function (...args) {
+                var gen = makeGen.apply(this, args);
+                function handle(result){
+                    return result.done
+                        ? Promise.resolve(result.value)
+                        : Promise.resolve(result.value)
+                            .then(r=>handle(gen.next(r)))
+                            .catch(e=>handle(gen.throw(e)));
+                }
+
+                try {
+                    return handle(gen.next());
+                } catch (ex) {
+                    return Promise.reject(ex);
+                }
+            }
+        }
+
         get cacheSize() {
-            return Math.min( this.guidCache.maxSize, this.idCache.maxSize);
+            return Math.min( this.guidAssetCache.maxSize, this.idGuidCache.maxSize);
         }
 
         set cacheSize(value) {
-            this.guidCache.maxSize = value;
-            this.idCache.maxSize = value;
+            this.guidAssetCache.maxSize = value;
+            this.idGuidCache.maxSize = value;
             this.isDirty = true;
         }
 
@@ -59,23 +78,23 @@
                     this.assetMap[key] = this.assetOf(asset);
                 }
             }
-            if (opts.guidCache instanceof Cache) {
-                this.guidCache = opts.guidCache;
+            if (opts.guidAssetCache instanceof Cache) {
+                this.guidAssetCache = opts.guidAssetCache;
             } else {
-                this.guidCache = new Cache(Object.assign({
+                this.guidAssetCache = new Cache(Object.assign({
                     fetch: guid=>{
                         return new Promise((resolve,reject) => {
                             self.loadAsset(guid).then(r=>resolve(r.snapshot()))
                                 .catch(e=>reject(e));
                         });
                     },
-                }, opts.guidCache));
+                }, opts.guidAssetCache));
             }
-            if (opts.idCache instanceof Cache) {
-                this.idCache = opts.idCache;
+            if (opts.idGuidCache instanceof Cache) {
+                this.idGuidCache = opts.idGuidCache;
             } else {
-                this.idCache =  new Cache(Object.assign({
-                }, opts.idCache));
+                this.idGuidCache =  new Cache(Object.assign({
+                }, opts.idGuidCache));
             }
             return undefined; // TBD
         }
@@ -111,7 +130,7 @@
                             for (var i = 0; i < keys.length; i++) {
                                 var key = keys[i];
                                 var asset = self.assetOf(json.assetMap[key]);
-                                asset && self.guidCache.put(asset.guid, asset.snapshot());
+                                asset && self.guidAssetCache.put(asset.guid, asset.snapshot());
                                 await self.saveAsset(asset);
                             };
                             resolve(self);
@@ -210,8 +229,9 @@
                         var asset = this.assetOf(json);
                         if (updateCache) {
                             this.assetMap[guid] = asset;
-                            this.isDirty = this.isDirty || !this.guidCache.entryOf(guid);
-                            this.guidCache.put(guid, asset);
+                            this.isDirty = true;
+                            this.guidAssetCache.put(guid, asset);
+                            this.idGuidCache.put(asset.id, guid);
                         }
                         resolve(asset);
                     });
@@ -276,9 +296,9 @@
                             return reject(err);
                         }
                         if (updateCache) {
-                            this.isDirty = this.isDirty || !this.guidCache.entryOf(guid);
+                            this.isDirty = this.isDirty || !this.guidAssetCache.entryOf(guid);
                             this.assetMap[guid] = asset;
-                            this.guidCache.put(asset.guid, asset);
+                            this.guidAssetCache.put(asset.guid, asset);
                         }
                         winston.info(`Inventory.saveAsset() saved asset guid:${asset.guid}`);
                         resolve(asset);
@@ -319,49 +339,47 @@
                 winston.warn(e.stack);
                 return Promise.reject(e);
             }
-            return new Promise((resolve, reject) => {
-                var asset =  this.assetMap[guid];
-                resolve(asset);
+            var entry = this.guidAssetCache.entryOf(guid);
+            var asset = entry && entry.value;
+            if (asset instanceof Asset) {
+                return Promise.resolve(asset);
+            }
+            return this.loadAsset(guid);
+        }
+
+        assetOfIdExhaustive(id, t=new Date(), updateCache=false) {
+            var self = this;
+            var tvf = new Filter.TValueFilter(Filter.OP_EQ, {
+                tag: TValue.T_ID,
+                value: id,
+                t,
             });
+
+            return Inventory.asyncGenerator(function*() {
+                var result = 0;
+                for (let guid of self.guids()) {
+                    var asset = yield self.loadAsset(guid, false);
+                    if (tvf.matches(asset)) {
+                        if (updateCache) {
+                            self.idGuidCache.put(id, guid);
+                            self.guidAssetCache.put(guid, asset);
+                            self.isDirty = true;
+                        }
+                        return asset;
+                    }
+                };
+                return null; 
+            })();
         }
 
         assetOfId(id, t=new Date()) {
-            var self = this;
-            if (!self.isOpen) {
-                var e = new Error("Inventory.assetOfId() inventory must be open()'d");
-                winston.warn(e.stack);
-                return Promise.reject(e);
+            var entry = this.idGuidCache.entryOf(id);
+            var guid = entry && entry.value;
+            if (guid) {
+                return this.assetOfGuid(guid);
             }
-            if (id == null) {
-                var e = new Error("id is required");
-                winston.warn(e.stack);
-                return Promise.reject(e);
-            }
-            return new Promise((resolve, reject) => {
-                var async = function*() {
-                    try {
-                        var tvf = new Filter.TValueFilter(Filter.OP_EQ, {
-                            tag: TValue.T_ID,
-                            value: id,
-                            t,
-                        });
-
-                        var assetGen = self.assets(tvf);
-                        var {
-                            value,
-                            done,
-                        } = assetGen.next();
-                        if (!(assetGen.next().done)) {
-                            throw new Error(`Data integrity error: multiple assets have same id: ${id}`);
-                        }
-                        resolve(value || null);
-                    } catch(e) {
-                        winston.error(e.stack);
-                        reject(e);
-                    }
-                }();
-                async.next();
-            });
+            winston.info(`Inventory.assetOfId() idGuidCache missed id:${id} `);
+            return this.assetOfIdExhaustive(id, t, true);
         }
 
         guids(ivpath = this.inventoryPath) {
@@ -392,8 +410,8 @@
                 var assets = filter ? allAssets.filter(a=>filter.matches(a)) : allAssets;
                 for (var i = 0; i < assets.length; i++) {
                     var asset = assets[i];
-                    self.isDirty = self.isDirty || !(self.guidCache.entryOf(asset.guid));
-                    self.guidCache.put(asset.guid, asset);
+                    self.isDirty = self.isDirty || !(self.guidAssetCache.entryOf(asset.guid));
+                    self.guidAssetCache.put(asset.guid, asset);
                     yield asset;
                 }
             }

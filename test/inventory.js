@@ -316,26 +316,8 @@
         }();
         async.next();
     });
-    it("TESTTESTgenerator", function(done) {
-        function async(makeGen){
-            return function (...args) {
-                var gen = makeGen.apply(this, args);
-                function handle(result){
-                    return result.done
-                        ? Promise.resolve(result.value)
-                        : Promise.resolve(result.value)
-                            .then(r=>handle(gen.next(r)))
-                            .catch(e=>handle(gen.throw(e)));
-                }
-
-                try {
-                    return handle(gen.next());
-                } catch (ex) {
-                    return Promise.reject(ex);
-                }
-            }
-        }
-        var sum = async(function*(data) {
+    it("enerator", function(done) {
+        var sum = Inventory.asyncGenerator(function*(data) {
             var result = 0;
             for (let d of data) {
                 result += yield Promise.resolve(d);
@@ -373,7 +355,7 @@
             done();
         } catch(e){done(e);} })();
     });
-    it("isDirty is true if inventory has changed", function(done) {
+    it("TESTTESTisDirty is true if inventory has changed", function(done) {
         (async function(){ try {
             var iv = new Inventory({
                 inventoryPath,
@@ -393,7 +375,8 @@
             should.deepEqual(asset, plant);
 
             // clear cache
-            iv.guidCache.clear();
+            iv.guidAssetCache.clear();
+            iv.idGuidCache.clear();
             iv.isDirty = false;
             should(iv.isDirty).equal(false);
             var asset = await iv.assetOfId(plant.id);
@@ -408,14 +391,43 @@
         should(iv.cacheSize).equal(1000);
         iv.cacheSize = 2000;
         should(iv.cacheSize).equal(2000);
-        should(iv.guidCache.maxSize).equal(2000);
-        should(iv.idCache.maxSize).equal(2000);
+        should(iv.guidAssetCache.maxSize).equal(2000);
+        should(iv.idGuidCache.maxSize).equal(2000);
 
         var json = JSON.parse(JSON.stringify(iv));
         var iv2 = new Inventory(json);
         should(iv2.cacheSize).equal(2000);
-        should(iv2.guidCache.maxSize).equal(2000);
-        should(iv2.idCache.maxSize).equal(2000);
+        should(iv2.guidAssetCache.maxSize).equal(2000);
+        should(iv2.idGuidCache.maxSize).equal(2000);
+    });
+    it("ssetOfIdExhaustive(id) searches all assets for first one with id", function(done) {
+        (async function() { try {
+            var iv = new Inventory({
+                inventoryPath,
+            });
+            await iv.open();
+            await iv.import(sampleInventory);
+            var asset = await iv.assetOfIdExhaustive('A0002');
+            var a0002 = await iv.loadAsset('GUID002');
+            should.deepEqual(asset,a0002);
+            done();
+        } catch(e){done(e)} })();
+    });
+    it("ssetOfId(id) returns asset of id", function(done) {
+        (async function() { try {
+            var iv = new Inventory({
+                inventoryPath,
+            });
+            await iv.open();
+            await iv.import(sampleInventory);
+            iv.idGuidCache.clear();
+            should(iv.idGuidCache.entryOf('A0002')).equal(undefined);
+            var asset = await iv.assetOfIdExhaustive('A0002');
+            should(iv.idGuidCache.entryOf('A0002')).equal(undefined);
+            var a0002 = await iv.loadAsset('GUID002');
+            should.deepEqual(asset,a0002);
+            done();
+        } catch(e){done(e)} })();
     });
 
 })
