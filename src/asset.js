@@ -93,6 +93,7 @@
             }
             return  (a.guid === b.guid) ? 0 : 1;
         }
+
         static assetTypes() {
             return [
                 Asset.T_ACTUATOR,
@@ -316,6 +317,10 @@
                 }
             })
             return undefined; // TBD
+        }
+
+        merge(srcAsset) {
+            this.mergeTValues(srcAsset.tvalues);
         }
 
     } //// class Asset

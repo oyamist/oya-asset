@@ -53,6 +53,38 @@
             }
             return  (a.t === b.t) ? 0 : 1;
         }
+        static compare_t_tag(a,b) {
+            if (a.t === b.t) {
+                if (a.tag === b.tag) {
+                    return 0;
+                }
+                return a.tag < b.tag ? -1 : 1;
+            }
+            return a.t < b.t ? -1 : 1;
+        }
+
+        static mergeTValues(tv1, tv2) {
+            // Choose longest sequence as most valid
+            (tv1.length < tv2.length) && ([tv1,tv2] = [tv2, tv1]);
+            tv1 = tv1.map(tv=>tv).sort(TValue.compare_t_tag);
+            tv2 = tv2.map(tv=>tv).sort(TValue.compare_t_tag);
+            var merged = [];
+            while (tv2.length && tv1.length) {
+                var cmp = TValue.compare_t_tag(tv1[0], tv2[0]);
+                if (cmp < 0) {
+                    merged.push(tv1.shift());
+                } else if (cmp === 0) {
+                    merged.push(tv1.shift()); // tv1 has priority
+                    tv2.shift(); // discard
+                } else {
+                    merged.push(tv2.shift());
+                }
+            }
+            tv1.length && (merged = merged.concat(tv1));
+            tv2.length && (merged = merged.concat(tv2));
+            return merged;
+        }
+
 
     }
 
