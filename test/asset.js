@@ -595,22 +595,10 @@
 
         // create a temporal property
         asset.set("location", "SFO");
-        should.deepEqual(asset.describeProperty('guid'), immutable('guid'));
-        should.deepEqual(asset.describeProperty('type'), immutable('type'));
-        should.deepEqual(asset.describeProperty('id'), retroactive('id'));
-        should.deepEqual(asset.describeProperty('size'), mutable('size'));
-        should.deepEqual(asset.describeProperty('asdf'), unused('asdf'));
         should.deepEqual(asset.describeProperty('location'), temporal('location'));
-        should.deepEqual(asset.describeProperty('color'), unused('color'));
 
         // create retroactive property
         asset.set("color", 'red', TValue.RETROACTIVE);
-        should.deepEqual(asset.describeProperty('guid'), immutable('guid'));
-        should.deepEqual(asset.describeProperty('type'), immutable('type'));
-        should.deepEqual(asset.describeProperty('id'), retroactive('id'));
-        should.deepEqual(asset.describeProperty('size'), mutable('size'));
-        should.deepEqual(asset.describeProperty('asdf'), unused('asdf'));
-        should.deepEqual(asset.describeProperty('location'), temporal('location'));
         should.deepEqual(asset.describeProperty('color'), retroactive('color'));
 
         // serialized asset has same property definitions
@@ -623,4 +611,34 @@
         should.deepEqual(asset.describeProperty('location'), temporal('location'));
         should.deepEqual(asset.describeProperty('color'), retroactive('color'));
     });
+    it("merge(asset1,asset2) two versions of same asset", function() {
+        var t = [
+            new Date(2018,11,1),
+            new Date(2018,11,2),
+            new Date(2018,11,3),
+        ];
+        var asset1 = new Asset({
+            id: 'asset1',
+            color: 'red1',
+        });
+        asset1.set('inspected', true, t[0]);
+        asset1.set('inspected', true, t[1]);
+        var asset2 = new Asset(Object.assign({}, asset1, {
+            id: 'asset2',
+            color: 'red2',
+        }));
+        asset2.set('inspected', true, t[2]);
+
+        var expected = new Asset(JSON.parse(JSON.stringify(asset2)));
+        var etv = expected.tvalues.sort((a,b) => TValue.compare_t_tag(a,b));
+        for (var i = 1; i < etv.length; i++) {
+            should(TValue.compare_t_tag(etv[i-1],etv[i])).below(1);
+        }
+        var merged = Asset.merge(asset1,asset2);
+        merged.tvalues.sort(TValue.compare_t_tag);
+        should.deepEqual(merged.tvalues.map(tv=>tv.toString()), 
+            expected.tvalues.map(tv=>tv.toString()));
+        should.deepEqual(merged, expected);
+    });
+
 })

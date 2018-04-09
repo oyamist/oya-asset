@@ -57,7 +57,7 @@
         should.deepEqual(tv2, tv1);
     });
     it("compare_t_tag(a,b) compares tvalues using (t,tag) as primary keys", function() {
-        var t1 = new Date(2018,11,1);
+        var t1 = TValue.RETROACTIVE;
         var t2 = new Date(2018,11,2);
         var tv1_color = new TValue({
             t: t1,
@@ -90,14 +90,19 @@
 
         // other properties are ignored
         var tv1_color_2 = new TValue({
-            t: t1,
+            t: new Date(t1.getTime()),
             tag: 'color',
-            text: 'woof',
-            value: 'red',
+            //text: undefined,
+            //value: undefined,
         });
         should(TValue.compare_t_tag(tv1_color,tv1_color_2)).equal(0);
+        should(TValue.compare_t_tag(tv1_color_2,tv1_color)).equal(0);
+
+        var tv = [tv1_size, tv2_color, tv1_size, tv1_color, tv1_color_2];
+        tv.sort(TValue.compare_t_tag);
+        should.deepEqual(tv, [ tv1_color, tv1_color_2, tv1_size, tv1_size, tv2_color, ]);
     });
-    it("TESTTESTmergeTValues(tv1,tv2) merges shorter into longer array", function() {
+    it("mergeTValues(tv1,tv2) merges shorter into longer array", function() {
         var t = [
             new Date(2018,11,1),
             new Date(2018,11,2),
@@ -139,6 +144,15 @@
         should.deepEqual(TValue.mergeTValues(tv1_random, tv2_random), [
             tv1[0], tv1[1], tv2[1], tv1[2], tv1[3],
         ]);
+    });
+    it("toString() overrides Object.toString()", function() {
+        var tv = new TValue({
+            t: new Date(Date.UTC(2018,11,2)),
+            tag: 'Test',
+            value: 123,
+            text: 'abc',
+        });
+        should(tv+"").equal("2018-12-02T00:00:00.000Z Test 123 abc");
     });
 
 })

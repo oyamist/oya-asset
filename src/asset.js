@@ -319,8 +319,16 @@
             return undefined; // TBD
         }
 
-        merge(srcAsset) {
-            this.mergeTValues(srcAsset.tvalues);
+        static merge(asset1, asset2) {
+            if (asset1.guid !== asset2.guid) {
+                throw new Error(`Assets with different guids cannot be merged: asset1:${asset1.guid} asset2:${asset2.guid}`);
+            }
+            if (asset1.tvalues.length < asset2.tvalues.length) {
+                [asset1, asset2] = [asset2, asset1]; // asset1 is primary asset
+            }
+            var merged = new Asset(asset1);
+            merged.tvalues = TValue.mergeTValues(asset1.tvalues, asset2.tvalues);
+            return merged;
         }
 
     } //// class Asset

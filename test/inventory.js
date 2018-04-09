@@ -90,7 +90,7 @@
             } catch (e) {done(e);}
         })();
     });
-    it("TESTTESTassets(filter) returns iterator for matching assets", function(done) {
+    it("ssets(filter) returns iterator for matching assets", function(done) {
         (async function() {
             try {
                 var iv = new Inventory({
@@ -362,7 +362,7 @@
             done();
         } catch(e){done(e);} })();
     });
-    it("TESTTESTisDirty is true if inventory has changed", function(done) {
+    it("sDirty is true if inventory has changed", function(done) {
         (async function(){ try {
             var iv = new Inventory({
                 inventoryPath,

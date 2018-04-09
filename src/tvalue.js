@@ -54,13 +54,13 @@
             return  (a.t === b.t) ? 0 : 1;
         }
         static compare_t_tag(a,b) {
-            if (a.t === b.t) {
+            if (a.t.getTime() === b.t.getTime()) {
                 if (a.tag === b.tag) {
                     return 0;
                 }
                 return a.tag < b.tag ? -1 : 1;
             }
-            return a.t < b.t ? -1 : 1;
+            return a.t.getTime() < b.t.getTime() ? -1 : 1;
         }
 
         static mergeTValues(tv1, tv2) {
@@ -85,8 +85,11 @@
             return merged;
         }
 
+        toString() {
+            return `${this.t.toJSON()} ${this.tag} ${this.value} ${this.text ? this.text : ""}`;
+        }
 
-    }
+    } // class TValue
 
     module.exports = exports.TValue = TValue;
 })(typeof exports === "object" ? exports : (exports = {}));
