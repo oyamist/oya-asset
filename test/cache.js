@@ -1,6 +1,8 @@
 (typeof describe === 'function') && describe("Cache", function() {
     const winston = require('winston');
     const should = require("should");
+    const { MerkleJson } = require("merkle-json");
+    const mj = new MerkleJson();
     const {
         Asset,
         Cache,
@@ -188,6 +190,7 @@
             key: assets[0].guid,
             obj: assets[0],
             t: t[0],
+            h: mj.hash(assets[0]),
         });
 
         // entry for non-existent objecdt
@@ -205,6 +208,7 @@
             key: assets[1].guid,
             obj: assets[1],
             t: t[1],
+            h: mj.hash(assets[1]),
         }]);
 
         // two entries
@@ -213,10 +217,12 @@
             key: assets[0].guid,
             obj: assets[0],
             t: t[0],
+            h: mj.hash(assets[0]),
         },{
             key: assets[1].guid,
             obj: assets[1],
             t: t[1],
+            h: mj.hash(assets[1]),
         }].sort(Cache.COMPARE_ENTRY_KEY));
     });
     it("is serializable", function(done) {
@@ -273,6 +279,7 @@
             key: 'a',
             obj: 'asdf',
             t,
+            h: mj.hash('asdf'),
         });
         should(cache.size()).equal(1);
 

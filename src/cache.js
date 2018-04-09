@@ -2,6 +2,8 @@
     const winston = require('winston');
     const Asset = require('./asset');
     const TValue = require('./tvalue');
+    const { MerkleJson } = require('merkle-json');
+    const mj = new MerkleJson();
 
     class Cache {
         constructor(opts={}) {
@@ -97,6 +99,7 @@
 
         put(key, obj=key, t=new Date()) {
             var entry = { key, obj, t, };
+            entry.h = mj.hash(obj);
             this.map[key] = entry;
             var excess = (this.size() - this.maxSize);
             excess > 0 && this.cull(excess, this.map);
