@@ -107,6 +107,7 @@
             }
             var self = this;
             return new Promise((resolve, reject) => {
+                winston.info(`Inventory.import() file:${ivpath}`);
                 fs.readFile(ivpath, (e,data) => {
                     if (e) {
                         winston.error(e.message, ereject.stack);
@@ -174,6 +175,7 @@
                         }
                         self.isOpen = true;
                         self.isDirty = false;
+                        winston.info(`Inventory.open() inventory path:${self.inventoryPath}`);
                         resolve(self);
                     } catch (e) {
                         winston.error(e.stack);

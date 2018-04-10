@@ -15,6 +15,7 @@ const {
 } = require('../index');
 
 global.__appdir = path.dirname(__dirname);
+const local = path.join(global.__appdir, 'local');
 
 app.use(compression());
 
@@ -42,13 +43,15 @@ let async = function*() {
             return acc==null && i>1 && arg[0]!=='-' ? arg : acc;
         }, null) || 'test';
         winston.info(`server.js RbAsset(${serviceName})`);
+        var inventoryPath = path.join(local, 
+            serviceName === 'test' ? 'test-assets' : 'assets');
         var rbasset = new RbAsset(serviceName, {
+            inventoryPath,
             emitter: oyaEmitter,
         });
         yield rbasset.initialize().then(r=>async.next(r)).catch(e=>async.throw(e));
         if (true) {
             var sampleInventory = path.join(__dirname, '..', 'test', 'sample-inventory.json');
-            winston.info(`server.js loading inventory: ${sampleInventory}`);
             rbasset.inventory.import(sampleInventory);
         }
         restBundles.push(rbasset);
