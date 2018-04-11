@@ -43,8 +43,7 @@ let async = function*() {
             return acc==null && i>1 && arg[0]!=='-' ? arg : acc;
         }, null) || 'test';
         winston.info(`server.js RbAsset(${serviceName})`);
-        var inventoryPath = path.join(local, 
-            serviceName === 'test' ? 'test-assets' : 'assets');
+        var inventoryPath = path.join(local, serviceName);
         var rbasset = new RbAsset(serviceName, {
             inventoryPath,
             emitter: oyaEmitter,

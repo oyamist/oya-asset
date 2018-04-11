@@ -16,7 +16,7 @@
             <v-text-field append-icon="search" label="Search" single-line clearable
                 :change="searchChanged()" hide-details v-model="search" ></v-text-field>
             <v-spacer/>
-            <v-btn primary @click="saveAsset()">Add</v-btn>
+            <v-btn primary @click="addAsset()">Add</v-btn>
         </v-card-title>
         <v-data-table v-bind:headers="headers" :items="assets" hide-actions 
             :custom-filter="assetFilter"
@@ -30,20 +30,20 @@
                         <v-checkbox primary hide-details v-model="cursor.selected" >
                         </v-checkbox>
                     </td>
-                    <td class="text-xs-left oya-asset-cell" @click="assetClick(cursor)"> 
+                    <td class="text-xs-left " @click="assetClick(cursor)"> 
                         {{ cursor.item.type }} </td>
-                    <td class="text-xs-left oya-asset-cell" @click="assetClick(cursor)"> 
+                    <td class="text-xs-left " @click="assetClick(cursor)"> 
                         {{ cursor.item.name }} </td>
-                    <td class="text-xs-left oya-asset-cell" @click="assetClick(cursor)"> 
+                    <td class="text-xs-left " @click="assetClick(cursor)"> 
                         {{ cursor.item.id }} </td>
-                    <td class="text-xs-left oya-asset-cell" @click="assetClick(cursor)"> 
+                    <td class="text-xs-left " @click="assetClick(cursor)"> 
                         {{ cursor.item.guid }} </td>
                 </tr>
             </template>
             <template slot="expand" slot-scope="cursor">
                 <v-container fluid class="oya-asset-expand">
                     <v-layout row class="pl-5">
-                        <v-flex xs2 class="body-2">SerializedKeyPair</v-flex>
+                        <v-flex xs2 class="body-2">Identity</v-flex>
                         <v-flex>
                             <v-layout row v-for="key in Object.keys(cursor.item).sort()" :key="key"
                                 v-if="assetValue(key, cursor.item) && keyClass(key, cursor.item)==='identity'"
@@ -80,7 +80,7 @@
         <div class="text-xs-center pt-3">
             <v-pagination circle :length="Math.round(0.5+assets.length/itemsPerPage)" 
                 v-model="pagination.page" 
-                :total-visible="assets.length"></v-pagination>
+                :total-visible="7"></v-pagination>
         </div>
         <v-dialog v-model="showAddDialog" fullscreen transition="dialog-bottom-transition"
            :overlay="false" scrollable >
@@ -92,7 +92,7 @@
                     <v-toolbar-title>Add Asset</v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-toolbar-items>
-                        <v-btn dark flat @click.native="showAddDialog=false">Save</v-btn>
+                        <v-btn dark flat @click.native="onSaveAsset">Save</v-btn>
                     </v-toolbar-items>
                  </v-toolbar>
                  <v-card-text ><!-- NON-TEMPORAL FIELDS ONLY!!!-->
@@ -101,6 +101,7 @@
                     </v-select>
                     <v-text-field label="ID: enter pre-printed asset tag if available" clearable
                         placeholder="(auto-generate)"
+                        @input="onIdInput"
                         v-model="newAsset.id"  class="input-group" ></v-text-field>
                     <v-text-field label="Name" clearable
                         placeholder="(auto-generate)"
@@ -165,6 +166,7 @@ export default {
         return {
             assets: [],
             selectedAssets: [],
+            filteredItems: [],
             showAddDialog: false,
             assetMap: {},
             page: 1,
@@ -179,15 +181,26 @@ export default {
         }
     },
     methods: {
+        onIdInput(event) {
+            this.newAsset.id = this.newAsset.id.toUpperCase();
+        },
         assetLabel(text) {
             return `${text}: enter ID of related asset or descriptive text`;
         },
         createNewAsset() {
-            return {
+            var asset = {
                 id: "",
                 name: "",
                 type: this.newAsset && this.newAsset.type || 'asset',
             };
+            if (this.filteredItems && this.filteredItems.length === 0 && this.search) {
+                asset.id = this.search.toUpperCase();
+            }
+            Object.defineProperty(asset, "sourceHint", {
+                writable: true,
+                value: '',
+            });;
+            return asset;
         },
         changeNewAssetSource() {
             var pat = new RegExp(`.*${this.newAsset.source}.*`,"i");
@@ -209,10 +222,27 @@ export default {
             }
             (sourceHint !== newAsset.sourceHint) && Vue.set(newAsset, 'sourceHint', sourceHint);
         },
-        saveAsset() {
-            console.log("saveAsset");
+        addAsset() {
+            console.log("addAsset", this.selectedAssets.length);
             this.showAddDialog = true;
             this.newAsset = this.createNewAsset();
+        },
+        onSaveAsset(event) {
+            var url = [this.restOrigin(), this.service, 'asset', 'snapshot'].join('/');
+            var upsert = Object.assign({}, this.newAsset);
+            (upsert.id === '') && (delete upsert.id);
+            (upsert.name === '') && (delete upsert.name);
+            var data = {
+                upsert,
+            }
+            console.log(`onSaveAsset(${event})`, data);
+            this.$http.post(url,data).then(res=>{
+                console.log('res',res);
+                this.showAddDialog = false;
+                this.refresh();
+            }).catch(e=>{
+                console.error(e);
+            });
         },
         statusProps(asset) {
             var status = Object.keys(asset).reduce((acc,key) => {
@@ -327,13 +357,15 @@ export default {
             this.selectedAssets.forEach(asset => (asset.selected = true));
             var SEARCH = search.toUpperCase();
             var keys = headers.map(hdr=>hdr.value);
-            return items.filter((item,i) => {
+            this.filteredItems =  items.filter((item,i) => {
                 return keys.reduce((acc,key) => {
                     var value = item[key];
                     return item.selected || acc 
                         || value && value.toUpperCase().indexOf(SEARCH) >= 0;
                 }, false);
             });
+
+            return this.filteredItems;
         }
     },
     computed: {
@@ -383,9 +415,6 @@ export default {
 
 </script>
 <style> 
-.oya-asset-cell {
-    width: 25%;
-}
 .oya-asset-expand {
     background:#eee;
 }

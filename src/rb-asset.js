@@ -29,7 +29,7 @@
                     this.resourceMethod("get", "asset/snapshot/:id", this.getSnapshot),
                     this.resourceMethod("get", "inventory/snapshots/:date", this.getSnapshots),
                     this.resourceMethod("get", "inventory/snapshots", this.getSnapshots),
-                    this.resourceMethod("post", "asset/snapshot", this.postAsset),
+                    this.resourceMethod("post", "asset/snapshot", this.postSnapshot),
                     this.resourceMethod("put", "asset/guid/:guid", this.putAsset),
                 ]),
             });
@@ -97,7 +97,7 @@
             return this.inventory.saveAsset(req.body);
         }
 
-        postAsset(req, res, next) {
+        postSnapshot(req, res, next) {
             return new Promise((resolve, reject) => {
                 var self = this;
                 var async = function*() {
@@ -105,7 +105,7 @@
                         var command = req.body;
                         var t = command.t ? new Date(command.t) : new Date();
                         if (!command.upsert) {
-                            var e = new Error(`RbAsset.postAsset() no asset to upsert`);
+                            var e = new Error(`RbAsset.postSnapshot() no asset to upsert`);
                             winston.error(e.stack);
                             return reject(e);
                         }
