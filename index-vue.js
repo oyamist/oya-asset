@@ -1,6 +1,8 @@
 import OyaInventory from "./src/ui/oya-inventory.vue";
+import OyaAsset from "./src/ui/oya-asset.vue";
 
 var components = {
+    OyaAsset,
     OyaInventory,
 
 }

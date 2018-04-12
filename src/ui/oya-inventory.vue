@@ -35,9 +35,12 @@
                     <td class="text-xs-left " @click="assetClick(cursor)"> 
                         {{ cursor.item.name }} </td>
                     <td class="text-xs-left " @click="assetClick(cursor)"> 
-                        {{ cursor.item.id }} </td>
+                        {{ cursor.item.id }}
+                    </td>
                     <td class="text-xs-left " @click="assetClick(cursor)"> 
-                        {{ cursor.item.guid }} </td>
+                        <a :href="`#/asset?guid=${cursor.item.guid}`" target="_blank">
+                            {{ cursor.item.guid }}</a> 
+                    </td>
                 </tr>
             </template>
             <template slot="expand" slot-scope="cursor">

@@ -8,6 +8,7 @@ import rbvue from 'rest-bundle/index-vue';
 
 import Dev from './Dev.vue';
 import Home from './Home.vue';
+import OyaAsset from './oya-asset.vue';
 import appvue from "../../index-vue";
 require('./stylus/main.styl')
 
@@ -21,10 +22,12 @@ Vue.use(appvue);
 var routes = [{
         path: '/',
         redirect: "/home"
-    },
-    {
+    },{
         path: '/home',
         component: Home
+    },{
+        path: '/asset',
+        component: OyaAsset,
     },
 ];
 routes = routes.concat(rbvue.methods.aboutRoutes());
