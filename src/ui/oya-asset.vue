@@ -10,8 +10,14 @@
     </rb-about>
 
     <v-card>
-        <v-card-title primary-title class="headline">
-            {{attrValue('name')}} 
+        <v-card-title >
+            <v-breadcrumbs divider="/" large>
+                <v-breadcrumbs-item v-for="item in navItems" 
+                    :href="item.href"
+                    :key="item.text" >
+                    <div class="headline">{{ item.text }}</div>
+                </v-breadcrumbs-item>
+            </v-breadcrumbs>
             <v-spacer/>
         </v-card-title>
         <v-card-text>
@@ -142,6 +148,15 @@ export default {
         },
     },
     computed: {
+        navItems() {
+            var search = this.$route.query.search||'';
+            return [{
+                text: 'Search',
+                href: `#/search?search=${search}`,
+            },{
+                text: `${this.attrValue('name')}`,
+            }];
+        },
         tvalues() {
             return this.asset && this.asset.tvalues || [];
         },

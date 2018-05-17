@@ -11,7 +11,7 @@
         <rb-about-item name="itemsPerPage" value="5" slot="prop">Assets displayed per page</rb-about-item>
     </rb-about>
 
-    <v-card>
+    <v-card flat>
         <v-card-title primary-title>
             <v-text-field append-icon="search" label="Search" single-line clearable
                 :change="searchChanged()" hide-details v-model="search" ></v-text-field>
@@ -38,7 +38,7 @@
                         {{ cursor.item.id }}
                     </td>
                     <td class="text-xs-left " @click="assetClick(cursor)"> 
-                        <a :href="`#/asset?guid=${cursor.item.guid}`" target="_blank">
+                        <a :href="`#/asset?guid=${cursor.item.guid}&search=${search||''}`" >
                             {{ cursor.item.guid }}</a> 
                     </td>
                 </tr>
@@ -81,7 +81,7 @@
             </template>
         </v-data-table>
         <div class="text-xs-center pt-3">
-            <v-pagination circle :length="Math.round(0.5+assets.length/itemsPerPage)" 
+            <v-pagination circle :length="paginationLength"
                 v-model="pagination.page" 
                 :total-visible="7"></v-pagination>
         </div>
@@ -173,7 +173,7 @@ export default {
             showAddDialog: false,
             assetMap: {},
             page: 1,
-            search: "",
+            search: this.$route.query.search,
             newAsset: this.createNewAsset(),
             pagination: { 
                 page: 1, 
@@ -264,7 +264,6 @@ export default {
         },
         assetClick(cursor) {
             cursor.expanded = !cursor.expanded;
-            //console.log('assetClick', cursor.expanded);
         },
         keyClass(key, item) {
             if (key === 'id' || key === 'name' || key === 'guid') {
@@ -372,6 +371,9 @@ export default {
         }
     },
     computed: {
+        paginationLength() {
+            return Math.round(0.5+this.filteredItems.length/this.itemsPerPage);
+        },
         assetTypes() {
             return [{
                 text: "Plant",

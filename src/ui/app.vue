@@ -16,38 +16,17 @@
             </v-list-tile-action>
           </v-list-tile>
         </div>
-        <v-list-group value="sidebarRestBundle">
+        <v-list-group value="sidebarDeveloper">
             <v-list-tile slot="item">
-              <v-list-tile-action> <v-icon >help</v-icon> </v-list-tile-action>
+              <v-list-tile-action> <v-icon >build</v-icon> </v-list-tile-action>
               <v-list-tile-content>
-                <v-list-tile-title>rest-bundle</v-list-tile-title>
+                <v-list-tile-title>Developer</v-list-tile-title>
               </v-list-tile-content>
               <v-list-tile-action>
                 <v-icon dark>keyboard_arrow_down</v-icon>
               </v-list-tile-action>
             </v-list-tile>
-            <div v-for="(item,i) in sidebarRestBundle" :key="i">
-              <v-list-tile exact :to="item.href">
-                <v-list-tile-content>
-                    <v-list-tile-title>{{ item.title }}</v-list-tile-title>
-                </v-list-tile-content>
-                <v-list-tile-action>
-                    <v-icon v-show='$route.path === item.href'>keyboard_arrow_right</v-icon>
-                </v-list-tile-action>
-              </v-list-tile>
-            </div>
-        </v-list-group>
-        <v-list-group value="sidebarAppRest">
-            <v-list-tile slot="item">
-              <v-list-tile-action> <v-icon >help</v-icon> </v-list-tile-action>
-              <v-list-tile-content>
-                <v-list-tile-title>{{package.name}}</v-list-tile-title>
-              </v-list-tile-content>
-              <v-list-tile-action>
-                <v-icon dark>keyboard_arrow_down</v-icon>
-              </v-list-tile-action>
-            </v-list-tile>
-            <div v-for="(item,i) in sidebarAppRest" :key="i">
+            <div v-for="(item,i) in sidebarDeveloper" :key="i">
               <v-list-tile exact :to="item.href">
                 <v-list-tile-content>
                     <v-list-tile-title>{{ item.title }}</v-list-tile-title>
@@ -65,14 +44,14 @@
         <v-toolbar-title class="grey--text text--lighten-1">
             <div style="display:flex; flex-flow:column; ">
                 <span class="mr-2" >{{package.name}} {{package.version}}</span>
-                <span class="caption">developer application</span>
+                <span class="caption">OyaMist asset tracker</span>
             </div>
         </v-toolbar-title>
         <v-spacer/>
         <rb-web-socket/>
     </v-toolbar>
     <v-content class="oya-content">
-        <v-container fluid style="padding-right:1em">
+        <v-container fluid class="oya-router-container">
             <router-view> </router-view>
         </v-container>
     </v-content>
@@ -82,12 +61,17 @@
 </template> 
 <script>
 
-import Home from './Home.vue';
+import Search from './search.vue';
 import rbvue from "rest-bundle/index-vue";
 import appvue from "../../index-vue";
 
+const developerComponents = [{
+    title: "Client State",
+    href: "/client-state",
+}].concat(rbvue.methods.aboutSidebar(appvue.components));
+
 export default {
-    name: 'dev',
+    name: 'app',
     props: {
         service: {
             default: "oya-assets",
@@ -99,11 +83,10 @@ export default {
             drawer: false,
             sidebarMain: [{
                 icon: "question_answer",
-                title: "Home",
-                href: "/home",
+                title: "Search",
+                href: "/search",
             }],
-            sidebarRestBundle: rbvue.methods.aboutSidebar(rbvue.components),
-            sidebarAppRest: rbvue.methods.aboutSidebar(appvue.components),
+            sidebarDeveloper: developerComponents,
         }
     },
     methods: {
@@ -117,13 +100,15 @@ export default {
     computed: {
     },
     components: {
-        Home,
+        Search,
     },
 }
 
 </script>
 <style> 
 .oya-content {
-    background: #ddd;
+}
+.oya-router-container {
+    padding-top: 0;
 }
 </style>

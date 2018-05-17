@@ -6,8 +6,9 @@ import axios from 'axios';
 import VueAxios from 'vue-axios';
 import rbvue from 'rest-bundle/index-vue';
 
-import Dev from './Dev.vue';
-import Home from './Home.vue';
+import App from './app.vue';
+import Search from './search.vue';
+import ClientState from './client-state.vue';
 import OyaAsset from './oya-asset.vue';
 import appvue from "../../index-vue";
 require('./stylus/main.styl')
@@ -21,10 +22,13 @@ Vue.use(appvue);
 
 var routes = [{
         path: '/',
-        redirect: "/home"
+        redirect: "/search"
     },{
-        path: '/home',
-        component: Home
+        path: '/search',
+        component: Search,
+    },{
+        path: '/client-state',
+        component: ClientState,
     },{
         path: '/asset',
         component: OyaAsset,
@@ -42,11 +46,12 @@ const store = new Vuex.Store({
 });
 
 new Vue({
-    el: '#dev',
+    el: '#app',
     router,
     store,
-    render: h => h(Dev),
+    render: h => h(App),
     components: {
-        Home,
+        Search,
+        ClientState,
     },
 })
