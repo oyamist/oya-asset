@@ -16,7 +16,7 @@
             <v-text-field append-icon="search" label="Search" single-line clearable
                 :change="searchChanged()" hide-details v-model="search" ></v-text-field>
             <v-spacer/>
-            <v-btn primary @click="addAsset()">Add</v-btn>
+            <v-btn color='primary' @click="addAsset()">Add</v-btn>
         </v-card-title>
         <v-data-table v-bind:headers="headers" :items="assets" hide-actions 
             :custom-filter="assetFilter"
@@ -27,7 +27,7 @@
             <template slot="items" slot-scope="cursor">
                 <tr >
                     <td >
-                        <v-checkbox primary hide-details v-model="cursor.selected" >
+                        <v-checkbox color='primary' hide-details v-model="cursor.selected" >
                         </v-checkbox>
                     </td>
                     <td class="text-xs-left " @click="assetClick(cursor)"> 

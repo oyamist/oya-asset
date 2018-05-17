@@ -20,6 +20,19 @@
             </v-breadcrumbs>
             <v-spacer/>
         </v-card-title>
+        <v-data-table v-bind:headers="headers" :items="attrs" hide-actions 
+            v-model="attrs"
+            class="elevation-1" >
+            <template slot="items" slot-scope="cursor">
+                <tr >
+                    <td class="text-xs-left " >
+                        {{ cursor.item.tag }} </td>
+                    <td class="text-xs-left " >
+                        {{ cursor.item.value }}
+                    </td>
+                </tr>
+            </template>
+        </v-data-table>
         <v-card-text>
             <table class="pl-3" cellpadding=0 cellspacing=0>
                 <tr>
@@ -80,7 +93,6 @@ export default {
         refresh() {
             var guid = this.$route.query.guid;
             var url = [this.restOrigin(), this.service, 'asset', 'guid',guid].join('/');
-            console.log(`refresh(})`, this.$route.query);
             this.$http.get(url).then(res=>{
                 console.log('res',res);
                 var asset = this.asset = res.data;
@@ -148,6 +160,12 @@ export default {
         },
     },
     computed: {
+        headers() {
+            return [
+                { text: 'Name', align: 'left', value: 'name' },
+                { text: 'Value', align: 'left', value: 'value' },
+            ];
+        },
         navItems() {
             var search = this.$route.query.search||'';
             return [{
@@ -169,7 +187,6 @@ export default {
         },
     },
     mounted() {
-        console.log('mounted', this.$route.query);
         this.refresh();
     },
 }
