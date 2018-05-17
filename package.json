@@ -1,6 +1,6 @@
 {
   "name": "oya-asset",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "OyaMist asset management",
   "main": "index.js",
   "directories": {
@@ -13,7 +13,7 @@
     "jsrsasign": "^8.0.6",
     "merkle-json": "^1.1.2",
     "npm": "^5.8.0",
-    "rest-bundle": "^0.33.13",
+    "rest-bundle": "^0.35.2",
     "uuid": "^3.1.0",
     "winston": "^2.4.1"
   },
