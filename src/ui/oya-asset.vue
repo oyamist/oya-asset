@@ -12,10 +12,13 @@
     <v-card>
         <v-card-title >
             <v-breadcrumbs divider="/" large>
-                <v-breadcrumbs-item v-for="item in navItems" 
+                <v-breadcrumbs-item v-for="(item,i) in navItems" 
                     :href="item.href"
                     :key="item.text" >
-                    <div class="headline">{{ item.text }}</div>
+                    <div class="title">
+                        <span v-if='i===0'>&#x1F50D;</span>
+                        {{ item.text }}
+                    </div>
                 </v-breadcrumbs-item>
             </v-breadcrumbs>
             <v-spacer/>
@@ -33,30 +36,6 @@
                 </tr>
             </template>
         </v-data-table>
-        <v-card-text>
-            <table class="pl-3" cellpadding=0 cellspacing=0>
-                <tr>
-                    <th class="attr-header">Category</th>
-                    <th class="attr-header">Property</th>
-                    <th class="attr-header">Value</th>
-                    <th class="attr-header">Effective</th>
-                    <th class="attr-header">Notes</th>
-                </tr>
-                <tr v-for="(attr,i) in attrs" :key="i" class="attr-row">
-                    <td class="attr-category" v-if="i===0 || attrs[i-1].category !== attrs[i].category" >
-                        {{attr.category}}
-                    </td>
-                    <td class="attr-category-empty" v-else> &nbsp; </td>
-                    <td class="attr-header" v-if="i===0 || attrs[i-1].tag !== attrs[i].tag" >
-                        {{attr.tag}}
-                    </td>
-                    <td class="attr-header-empty" v-else> &nbsp; </td>
-                    <td> {{attr.value}} </td>
-                    <td > <span class="attr-date" >{{attrDate(attr.t)}}</span> </td>
-                    <td> {{attr.text}} </td>
-                </tr>
-            </table>
-        </v-card-text>
     </v-card>
 </div>
 
@@ -65,6 +44,7 @@
 
 import Vue from 'vue';
 import rbvue from "rest-bundle/index-vue";
+import Asset from '../asset';
 
 const RETROACTIVE = new Date(-8640000000000000); // Javascript minimum date
 
@@ -168,8 +148,9 @@ export default {
         },
         navItems() {
             var search = this.$route.query.search||'';
+            var text = search || 'Search';
             return [{
-                text: 'Search',
+                text,
                 href: `#/search?search=${search}`,
             },{
                 text: `${this.attrValue('name')}`,
@@ -225,4 +206,5 @@ td.attr-category-empty {
 td.attr-header-empty {
     border-top: none;
 }
+
 </style>

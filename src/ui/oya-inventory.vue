@@ -38,7 +38,7 @@
                         {{ cursor.item.id }}
                     </td>
                     <td class="text-xs-left " @click="assetClick(cursor)"> 
-                        <a :href="`#/asset?guid=${cursor.item.guid}&search=${search||''}`" >
+                        <a :href="`#/asset?guid=${cursor.item.guid}&search=${search||cursor.item.guid}`" >
                             {{ cursor.item.guid }}</a> 
                     </td>
                 </tr>
@@ -52,7 +52,7 @@
                                 v-if="assetValue(key, cursor.item) && keyClass(key, cursor.item)==='identity'"
                                 class="">
                                 <v-flex xs3 class='body-2'>{{key}}</v-flex>
-                                <v-flex >{{assetValue(key, cursor.item)}}</v-flex>
+                                <oya-attr-value :prop="key" :asset="cursor.item" :assetMap="assetMap" />
                             </v-layout>
                         </v-flex>
                     </v-layout>
@@ -63,7 +63,7 @@
                                 v-if="assetValue(key, cursor.item) && keyClass(key, cursor.item)==='detail'"
                                 class="">
                                 <v-flex xs3 class='body-2'>{{key}}</v-flex>
-                                <v-flex >{{assetValue(key, cursor.item)}}</v-flex>
+                                <oya-attr-value :prop="key" :asset="cursor.item" :assetMap="assetMap" />
                             </v-layout>
                         </v-flex>
                     </v-layout>
@@ -73,7 +73,7 @@
                             <v-layout row v-for="(dp,i) in statusProps(cursor.item)" :key="i"
                                 class="">
                                 <v-flex xs3 class='body-2'>{{dp.key}}</v-flex>
-                                <v-flex >{{dp.value}}</v-flex>
+                                <oya-attr-value prop="value" :asset="dp" :assetMap="assetMap" />
                             </v-layout>
                         </v-flex>
                     </v-layout>
@@ -146,8 +146,7 @@
 
 import Vue from 'vue';
 import rbvue from "rest-bundle/index-vue";
-
-const DATE_VALUE = /^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d/;
+import Asset from '../asset.js';
 
 export default {
     mixins: [ 
@@ -276,53 +275,7 @@ export default {
             return 'detail';
         },
         assetValue(key, asset) {
-            var value = asset[key];
-            if (key === 'guid') {
-                return value;
-            } 
-            if (typeof value !== 'string') {
-                return value;
-            } 
-            var valueAsset = this.assetMap[value];
-            if (valueAsset) {
-                return `${valueAsset.name} \u2666 ${valueAsset.id} \u2666 ${valueAsset.type}`;
-            }
-
-            if (value.match(DATE_VALUE)) {
-                var date = new Date(value);
-                var msElapsed = Date.now() - date;
-                var days = (Math.round(msElapsed / (24*3600*1000))).toFixed(0);
-                if (days < 14) {
-                    var dateStr = date.toLocaleDateString(navigator.language, {
-                        weekday: 'short',
-                        month: 'short',
-                        day: 'numeric',
-                    });
-                } else if (days < 365) {
-                    var dateStr = date.toLocaleDateString(navigator.language, {
-                        month: 'short',
-                        day: 'numeric',
-                    });
-                } else {
-                    var dateStr = date.toLocaleDateString(navigator.language, {
-                        month: 'numeric',
-                        day: '2-digit',
-                        year:'2-digit',
-                    });
-                }
-                var timeStr = date.toLocaleTimeString(navigator.language, {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                });
-                if (key !== 'begin' && asset.begin) {
-                    var begin = new Date(asset.begin);
-                    var age = Math.trunc((date - begin)/(24*3600*1000));
-                    return `${dateStr} (${-days} days @ ${age} days) \u2666 ${timeStr}`;
-                } else {
-                    return `${dateStr} (${-days} days) \u2666 ${timeStr}`;
-                }
-            }
-            return value;
+            return Asset.keyDisplayValue(key, asset, this.assetMap);
         },
         refresh(opts={}) {
             var url = [this.restOrigin(), this.service, 'inventory', 'snapshots'].join('/');
@@ -372,7 +325,9 @@ export default {
     },
     computed: {
         paginationLength() {
-            return Math.round(0.5+this.filteredItems.length/this.itemsPerPage);
+            return this.search 
+                ? Math.round(0.5+this.filteredItems.length/this.itemsPerPage)
+                : Math.round(0.5+this.assets.length/this.itemsPerPage);
         },
         assetTypes() {
             return [{

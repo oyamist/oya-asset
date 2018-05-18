@@ -4,6 +4,7 @@
     const MSDAYS = 24*3600*1000;
     const SHORT_GUID_DIGITS = 7; // same as git default
     const ISODATE = /^\d\d\d\d-\d\d-\d\d/;
+    const JSON_DATE = /^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d/;
     
     // Assets have different kinds of properties:
     // * immutable non-temporal properties (e.g., guid) 
@@ -329,6 +330,56 @@
             var merged = new Asset(asset1);
             merged.tvalues = TValue.mergeTValues(asset1.tvalues, asset2.tvalues);
             return merged;
+        }
+
+        static keyDisplayValue(key, asset, assetMap={}) {
+            var value = asset[key];
+            if (key === 'guid') {
+                return value;
+            } 
+            if (typeof value !== 'string') {
+                return value;
+            } 
+            var valueAsset = assetMap[value]; // if value is a guid, show referenced asset summary
+            if (valueAsset && valueAsset !== asset) {
+                return `${valueAsset.name} \u2666 ${valueAsset.id} \u2666 ${valueAsset.type}`;
+            }
+
+            if (value.match(JSON_DATE)) {
+                var date = new Date(value);
+                var msElapsed = Date.now() - date;
+                var days = (Math.round(msElapsed / (24*3600*1000))).toFixed(0);
+                if (days < 14) {
+                    var dateStr = date.toLocaleDateString(navigator.language, {
+                        weekday: 'short',
+                        month: 'short',
+                        day: 'numeric',
+                    });
+                } else if (days < 365) {
+                    var dateStr = date.toLocaleDateString(navigator.language, {
+                        month: 'short',
+                        day: 'numeric',
+                    });
+                } else {
+                    var dateStr = date.toLocaleDateString(navigator.language, {
+                        month: 'numeric',
+                        day: '2-digit',
+                        year:'2-digit',
+                    });
+                }
+                var timeStr = date.toLocaleTimeString(navigator.language, {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                });
+                if (key !== 'begin' && asset.begin) {
+                    var begin = new Date(asset.begin);
+                    var age = Math.trunc((date - begin)/(24*3600*1000));
+                    return `${dateStr} (${-days} days @ ${age} days) \u2666 ${timeStr}`;
+                } else {
+                    return `${dateStr} (${-days} days) \u2666 ${timeStr}`;
+                }
+            }
+            return value;
         }
 
     } //// class Asset
