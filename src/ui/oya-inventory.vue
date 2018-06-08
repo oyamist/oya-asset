@@ -8,7 +8,7 @@
         <rb-about-item name="about" value="false" slot="prop">Show this descriptive text</rb-about-item>
         <rb-about-item name="service" value="oya-asset" slot="prop">RestBundle name</rb-about-item>
         <rb-about-item name="title" value="Assets" slot="prop">Control title</rb-about-item>
-        <rb-about-item name="itemsPerPage" value="5" slot="prop">Assets displayed per page</rb-about-item>
+        <rb-about-item name="itemsPerPage" value="10" slot="prop">Assets displayed per page</rb-about-item>
     </rb-about>
 
     <v-card flat>
@@ -161,7 +161,7 @@ export default {
             default: 'oya-asset',
         },
         itemsPerPage: {
-            default: 3,
+            default: 10,
         },
     },
     data: function() {
