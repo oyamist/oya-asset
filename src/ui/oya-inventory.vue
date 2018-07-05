@@ -1,4 +1,3 @@
-
 <template>
 
 <div>
@@ -30,34 +29,25 @@
                         <v-checkbox color='primary' hide-details v-model="cursor.selected" >
                         </v-checkbox>
                     </td>
-                    <td class="text-xs-left " @click="assetClick(cursor)"> 
-                        {{ cursor.item.type }} </td>
-                    <td class="text-xs-left " @click="assetClick(cursor)"> 
-                        {{ cursor.item.name }} </td>
-                    <td class="text-xs-left " @click="assetClick(cursor)"> 
-                        {{ cursor.item.id }}
+                    <td class="text-xs-left " @click="assetClick(cursor)" style="width:10%"> 
+                        <a :href="`#/asset?guid=${cursor.item.guid}&id=${cursor.item.id}&search=${search||cursor.item.guid}`" 
+                            :title='cursor.item.guid'
+                            >
+                            {{ cursor.item.id }}
+                        </a> 
                     </td>
                     <td class="text-xs-left " @click="assetClick(cursor)"> 
-                        <a :href="`#/asset?guid=${cursor.item.guid}&search=${search||cursor.item.guid}`" >
-                            {{ cursor.item.guid }}</a> 
+                        {{ cursor.item.name }} </td>
+                    <td class="text-xs-left " @click="assetClick(cursor)" style="width:10%"> 
+                        {{ cursor.item.type }} </td>
+                    <td class="text-xs-left" @click="assetClick(cursor)" style="width:10%"> 
+                        <div class="oya-inventory-guid" style="width:10em"> {{ cursor.item.guid }} </div>
                     </td>
                 </tr>
             </template>
             <template slot="expand" slot-scope="cursor">
                 <v-container fluid class="oya-asset-expand">
                     <v-layout row class="pl-5">
-                        <v-flex xs2 class="body-2">Identity</v-flex>
-                        <v-flex>
-                            <v-layout row v-for="key in Object.keys(cursor.item).sort()" :key="key"
-                                v-if="assetValue(key, cursor.item) && keyClass(key, cursor.item)==='identity'"
-                                class="">
-                                <v-flex xs3 class='body-2'>{{key}}</v-flex>
-                                <oya-attr-value :prop="key" :asset="cursor.item" :assetMap="assetMap" />
-                            </v-layout>
-                        </v-flex>
-                    </v-layout>
-                    <v-layout row class="pl-5">
-                        <v-flex xs2 class="body-2">Detail</v-flex>
                         <v-flex>
                             <v-layout row v-for="key in Object.keys(cursor.item).sort()" :key="key"
                                 v-if="assetValue(key, cursor.item) && keyClass(key, cursor.item)==='detail'"
@@ -67,13 +57,14 @@
                             </v-layout>
                         </v-flex>
                     </v-layout>
-                    <v-layout row class="pl-5">
-                        <v-flex xs2 class="body-2">Status</v-flex>
+                    <v-layout row class="pl-5 pt-1">
                         <v-flex>
                             <v-layout row v-for="(dp,i) in statusProps(cursor.item)" :key="i"
                                 class="">
-                                <v-flex xs3 class='body-2'>{{dp.key}}</v-flex>
-                                <oya-attr-value prop="value" :asset="dp" :assetMap="assetMap" />
+                                <v-flex class="oya-inventory-time pl-3" xs6>
+                                    <oya-attr-value prop="value" :asset="dp" :assetMap="assetMap" />
+                                </v-flex>
+                                <v-flex xs3 class='body'>{{dp.key}}</v-flex>
                             </v-layout>
                         </v-flex>
                     </v-layout>
@@ -265,7 +256,7 @@ export default {
             cursor.expanded = !cursor.expanded;
         },
         keyClass(key, item) {
-            if (key === 'id' || key === 'name' || key === 'guid') {
+            if (key === 'id' || key === 'name' || key === 'guid' || key === 'type') {
                 return 'identity';
             }
             var value = item[key];
@@ -361,9 +352,9 @@ export default {
         },
         headers() {
             return [
-                { text: 'Type', align: 'left', value: 'type' },
-                { text: 'Name', align: 'left', value: 'name' },
-                { text: 'Id', align: 'left', value: 'id' },
+                { text: 'ID', align: 'left', value: 'id' },
+                { text: 'TYPE', align: 'left', value: 'type' },
+                { text: 'NAME', align: 'left', value: 'name' },
                 { text: 'GUID', align: 'left', value: 'guid' },
             ];
         },
@@ -377,5 +368,11 @@ export default {
 <style> 
 .oya-asset-expand {
     background:#eee;
+}
+.oya-inventory-guid {
+    font-size: xx-small;
+}
+.oya-inventory-time {
+    border-left: 1px solid #ccc;
 }
 </style>
