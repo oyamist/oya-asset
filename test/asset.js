@@ -567,6 +567,27 @@
         }();
         async.next();
     });
+    it("TESTTESTkeyDisplayValue(key, asset, assetMap, locale)", function() {
+        var asset = new Asset();
+        var t1 = new Date(2018,1,1);
+        var t2 = new Date(2018,1,2);
+        var t3 = new Date(2018,1,3);
+        var t4 = new Date(2018,1,10);
+        assetMap = {
+            [asset.guid]: asset,
+        };
+        asset.color = 'red';
+        should.deepEqual(Asset.keyDisplayValue('color' , asset, assetMap), 'red');
+        asset.height = 1.43;
+        should.deepEqual(Asset.keyDisplayValue('height' , asset, assetMap), 1.43);
+        asset.graduated = t1;
+        should.deepEqual(Asset.keyDisplayValue('graduated' , asset, assetMap), t1);
+        asset.begin = t1;
+        asset.end = t4;
+        asset.married = t3.toISOString();
+        should.deepEqual(Asset.keyDisplayValue('married' , asset, assetMap), 
+            'Sat, Feb 3 (-7 days @ 2 days) \u2666 12:00 AM');
+    });
     it("valueHistory(tag) returns array of TValues of tag", function() {
         var asset = new Asset();
         var t1 = new Date(2018,1,1);

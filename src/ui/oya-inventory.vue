@@ -55,16 +55,18 @@
                                 <v-flex xs3 class='body-2'>{{key}}</v-flex>
                                 <oya-attr-value :prop="key" :asset="cursor.item" :assetMap="assetMap" />
                             </v-layout>
+                            <v-layout row class="body-2" style='border-bottom: 1pt solid white'>History</v-layout>
                         </v-flex>
                     </v-layout>
-                    <v-layout row class="pl-5 pt-1">
+                    <v-layout row class="pt-1">
                         <v-flex>
                             <v-layout row v-for="(dp,i) in statusProps(cursor.item)" :key="i"
-                                class="">
-                                <v-flex class="oya-inventory-time pl-3" xs6>
-                                    <oya-attr-value prop="value" :asset="dp" :assetMap="assetMap" />
-                                </v-flex>
-                                <v-flex xs3 class='body'>{{dp.key}}</v-flex>
+                                class="pl-5">
+                                <div class="oya-days-date">{{new Date(dp.date).toLocaleDateString()}}</div>
+                                <div xs3 class='oya-days-key'>{{dp.key}}</div>
+                                <div class="oya-days-plus" title='days since "begin"'>+{{daysPlus(dp, cursor.item)}}</div>
+                                <div class="oya-days-minus" title='days before today/"end"'>
+                                    -{{daysMinus(dp, cursor.item)}} days</div>
                             </v-layout>
                         </v-flex>
                     </v-layout>
@@ -238,6 +240,7 @@ export default {
             });
         },
         statusProps(asset) {
+            console.log('asset',asset);
             var status = Object.keys(asset).reduce((acc,key) => {
                 var value = asset[key];
                 if (typeof value === 'string' && value.match(/^\d\d\d\d-\d\d-\d\dT/)) {
@@ -266,7 +269,7 @@ export default {
             return 'detail';
         },
         assetValue(key, asset) {
-            return Asset.keyDisplayValue(key, asset, this.assetMap);
+            return Asset.keyDisplayValue(key, asset, this.assetMap, navigator.location);
         },
         refresh(opts={}) {
             var url = [this.restOrigin(), this.service, 'inventory', 'snapshots'].join('/');
@@ -280,6 +283,28 @@ export default {
             }).catch(e=>{
                 console.error(e);
             });
+        },
+        daysMinus(dateStr, asset) {
+            if (asset.end) {
+                var prefix = 'end-';
+                var end = new Date(asset.end);
+            } else {
+                var prefix = 'now-';
+                var end = Date.now();
+            }
+            var days = end - new Date(dateStr.date);
+            days = Math.ceil(days / (3600*24*1000));
+            return days;
+        },
+        daysPlus(dateStr, asset) {
+            var result = 0;
+            console.log('dateStr', dateStr);
+            if (asset.begin) {
+                var begin = new Date(asset.begin);
+                var days = new Date(dateStr.date) - begin;
+                result = Math.floor(days / (3600*24*1000));
+            }
+            return result;
         },
         dataInput(values) {
             console.log(`data input ${values}`);
@@ -368,11 +393,32 @@ export default {
 <style> 
 .oya-asset-expand {
     background:#eee;
+    padding-left: 13.8em;
 }
 .oya-inventory-guid {
     font-size: xx-small;
 }
 .oya-inventory-time {
     border-left: 1px solid #ccc;
+}
+.oya-days-plus {
+    text-align: right;
+    padding-right: 2px;
+    width: 3em;
+}
+.oya-days-minus {
+    border-left: 1pt solid #ccc;
+    width: 7em;
+    padding-left: 2px;
+}
+.oya-days-key {
+    font-weight: 500;
+    min-width: 7em;
+    text-align: left;
+}
+.oya-days-date {
+    margin-right: 0.5em;
+    text-align: right;
+    width: 7em;
 }
 </style>

@@ -69,6 +69,8 @@
             this.end = opts.end || null;
         }
 
+        static get JSON_DATE() { return JSON_DATE; }
+
         static get T_ACTUATOR() { return "actuator"; }
         static get T_ADDRESS() { return "address"; }
         static get T_ASSET() { return "asset"; }
@@ -332,7 +334,7 @@
             return merged;
         }
 
-        static keyDisplayValue(key, asset, assetMap={}) {
+        static keyDisplayValue(key, asset, assetMap={}, language='en-us') {
             var value = asset[key];
             if (key === 'guid') {
                 return value;
@@ -347,27 +349,28 @@
 
             if (value.match(JSON_DATE)) {
                 var date = new Date(value);
-                var msElapsed = Date.now() - date;
+                var end = asset.end || Date.now();
+                var msElapsed = end - date;
                 var days = (Math.round(msElapsed / (24*3600*1000))).toFixed(0);
                 if (days < 14) {
-                    var dateStr = date.toLocaleDateString(navigator.language, {
+                    var dateStr = date.toLocaleDateString(language, {
                         weekday: 'short',
                         month: 'short',
                         day: 'numeric',
                     });
                 } else if (days < 365) {
-                    var dateStr = date.toLocaleDateString(navigator.language, {
+                    var dateStr = date.toLocaleDateString(language, {
                         month: 'short',
                         day: 'numeric',
                     });
                 } else {
-                    var dateStr = date.toLocaleDateString(navigator.language, {
+                    var dateStr = date.toLocaleDateString(language, {
                         month: 'numeric',
                         day: '2-digit',
                         year:'2-digit',
                     });
                 }
-                var timeStr = date.toLocaleTimeString(navigator.language, {
+                var timeStr = date.toLocaleTimeString(language, {
                     hour: '2-digit',
                     minute: '2-digit',
                 });
