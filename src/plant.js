@@ -9,10 +9,10 @@
             }, opts));
             
             if (opts.hasOwnProperty(Plant.T_PLANT)) {
-                this.set(Plant.T_PLANT, opts.plant, TValue.RETROACTIVE);
+                this.setTValue(Plant.T_PLANT, opts.plant, TValue.RETROACTIVE);
             }
             if (opts.hasOwnProperty(Plant.T_CULTIVAR)) {
-                this.set(Plant.T_CULTIVAR, opts.cultivar, TValue.RETROACTIVE);
+                this.setTValue(Plant.T_CULTIVAR, opts.cultivar, TValue.RETROACTIVE);
             }
         }
 
@@ -56,14 +56,14 @@
             return this.get(Plant.T_PLANT);
         }
         set plant(value) {
-            this.set(Plant.T_PLANT, value);
+            this.setTValue(Plant.T_PLANT, value);
         }
 
         get cultivar() {
             return this.get(Plant.T_CULTIVAR);
         }
         set cultivar(value) {
-            this.set(Plant.T_CULTIVAR, value);
+            this.setTValue(Plant.T_CULTIVAR, value);
         }
 
     }

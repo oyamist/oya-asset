@@ -45,21 +45,21 @@
 
             // Asset id is retroactive temporal value initializable with ctor options
             if (opts.hasOwnProperty('id')) {
-                this.set(TValue.T_ID, opts.id, TValue.RETROACTIVE);
+                this.setTValue(TValue.T_ID, opts.id, TValue.RETROACTIVE);
             } else if (opts.tvalues) {
                 // id is in the tvalues
             } else {
-                this.set(TValue.T_ID, this.guid.substr(0,SHORT_GUID_DIGITS), TValue.RETROACTIVE);
+                this.setTValue(TValue.T_ID, this.guid.substr(0,SHORT_GUID_DIGITS), TValue.RETROACTIVE);
             }
 
             // Asset name is retroactive temporal value initializable with ctor options
             if (opts.hasOwnProperty('name')) {
-                this.set(TValue.T_NAME, opts.name, TValue.RETROACTIVE);
+                this.setTValue(TValue.T_NAME, opts.name, TValue.RETROACTIVE);
             } else if (opts.tvalues) {
                 // name is in tvalues
             } else {
                 var name = `${this.namePrefix(opts)}${this.id}`;
-                this.set(TValue.T_NAME, name, TValue.RETROACTIVE);
+                this.setTValue(TValue.T_NAME, name, TValue.RETROACTIVE);
             }
             if (opts.begin) {
                 this.begin = opts.begin instanceof Date ? opts.begin : new Date(opts.begin);
@@ -157,12 +157,12 @@
         }
 
         get id() { return this.get(TValue.T_ID); }
-        set id(value) { this.set(TValue.T_ID, value); return value; }
+        set id(value) { this.setTValue(TValue.T_ID, value); return value; }
 
         get name() { return this.get(TValue.T_NAME); }
-        set name(value) { this.set(TValue.T_NAME, value); return value; }
+        set name(value) { this.setTValue(TValue.T_NAME, value); return value; }
 
-        set(...args) {
+        setTValue(...args) {
             if (typeof args[0] === 'string') { // set(tag,value,date)
                 var tag = args[0];
                 var tvalue = {
@@ -183,7 +183,7 @@
                 var tvalue = args[0];
             }
             if (tvalue == null) {
-                throw new Error('Asset.set(tvalue) tvalue is required');
+                throw new Error('Asset.setTValue(tvalue) tvalue is required');
             }
             if (!(tvalue instanceof TValue)) {
                 tvalue = new TValue(tvalue);
@@ -301,14 +301,14 @@
                     }
                 } else if (newValue !== oldValue) {
                     if ((typeof newValue === 'string') && newValue.match(ISODATE)) {
-                        this.set(new TValue({
+                        this.setTValue(new TValue({
                             t: new Date(newValue),
                             tag: key,
                             value: true,
                             text,
                         }));
                     } else {
-                        this.set(new TValue({
+                        this.setTValue(new TValue({
                             t,
                             tag: key,
                             value: newValue,

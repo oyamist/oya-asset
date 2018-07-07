@@ -184,9 +184,9 @@
             color: 'blue',
             qty: 3,
         };
-        asset.set(TValue.T_DIMENSIONS, value);
+        asset.setTValue(TValue.T_DIMENSIONS, value);
         should.deepEqual(asset.get(TValue.T_DIMENSIONS), value);
-        asset.set(TValue.T_DIMENSIONS);
+        asset.setTValue(TValue.T_DIMENSIONS);
         var json = JSON.stringify(asset);
         var asset2 = new Asset(JSON.parse(json));
         should.deepEqual(asset2, asset);
@@ -196,18 +196,18 @@
         var asset = new Asset();
 
         // set(valueTag, value)
-        asset.set(TValue.T_LOCATION, 'SFO');
+        asset.setTValue(TValue.T_LOCATION, 'SFO');
         should(asset.get(TValue.T_LOCATION)).equal('SFO');
-        asset.set(TValue.T_LOCATION, 'LAX');
+        asset.setTValue(TValue.T_LOCATION, 'LAX');
         should(asset.get(TValue.T_LOCATION)).equal('LAX');
 
         // set(tvalue)
-        asset.set(new TValue({
+        asset.setTValue(new TValue({
             tag: TValue.T_LOCATION, 
             value: 'ATL',
         }));
         should(asset.get(TValue.T_LOCATION)).equal('ATL');
-        asset.set({
+        asset.setTValue({
             tag: TValue.T_LOCATION, 
             value: 'PIT',
         });
@@ -215,7 +215,7 @@
 
         // set prior value
         var t1 = new Date(2018,1,10);
-        asset.set({
+        asset.setTValue({
             tag: TValue.T_LOCATION, 
             value: 'NYC',
             t: t1,
@@ -225,11 +225,11 @@
     });
     it("get(valueTag,date) returns temporal value for date", function() {
         var asset = new Asset();
-        asset.set(TValue.T_DIMENSIONS, {
+        asset.setTValue(TValue.T_DIMENSIONS, {
             size: 'small',
             qty: 2,
         });
-        asset.set(TValue.T_DIMENSIONS, { 
+        asset.setTValue(TValue.T_DIMENSIONS, { 
             size: 'large', 
         });
         var asset = new Asset(JSON.parse(JSON.stringify(asset))); // is serializable
@@ -239,9 +239,9 @@
 
         var t1 = new Date(2018,1,1);
         var t2 = new Date(2018,1,2);
-        asset.set(TValue.T_ACTIVATED, true, t1);
+        asset.setTValue(TValue.T_ACTIVATED, true, t1);
         should.equal(asset.get(TValue.T_ACTIVATED, t1), t1); // true is mapped to date
-        asset.set(TValue.T_ACTIVATED, false, t2);
+        asset.setTValue(TValue.T_ACTIVATED, false, t2);
         should.equal(asset.get(TValue.T_ACTIVATED, t2), false);
     });
     it("get(valueTag,date) also returns non-temporal property value ", function() {
@@ -254,15 +254,15 @@
         var asset = new Asset();
         var t1 = new Date(2018,2,1);
         should(asset.begin.toJSON()).not.equal(t1.toJSON());
-        asset.set("begin", t1);
+        asset.setTValue("begin", t1);
         should(asset.begin.toJSON()).equal(t1.toJSON());
 
         // immutable 
         should.throws(() => {
-            asset.set("guid", "asdf");
+            asset.setTValue("guid", "asdf");
         });
         should.throws(() => {
-            asset.set("type", "asdf");
+            asset.setTValue("type", "asdf");
         });
     });
     it("location(date) returns asset location for date", function() {
@@ -271,9 +271,9 @@
         var t1 = new Date(2018,1,1);
         var t2 = new Date(2018,1,2);
         var t3 = new Date(2018,1,3);
-        asset.set(TValue.T_LOCATION, 'SFO', t1);
-        asset.set(TValue.T_LOCATION, 'LAX', t2);
-        asset.set(TValue.T_LOCATION, 'PIT', t3);
+        asset.setTValue(TValue.T_LOCATION, 'SFO', t1);
+        asset.setTValue(TValue.T_LOCATION, 'LAX', t2);
+        asset.setTValue(TValue.T_LOCATION, 'PIT', t3);
         var asset = new Asset(JSON.parse(JSON.stringify(asset))); // is serializable
         should(asset.location()).equal('PIT');
         should(asset.location(t0)).equal(undefined);
@@ -349,9 +349,9 @@
             name: 'pump_A0001',
             guid: asset.guid,
         });
-        asset.set(TValue.T_LOCATION, 'SFO', t1);
-        asset.set(TValue.T_LOCATION, 'LAX', t2);
-        asset.set(TValue.T_LOCATION, 'PIT', t3);
+        asset.setTValue(TValue.T_LOCATION, 'SFO', t1);
+        asset.setTValue(TValue.T_LOCATION, 'LAX', t2);
+        asset.setTValue(TValue.T_LOCATION, 'PIT', t3);
         should(asset.snapshot()).properties({
             location: 'PIT',
         });
@@ -593,9 +593,9 @@
         var t1 = new Date(2018,1,1);
         var t2 = new Date(2018,1,2);
         var t3 = new Date(2018,1,3);
-        asset.set('color', 'blue', t3, 'C');
-        asset.set('color', 'red', t1, 'A',);
-        asset.set('color', 'green', t2, 'B');
+        asset.setTValue('color', 'blue', t3, 'C');
+        asset.setTValue('color', 'red', t1, 'A',);
+        asset.setTValue('color', 'green', t2, 'B');
         var history = asset.valueHistory('color');
         should.deepEqual(history.map(tv=>tv.value), ['red','green', 'blue']);
         should.deepEqual(history.map(tv=>tv.t), [t1,t2,t3]);
@@ -615,11 +615,11 @@
         should.deepEqual(asset.describeProperty('color'), unused('color'));
 
         // create a temporal property
-        asset.set("location", "SFO");
+        asset.setTValue("location", "SFO");
         should.deepEqual(asset.describeProperty('location'), temporal('location'));
 
         // create retroactive property
-        asset.set("color", 'red', TValue.RETROACTIVE);
+        asset.setTValue("color", 'red', TValue.RETROACTIVE);
         should.deepEqual(asset.describeProperty('color'), retroactive('color'));
 
         // serialized asset has same property definitions
@@ -642,13 +642,13 @@
             id: 'asset1',
             color: 'red1',
         });
-        asset1.set('inspected', true, t[0]);
-        asset1.set('inspected', true, t[1]);
+        asset1.setTValue('inspected', true, t[0]);
+        asset1.setTValue('inspected', true, t[1]);
         var asset2 = new Asset(Object.assign({}, asset1, {
             id: 'asset2',
             color: 'red2',
         }));
-        asset2.set('inspected', true, t[2]);
+        asset2.setTValue('inspected', true, t[2]);
 
         var expected = new Asset(JSON.parse(JSON.stringify(asset2)));
         var etv = expected.tvalues.sort((a,b) => TValue.compare_t_tag(a,b));

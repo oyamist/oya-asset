@@ -55,8 +55,8 @@
         var plant = new Plant({
             begin,
         });
-        plant.set(Plant.T_GERMINATING, true, new Date(2018,1,5,8,30));
-        plant.set(Plant.T_SPROUTED, true, new Date(2018,1,10,9,30));
+        plant.setTValue(Plant.T_GERMINATING, true, new Date(2018,1,5,8,30));
+        plant.setTValue(Plant.T_SPROUTED, true, new Date(2018,1,10,9,30));
         should(plant.ageAt(Plant.T_GERMINATING)).equal(4);
         should(plant.ageAt(Plant.T_SPROUTED)).equal(9);
         should(plant.ageAt(Plant.T_POLLINATED)).equal(null);

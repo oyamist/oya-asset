@@ -14,8 +14,8 @@
         var asset = new Asset();
         var t1 = new Date(2018,1,10);
         var t2 = new Date(2018,1,11);
-        asset.set("size", 32, t1);
-        asset.set("size", 40, t2);
+        asset.setTValue("size", 32, t1);
+        asset.setTValue("size", 40, t2);
         should(asset.get("size", t1)).equal(32);
         var tv32 = new TValue({ 
             tag: "size",

@@ -165,7 +165,7 @@
                 var inventory = rbtest().inventory;
                 var a0001 = await inventory.assetOfGuid('GUID001');
                 var a0001copy = new Asset(a0001);
-                a0001copy.set('color', 'red');
+                a0001copy.setTValue('color', 'red');
                 should(a0001.get('color')).equal(undefined);
                 should(a0001copy.get('color')).equal('red');
                 var url = `/test/asset/guid/GUID001`;

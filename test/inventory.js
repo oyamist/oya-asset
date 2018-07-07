@@ -107,7 +107,7 @@
                     guid: 'GUID1001',
                 });
                 should(plant1.id).equal('A1001');
-                plant1.set(TValue.T_ID, 'A1004', t2);
+                plant1.setTValue(TValue.T_ID, 'A1004', t2);
                 should(plant1.id).equal('A1004');
                 var plant2 = new Plant({
                     name: 'plant2',
