@@ -24,18 +24,23 @@
             <v-spacer/>
         </v-card-title>
         <v-data-table v-bind:headers="headers" :items="attrs" hide-actions 
+            :custom-sort='attrSort'
             v-model="attrs"
             class="elevation-1" >
             <template slot="items" slot-scope="cursor">
                 <tr >
                     <td class="text-xs-left " >
+                        {{ attrDate(cursor.item.t) }} </td>
+                    <td class="text-xs-left " >
                         {{ cursor.item.tag }} </td>
                     <td class="text-xs-left " >
-                        {{ cursor.item.value }}
-                    </td>
+                        {{ cursor.item.value }} </td>
                 </tr>
             </template>
         </v-data-table>
+        {{asset}}
+        <br>
+        {{attrs}}
     </v-card>
 </div>
 
@@ -91,7 +96,8 @@ export default {
                             category: key === 'guid' ? "Identity" : "Detail",
                             tag: key,
                             value: asset[key],
-                            t: RETROACTIVE,
+                            name: asset.name,
+                            t: null,
                         });
                         
                     }
@@ -128,20 +134,48 @@ export default {
             return undefined;
         },
         attrDate(t) {
+            if (t == null) {
+                return '--';
+            }
+            if (t.getTime() === RETROACTIVE.getTime()) {
+                return '...begin';
+            }
             var msday = 24 * 3600 * 1000;
-            var d = Math.round((t-Date.now()) / msday);
+            var begin = new Date(this.asset.begin);
+            var d = Math.round((t-begin.getTime()) / msday);
             if (Math.abs(d) < 365) {
-                return `${t.toLocaleDateString()} (${d} days)`;
+                return `${t.toLocaleDateString()} (+${d} days)`;
             }
             if (Math.abs(d) < 100 * 365) {
                 return `${t.toLocaleDateString()}`;
             }
             return '';
         },
+        attrSort(items, index, isDescending) {
+            if (index === 't') {
+                items.sort((a,b) => {
+                    if (a.t == null && b.t) {
+                        return -1;
+                    }
+                    if (a.t && b.t == null) {
+                        return 1;
+                    }
+                    if (a.t == null && b.t == null || a.t.getTime() === b.t.getTime()) {
+                        return a.tag < b.tag 
+                            ? -1
+                            : (a.tag === b.tag ? 0 : 1);
+                    }
+                    return a.t < b.t ? -1 : (a.t === b.t ? 0 : 1);
+                });
+
+            }
+            return items;
+        },
     },
     computed: {
         headers() {
             return [
+                { text: 'Date', align: 'left', value: 't' },
                 { text: 'Name', align: 'left', value: 'name' },
                 { text: 'Value', align: 'left', value: 'value' },
             ];
