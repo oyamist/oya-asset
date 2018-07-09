@@ -28,6 +28,7 @@
         static get T_SIZE() { return "size"; } 
         static get T_DIMENSIONS() { return "dimensions"; } 
         static get T_LOCATION() { return "location"; } 
+        static get V_EVENT() { return "__event__"; }
 
         static get TIME_RESOLUTION_MS() { return 2; }
         static get RETROACTIVE() { 
@@ -61,6 +62,10 @@
                 return a.tag < b.tag ? -1 : 1;
             }
             return a.t.getTime() < b.t.getTime() ? -1 : 1;
+        }
+
+        static isEvent(tv) {
+            return tv.value === TValue.V_EVENT;
         }
 
         static mergeTValues(tv1, tv2) {

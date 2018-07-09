@@ -167,7 +167,7 @@
                 var tag = args[0];
                 var tvalue = {
                     tag,
-                    value: args[1] === undefined ? true : args[1],
+                    value: args[1] === undefined ? TValue.V_EVENT : args[1],
                     t: args[2] || new Date(),
                 };
                 if (this.hasOwnProperty(args[0])) { // non-temporal
@@ -208,7 +208,7 @@
             }
             this.validateTag(valueTag);
             var tvalue =  this.getTValue(valueTag, date);
-            if (tvalue && tvalue.value === true) {
+            if (tvalue && tvalue.value === TValue.V_EVENT) {
                 return tvalue.t;
             }
             return tvalue ? tvalue.value : undefined;
@@ -280,7 +280,7 @@
                 var valueTag = tvalue.tag;
                 var tv = tagMap[valueTag];
                 if (!tv && tvalue.t <= t || tv && tv.t <= tvalue.t && tvalue.t <= t) {
-                    if (tvalue.value === true) { 
+                    if (tvalue.value === TValue.V_EVENT) { 
                         snapshot[valueTag] = tvalue.t.toJSON(); // coerce to date
                     } else {
                         snapshot[valueTag] = tvalue.value;
@@ -304,7 +304,7 @@
                         this.setTValue(new TValue({
                             t: new Date(newValue),
                             tag: key,
-                            value: true,
+                            value: TValue.V_EVENT,
                             text,
                         }));
                     } else {

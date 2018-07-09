@@ -239,8 +239,8 @@
 
         var t1 = new Date(2018,1,1);
         var t2 = new Date(2018,1,2);
-        asset.setTValue(TValue.T_ACTIVATED, true, t1);
-        should.equal(asset.get(TValue.T_ACTIVATED, t1), t1); // true is mapped to date
+        asset.setTValue(TValue.T_ACTIVATED, TValue.V_EVENT, t1);
+        should.equal(asset.get(TValue.T_ACTIVATED, t1), t1); // TValue.V_EVENT is mapped to date
         asset.setTValue(TValue.T_ACTIVATED, false, t2);
         should.equal(asset.get(TValue.T_ACTIVATED, t2), false);
     });
@@ -484,20 +484,20 @@
         }();
         async.next();
     });
-    it("snapshots map true to assignment date", function(done) {
+    it("snapshots map TValue.V_EVENT to assignment date", function(done) {
         var async = function*() {
             var asset = new Asset();
             var t0 = TValue.RETROACTIVE;
             var t1 = new Date(2018, 1, 1);
             var tv1 = new TValue({
                 tag: TValue.T_ACTIVATED,
-                value: true,
+                value: TValue.V_EVENT,
                 t: t1,
             });
             var t2 = new Date(2018, 1, 2);
             var tv2 = new TValue({
                 tag: TValue.T_ACTIVATED,
-                value: true,
+                value: TValue.V_EVENT,
                 t: t2,
             });
             var t3 = new Date(2018, 1, 3);
@@ -509,7 +509,7 @@
             var tfuture = new Date(Date.now() + 365*24*3600*1000);
             var tvfuture = new TValue({
                 tag: TValue.T_ACTIVATED,
-                value: true,
+                value: TValue.V_EVENT,
                 t: tfuture,
             });
 
@@ -521,17 +521,17 @@
                 [TValue.T_ACTIVATED]: t1.toJSON(),
             });
             should.deepEqual(asset.valueHistory(TValue.T_ACTIVATED), [ tv1 ]);
-            should.deepEqual(tv1.value, true); // store boolean value, not date
+            should.deepEqual(tv1.value, TValue.V_EVENT); // store event marker value
             should(asset.snapshot()).properties({
                 activated: t1.toJSON(),
             });
 
-            // map true to assignment date
+            // map TValue.V_EVENT to assignment date
             asset.updateSnapshot({
-                [TValue.T_ACTIVATED]: true,
+                [TValue.T_ACTIVATED]: TValue.V_EVENT,
             }, t2);
             should.deepEqual(asset.valueHistory(TValue.T_ACTIVATED), [ tv1, tv2 ]);
-            should.deepEqual(tv2.value, true); // store boolean value, not date
+            should.deepEqual(tv2.value, TValue.V_EVENT); // event marker value
             should(asset.snapshot()).properties({ // snapshot returns current activated date
                 activated: t2.toJSON(),
             });
@@ -642,13 +642,13 @@
             id: 'asset1',
             color: 'red1',
         });
-        asset1.setTValue('inspected', true, t[0]);
-        asset1.setTValue('inspected', true, t[1]);
+        asset1.setTValue('inspected', TValue.V_EVENT, t[0]);
+        asset1.setTValue('inspected', TValue.V_EVENT, t[1]);
         var asset2 = new Asset(Object.assign({}, asset1, {
             id: 'asset2',
             color: 'red2',
         }));
-        asset2.setTValue('inspected', true, t[2]);
+        asset2.setTValue('inspected', TValue.V_EVENT, t[2]);
 
         var expected = new Asset(JSON.parse(JSON.stringify(asset2)));
         var etv = expected.tvalues.sort((a,b) => TValue.compare_t_tag(a,b));

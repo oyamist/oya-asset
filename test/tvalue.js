@@ -23,6 +23,25 @@
         should(evt2.text).equal('asdf');
         should(evt2.value).equal('purple');
     });
+    it("TESTTESTisEvent(tv) returns true if given TValue is an event", function(){
+        var t1 = new Date(2018, 2, 3);
+        var tvcolor = new TValue({
+            tag: 'color',
+            value: 'red',
+            t: t1,
+        });
+        var tvevent = new TValue({
+            tag: 'germinated',
+            value: TValue.V_EVENT, // marks TValue as event
+            t: t1,
+        });
+        should(TValue.isEvent(tvcolor)).equal(false);
+        should(TValue.isEvent(tvevent)).equal(true);
+
+        // isEvent(json) works similarly
+        should(TValue.isEvent(JSON.parse(JSON.stringify(tvcolor)))).equal(false);
+        should(TValue.isEvent(JSON.parse(JSON.stringify(tvevent)))).equal(true);
+    });
     it("RETROACTIVE is the timestamp for retroactive values", function() {
         // Retroactive date is JS minimum date. So there.
         should(TValue.RETROACTIVE.toJSON()).equal("-271821-04-20T00:00:00.000Z");

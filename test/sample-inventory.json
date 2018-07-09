@@ -38,15 +38,15 @@
         },{
             "tag": "germinated",
             "t": "2018-02-15T10:30:40.123Z",
-            "value":true
+            "value":"__event__"
         },{
             "tag": "sprouted",
             "t": "2018-02-20T10:30:40.123Z",
-            "value":true
+            "value":"__event__"
         },{
             "tag": "budding",
             "t": "2018-02-25T10:30:40.123Z",
-            "value":true
+            "value":"__event__"
         },{
             "tag": "location",
             "t": "2018-03-12T00:00:00Z",
