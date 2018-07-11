@@ -9,38 +9,65 @@
         <rb-about-item name="title" value="Asset" slot="prop">Control title</rb-about-item>
     </rb-about>
 
-    <v-card>
-        <v-card-title >
+    <v-card flat class="mt-3">
+        <v-tabs v-model="activeTab" centered>
+          <v-toolbar class="grey lighten-4">
             <v-breadcrumbs divider="/" large>
                 <v-breadcrumbs-item v-for="(item,i) in navItems" 
                     :href="item.href"
                     :key="item.text" >
                     <div class="title">
-                        <span v-if='i===0'>&#x1F50D;</span>
+                        <!--span v-if='i===0'>&#x1F50D;</span-->
                         {{ item.text }}
                     </div>
                 </v-breadcrumbs-item>
             </v-breadcrumbs>
-            <v-spacer/>
-        </v-card-title>
-        <v-data-table v-bind:headers="headers" :items="attrs" hide-actions 
-            :custom-sort='attrSort'
-            v-model="attrs"
-            class="elevation-1" >
-            <template slot="items" slot-scope="cursor">
-                <tr >
-                    <td class="text-xs-left " >
-                        {{ attrDate(cursor.item.t) }} </td>
-                    <td class="text-xs-left " >
-                        {{ cursor.item.tag }} </td>
-                    <td class="text-xs-left " >
-                        {{ cursor.item.value }} </td>
-                </tr>
-            </template>
-        </v-data-table>
-        {{asset}}
-        <br>
-        {{attrs}}
+          </v-toolbar>
+          <v-tabs-bar class="grey lighten-4" >
+            <v-tabs-slider color="grey darken-4"></v-tabs-slider>
+            <v-tabs-item :href="'#'+tabs[0]" >
+                <div style="width:15em"><v-icon>list</v-icon>&nbsp;Attributes</div>
+            </v-tabs-item>
+            <v-tabs-item :href="'#'+tabs[1]" >
+                <div style="width:15em"><v-icon>date_range</v-icon>&nbsp;History</div>
+            </v-tabs-item>
+          </v-tabs-bar>
+          <v-tabs-items>
+            <v-tabs-content :id='tabs[0]'>
+              <v-card flat>
+                <v-data-table v-bind:headers="headers" :items="attrs" hide-actions 
+                    v-model="attrs"
+                    class="elevation-1" >
+                    <template slot="items" slot-scope="cursor">
+                        <tr >
+                            <td class="text-xs-right " style="width:14em">
+                                {{ cursor.item.tag }} </td>
+                            <td class="text-xs-left " >
+                                {{ cursor.item.value }} </td>
+                        </tr>
+                    </template>
+                </v-data-table>
+              </v-card>
+            </v-tabs-content>
+            <v-tabs-content :id='tabs[1]'>
+              <v-card flat>
+                <v-data-table v-bind:headers="historyHeaders" :items="historyAttrs" hide-actions 
+                    :custom-sort='historySort'
+                    v-model="historyAttrs"
+                    class="elevation-1" >
+                    <template slot="items" slot-scope="cursor">
+                        <tr >
+                            <td class="text-xs-right " style="width:14em">
+                                {{ attrDate(cursor.item.t) }} </td>
+                            <td class="text-xs-left " >
+                                {{ cursor.item.tag }} </td>
+                        </tr>
+                    </template>
+                </v-data-table>
+              </v-card>
+            </v-tabs-content>
+          </v-tabs-items>
+        </v-tabs>
     </v-card>
 </div>
 
@@ -52,6 +79,7 @@ import rbvue from "rest-bundle/index-vue";
 import Asset from '../asset';
 
 const RETROACTIVE = new Date(-8640000000000000); // Javascript minimum date
+const V_EVENT = '__event__';
 
 export default {
     mixins: [ 
@@ -72,6 +100,9 @@ export default {
                 tvalues: [],
             },
             attrs: [],
+            historyAttrs: [],
+            activeTab: null,
+            tabs: [ 'Attributes', 'History'  ],
         }
     },
     methods: {
@@ -83,16 +114,12 @@ export default {
                 var asset = this.asset = res.data;
                 var tvalues = asset.tvalues || [];
                 tvalues.forEach(tv => (tv.t = new Date(tv.t)));
-                var attrs = this.attrs = tvalues.map(tv => {
-                    var attr = Object.assign({
-                        category: tv.tag === 'id' || tv.tag === 'name' 
-                            ? 'Identity' : 'History',
-                    }, tv);
-                    return attr;
+                var allAttrs = tvalues.map(tv => {
+                    return Object.assign({}, tv);
                 });
                 Object.keys(asset).forEach(key => {
                     if (key !== 'tvalues') {
-                        attrs.push({
+                        allAttrs.push({
                             category: key === 'guid' ? "Identity" : "Detail",
                             tag: key,
                             value: asset[key],
@@ -102,23 +129,31 @@ export default {
                         
                     }
                 });
-                attrs.sort((a,b) => {
-                    if (a.category === b.category) {
-                        if (a.tag === b.tag) {
-                            if (a.t.getTime() === b.t.getTime()) {
-                                return 0;
-                            }
-                            return a.t.getTime() < b.t.getTime() ? 1 : -1;
+                allAttrs.sort((a,b) => {
+                    if (a.tag === b.tag) {
+                        if (a.value === V_EVENT || a.t.getTime() === b.t.getTime()) {
+                            return 0;
                         }
-                        return a.tag.localeCompare(b.tag);
+                        return a.t.getTime() < b.t.getTime() ? 1 : -1;
                     }
-                    var order = {
-                        Identity: 1,
-                        Detail: 2,
-                        History: 3,
-                    };
-                    return order[a.category] < order[b.category] ? -1 : 1;
+                    return a.tag.localeCompare(b.tag);
                 });
+                this.historyAttrs = allAttrs.filter(a => {
+                    return a.value === V_EVENT;
+                });
+                var attrMap = {};
+                this.attrs = allAttrs.reduce((acc,attr) => {
+                    if (attr.value === V_EVENT) {
+                        // historical: do nothing
+                    } else {
+                        var curAttr = attrMap[attr.tag];
+                        if (curAttr == null || curAttr.t < attr.t) {
+                            acc.push(attr);
+                            attrMap[attr.tag] = attr;
+                        } 
+                    }
+                    return acc;
+                },[]);
             }).catch(e=>{
                 console.error(e);
             });
@@ -151,7 +186,7 @@ export default {
             }
             return '';
         },
-        attrSort(items, index, isDescending) {
+        historySort(items, index, isDescending) {
             if (index === 't') {
                 items.sort((a,b) => {
                     if (a.t == null && b.t) {
@@ -175,9 +210,14 @@ export default {
     computed: {
         headers() {
             return [
-                { text: 'Date', align: 'left', value: 't' },
-                { text: 'Name', align: 'left', value: 'name' },
+                { text: 'Attribute', align: 'right', value: 'name' },
                 { text: 'Value', align: 'left', value: 'value' },
+            ];
+        },
+        historyHeaders() {
+            return [
+                { text: 'Date', align: 'right', value: 't' },
+                { text: 'Event', align: 'left', value: 'name' },
             ];
         },
         navItems() {

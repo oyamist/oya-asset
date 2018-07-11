@@ -46,7 +46,7 @@
                 </tr>
             </template>
             <template slot="expand" slot-scope="cursor">
-                <v-container fluid class="oya-asset-expand">
+                <v-container fluid class="oya-inventory-expand">
                     <v-layout row class="pl-5">
                         <v-flex>
                             <v-layout row v-for="key in Object.keys(cursor.item).sort()" :key="key"
@@ -298,7 +298,6 @@ export default {
         },
         daysPlus(dateStr, asset) {
             var result = 0;
-            console.log('dateStr', dateStr);
             if (asset.begin) {
                 var begin = new Date(asset.begin);
                 var days = new Date(dateStr.date) - begin;
@@ -391,7 +390,7 @@ export default {
 
 </script>
 <style> 
-.oya-asset-expand {
+.oya-inventory-expand {
     background:#eee;
     padding-left: 13.8em;
 }
