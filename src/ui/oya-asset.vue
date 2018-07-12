@@ -17,7 +17,6 @@
                     :href="item.href"
                     :key="item.text" >
                     <div class="title">
-                        <!--span v-if='i===0'>&#x1F50D;</span-->
                         {{ item.text }}
                     </div>
                 </v-breadcrumbs-item>
@@ -35,7 +34,7 @@
           <v-tabs-items>
             <v-tabs-content :id='tabs[0]'>
               <v-card flat>
-                <v-data-table v-bind:headers="headers" :items="attrs" hide-actions 
+                <v-data-table v-bind:headers="headers" :items="attrs" 
                     v-model="attrs"
                     class="elevation-1" >
                     <template slot="items" slot-scope="cursor">
@@ -51,17 +50,30 @@
             </v-tabs-content>
             <v-tabs-content :id='tabs[1]'>
               <v-card flat>
-                <v-data-table v-bind:headers="historyHeaders" :items="historyAttrs" hide-actions 
-                    :custom-sort='historySort'
-                    v-model="historyAttrs"
+                <v-data-table :headers="historyHeaders" :items="eventAttrs" 
+                    item-key="tag"
                     class="elevation-1" >
                     <template slot="items" slot-scope="cursor">
-                        <tr >
-                            <td class="text-xs-right " style="width:14em">
+                        <tr>
+                            <td class="text-xs-right " style="width:14em" @click="eventAttrClick(cursor)">
                                 {{ attrDate(cursor.item.t) }} </td>
-                            <td class="text-xs-left " >
+                            <td class="text-xs-left "  @click="eventAttrClick(cursor)">
                                 {{ cursor.item.tag }} </td>
                         </tr>
+                    </template>
+                    <template slot="expand" slot-scope="cursor">
+                        <v-card flat color="grey lighten-3">
+                            <v-card-text class="pl-5">
+                                 <div class='oya-asset-event' v-for="tv in attrEvents(cursor.item.tag)">
+                                    <div>{{new Date(tv.t).toLocaleDateString()}}</div>
+                                    <div>
+                                        <v-btn icon small @click="deleteEvent(cursor.item)">
+                                            <v-icon>delete</v-icon>
+                                        </v-btn>
+                                    </div>
+                                 </div>
+                            </v-card-text>
+                        </v-card>
                     </template>
                 </v-data-table>
               </v-card>
@@ -100,7 +112,8 @@ export default {
                 tvalues: [],
             },
             attrs: [],
-            historyAttrs: [],
+            selectedEvents: [],
+            eventAttrs: [],
             activeTab: null,
             tabs: [ 'Attributes', 'History'  ],
         }
@@ -138,7 +151,7 @@ export default {
                     }
                     return a.tag.localeCompare(b.tag);
                 });
-                this.historyAttrs = allAttrs.filter(a => {
+                this.eventAttrs = allAttrs.filter(a => {
                     return a.value === V_EVENT;
                 });
                 var attrMap = {};
@@ -168,6 +181,19 @@ export default {
             }
             return undefined;
         },
+        eventAttrClick(cursor) {
+            cursor.expanded = !cursor.expanded;
+            console.log('click', cursor);
+        },
+        attrEvents(attr) {
+            var tv = this.tvalues.filter(tv => {
+                return tv.tag === attr;
+            });
+            tv.sort((a,b) => {
+                a.t === b.t ? 0 : (a.t < b.t ? -1 : 1);
+            });
+            return tv;
+        },
         attrDate(t) {
             if (t == null) {
                 return '--';
@@ -186,25 +212,8 @@ export default {
             }
             return '';
         },
-        historySort(items, index, isDescending) {
-            if (index === 't') {
-                items.sort((a,b) => {
-                    if (a.t == null && b.t) {
-                        return -1;
-                    }
-                    if (a.t && b.t == null) {
-                        return 1;
-                    }
-                    if (a.t == null && b.t == null || a.t.getTime() === b.t.getTime()) {
-                        return a.tag < b.tag 
-                            ? -1
-                            : (a.tag === b.tag ? 0 : 1);
-                    }
-                    return a.t < b.t ? -1 : (a.t === b.t ? 0 : 1);
-                });
-
-            }
-            return items;
+        deleteEvent(tv) {
+            console.log('delete', tv.t, tv.tag);
         },
     },
     computed: {
@@ -281,4 +290,10 @@ td.attr-header-empty {
     border-top: none;
 }
 
+.oya-asset-event {
+    margin-left: 13em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
 </style>
