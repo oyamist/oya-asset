@@ -11,14 +11,12 @@
 
     <v-card flat class="mt-3">
         <v-tabs v-model="activeTab" centered>
-          <v-toolbar class="grey lighten-4">
-            <v-breadcrumbs divider="/" large>
+          <v-toolbar class="grey lighten-4" dense>
+            <v-breadcrumbs divider="/" justify-end >
                 <v-breadcrumbs-item v-for="(item,i) in navItems" 
                     :href="item.href"
                     :key="item.text" >
-                    <div class="title">
-                        {{ item.text }}
-                    </div>
+                    <div class="subheading" > {{ item.text }} </div>
                 </v-breadcrumbs-item>
             </v-breadcrumbs>
           </v-toolbar>
@@ -52,10 +50,13 @@
               <v-card flat>
                 <v-data-table :headers="historyHeaders" :items="eventAttrs" 
                     item-key="tag"
+                    :custom-sort="eventAttrSort"
                     class="elevation-1" >
                     <template slot="items" slot-scope="cursor">
                         <tr>
-                            <td class="text-xs-right " style="width:14em" @click="eventAttrClick(cursor)">
+                            <td class="text-xs-right " style="width:14em" @click="eventAttrClick(cursor)"
+                                :title='attrDateTitle(cursor.item.t)'
+                                >
                                 {{ attrDate(cursor.item.t) }} </td>
                             <td class="text-xs-left "  @click="eventAttrClick(cursor)">
                                 {{ cursor.item.tag }} </td>
@@ -80,6 +81,7 @@
             </v-tabs-content>
           </v-tabs-items>
         </v-tabs>
+        {{asset}}
     </v-card>
 </div>
 
@@ -132,12 +134,12 @@ export default {
                 });
                 Object.keys(asset).forEach(key => {
                     if (key !== 'tvalues') {
+                        var value = asset[key];
+                        var t = value && new Date(value);
                         allAttrs.push({
-                            category: key === 'guid' ? "Identity" : "Detail",
                             tag: key,
-                            value: asset[key],
-                            name: asset.name,
-                            t: null,
+                            value,
+                            t,
                         });
                         
                     }
@@ -151,12 +153,13 @@ export default {
                     }
                     return a.tag.localeCompare(b.tag);
                 });
+                console.log('allAttrs',allAttrs);
                 this.eventAttrs = allAttrs.filter(a => {
-                    return a.value === V_EVENT;
+                    return a.tag === 'begin' || a.tag === 'end' || a.value === V_EVENT;
                 });
                 var attrMap = {};
                 this.attrs = allAttrs.reduce((acc,attr) => {
-                    if (attr.value === V_EVENT) {
+                    if (attr.value === V_EVENT || attr.tag === 'begin' || attr.tag === 'end') {
                         // historical: do nothing
                     } else {
                         var curAttr = attrMap[attr.tag];
@@ -185,6 +188,27 @@ export default {
             cursor.expanded = !cursor.expanded;
             console.log('click', cursor);
         },
+        eventAttrSort(items, index, isDescending) {
+            console.log('index', index);
+            if (index === 'tag') {
+                items.sort((a,b) => {
+                    return a.tag.localeCompare(b.tag);
+                });
+            } else {
+                items.sort((a,b) => {
+                    if (a.t === b.t) {
+                        return 0;
+                    }
+                    if (a.t && b.t) {
+                        var at = new Date(a.t);
+                        var bt = new Date(b.t);
+                        return at.getTime() - bt.getTime();
+                    }
+                    return a.t ? -1 : 1;
+                });
+            };
+            return items;
+        },
         attrEvents(attr) {
             var tv = this.tvalues.filter(tv => {
                 return tv.tag === attr;
@@ -201,11 +225,20 @@ export default {
             if (t.getTime() === RETROACTIVE.getTime()) {
                 return '...begin';
             }
+            return `${t.toLocaleDateString()}`;
+        },
+        attrDateTitle(t) {
+            if (t == null) {
+                return '--';
+            }
+            if (t.getTime() === RETROACTIVE.getTime()) {
+                return '...begin';
+            }
             var msday = 24 * 3600 * 1000;
             var begin = new Date(this.asset.begin);
             var d = Math.round((t-begin.getTime()) / msday);
             if (Math.abs(d) < 365) {
-                return `${t.toLocaleDateString()} (+${d} days)`;
+                return `begin + ${d} days`;
             }
             if (Math.abs(d) < 100 * 365) {
                 return `${t.toLocaleDateString()}`;
@@ -219,14 +252,14 @@ export default {
     computed: {
         headers() {
             return [
-                { text: 'Attribute', align: 'right', value: 'name' },
+                { text: 'Attribute', align: 'right', value: 'tag' },
                 { text: 'Value', align: 'left', value: 'value' },
             ];
         },
         historyHeaders() {
             return [
                 { text: 'Date', align: 'right', value: 't' },
-                { text: 'Event', align: 'left', value: 'name' },
+                { text: 'Event', align: 'left', value: 'tag' },
             ];
         },
         navItems() {
@@ -270,17 +303,6 @@ th {
 }
 .attr-row > td {
     border-top: 1px solid #eee;
-}
-.attr-category {
-    margin-top: 1em;
-    vertical-align: top;
-    padding-left: 0.5em;
-    padding-right: 0.5em;
-    font-weight: 800;
-    font-style: italic;
-}
-td.attr-category-empty {
-    border-top: none;
 }
 .attr-header {
     font-weight: 500;
