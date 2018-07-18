@@ -64,9 +64,9 @@
                       <v-icon >add</v-icon>
                   </v-btn>
                 </div>
-                <v-data-table :headers="historyHeaders" :items="eventAttrs" 
+                <v-data-table :headers="historyHeaders" :items="historyAttrs" 
                     item-key="tag"
-                    :custom-sort="eventAttrSort"
+                    :custom-sort="historyAttrSort"
                     class="elevation-1" >
                     <template slot="items" slot-scope="cursor">
                         <tr>
@@ -74,18 +74,22 @@
                                 :title='attrDateTitle(cursor.item.t)'
                                 >
                                 {{ attrDate(cursor.item.t) }} </td>
-                            <td class="text-xs-left "  @click="eventAttrClick(cursor)">
+                            <td class="text-xs-left " style="width:14em" @click="eventAttrClick(cursor)">
                                 {{ cursor.item.tag }} </td>
+                            <td class="text-xs-left "  @click="eventAttrClick(cursor)">
+                                {{ cursor.item.value }} </td>
                         </tr>
                     </template>
                     <template slot="expand" slot-scope="cursor">
                         <v-card flat color="grey lighten-3">
                             <v-card-text class="pl-5">
-                                 <div class='oya-asset-event' v-for="tv in attrEvents(cursor.item.tag)">
-                                    <div>{{new Date(tv.t).toLocaleDateString()}}</div>
+                                 <div class='oya-asset-event' v-for="tv in attrHistory(cursor.item.tag)">
+                                    <div style='width:12em'>{{dateDisplay(tv.t)}}</div>
+                                    <div style='width:14em'>{{tv.value}}</div>
                                     <div>
-                                        <v-btn icon small @click="deleteEvent(cursor.item)">
-                                            <v-icon>delete</v-icon>
+                                        <v-btn icon small @click="deleteEvent(cursor.item)"
+                                            >
+                                            <v-icon color='primary'>delete</v-icon>
                                         </v-btn>
                                     </div>
                                  </div>
@@ -131,7 +135,7 @@ export default {
             },
             attrs: [],
             selectedEvents: [],
-            eventAttrs: [],
+            historyAttrs: [],
             activeTab: null,
             tabs: [ 'Attributes', 'History'  ],
         }
@@ -141,51 +145,52 @@ export default {
             var guid = this.$route.query.guid;
             var url = [this.restOrigin(), this.service, 'asset', 'guid',guid].join('/');
             this.$http.get(url).then(res=>{
-                console.log('res',res);
+                console.debug('refresh',res);
                 var asset = this.asset = res.data;
-                var tvalues = asset.tvalues || [];
-                tvalues.forEach(tv => (tv.t = new Date(tv.t)));
-                var allAttrs = tvalues.map(tv => {
-                    return Object.assign({}, tv);
-                });
+                asset.begin = new Date(asset.begin);
+                asset.end && (asset.end = new Date(asset.end));
+
+                this.attrs = [];
                 Object.keys(asset).forEach(key => {
                     if (key !== 'tvalues') {
                         var value = asset[key];
                         var t = value && new Date(value);
-                        allAttrs.push({
+                        var attr = {
                             tag: key,
                             value,
                             t,
-                        });
-                        
+                        };
+                        this.attrs.push(attr);
                     }
                 });
-                allAttrs.sort((a,b) => {
-                    if (a.tag === b.tag) {
-                        if (a.value === V_EVENT || a.t.getTime() === b.t.getTime()) {
-                            return 0;
-                        }
-                        return a.t.getTime() < b.t.getTime() ? 1 : -1;
-                    }
-                    return a.tag.localeCompare(b.tag);
-                });
-                console.log('allAttrs',allAttrs);
-                this.eventAttrs = allAttrs.filter(a => {
-                    return a.tag === 'begin' || a.tag === 'end' || a.value === V_EVENT;
-                });
+
                 var attrMap = {};
-                this.attrs = allAttrs.reduce((acc,attr) => {
-                    if (attr.value === V_EVENT || attr.tag === 'begin' || attr.tag === 'end') {
-                        // historical: do nothing
-                    } else {
-                        var curAttr = attrMap[attr.tag];
-                        if (curAttr == null || curAttr.t < attr.t) {
-                            acc.push(attr);
-                            attrMap[attr.tag] = attr;
-                        } 
-                    }
+                var historyAttrs = [{
+                    tag: 'begin',
+                    value: asset.begin,
+                    t: asset.begin,
+                },{
+                    tag: 'end',
+                    value: asset.end,
+                    t: asset.end,
+                }];
+                this.historyAttrs = this.tvalues.reduce((acc,tv) => {
+                    var attr =  Object.assign({}, tv, {
+                        t: new Date(tv.t),
+                    });
+                    var tag = attr.tag;
+                    var curAttr = attrMap[tag];
+                    if (curAttr == null) {
+                        acc.push(attr);
+                        attrMap[tag] = attr;
+                    }  else if (curAttr.t.getTime() < attr.t.getTime()) {
+                        attrMap[tag] = Object.assign(curAttr, {
+                            t: attr.t,
+                            value: attr.value,
+                        });
+                    } 
                     return acc;
-                },[]);
+                }, historyAttrs);
             }).catch(e=>{
                 console.error(e);
             });
@@ -198,40 +203,56 @@ export default {
                     return attr.value;
                 }
             }
+            if (this.historyAttrs) {
+                for (var i=this.historyAttrs.length; i-- > 0;) {
+                    var attr = this.historyAttrs[i];
+                    if (attr && attr.tag === 'name') {
+                        return attr.value;
+                    }
+                }
+            }
             return undefined;
         },
         eventAttrClick(cursor) {
             cursor.expanded = !cursor.expanded;
             console.log('click', cursor);
         },
-        eventAttrSort(items, index, isDescending) {
-            console.log('index', index);
+        compareAttrDate(a,b) {
+            if (a.t === b.t) {
+                var cmp = 0;
+            } else if (a.t == null) {
+                var cmp = 1;
+            } else if (b.t == null) {
+                var cmp = -1;
+            } else {
+                var at = typeof a.t === 'date' ? a.t : new Date(a.t);
+                var bt = typeof b.t === 'date' ? b.t : new Date(b.t);
+                var cmp  = at.getTime() - bt.getTime()
+            }
+            return cmp || (cmp = a.tag.localeCompare(b.tag));
+        },
+        historyAttrSort(items, index, isDesc) {
             if (index === 'tag') {
                 items.sort((a,b) => {
-                    return a.tag.localeCompare(b.tag);
+                    return isDesc ? -a.tag.localeCompare(b.tag) : a.tag.localeCompare(b.tag);
+                });
+            } else if (index === 'value') {
+                items.sort((a,b) => {
+                    return isDesc
+                        ? -`${a.value}`.localeCompare(`${b.value}`)
+                        : `${a.value}`.localeCompare(`${b.value}`);
                 });
             } else {
                 items.sort((a,b) => {
-                    if (a.t === b.t) {
-                        return 0;
-                    }
-                    if (a.t && b.t) {
-                        var at = new Date(a.t);
-                        var bt = new Date(b.t);
-                        return at.getTime() - bt.getTime();
-                    }
-                    return a.t ? -1 : 1;
+                    var cmp = this.compareAttrDate(a,b);
+                    return isDesc ? -cmp : cmp;
                 });
             };
             return items;
         },
-        attrEvents(attr) {
-            var tv = this.tvalues.filter(tv => {
-                return tv.tag === attr;
-            });
-            tv.sort((a,b) => {
-                a.t === b.t ? 0 : (a.t < b.t ? -1 : 1);
-            });
+        attrHistory(attr) {
+            var tv = this.tvalues.filter(tv => (tv.tag === attr));
+            tv.sort((a,b) => -this.compareAttrDate(a,b));
             return tv;
         },
         attrDate(t) {
@@ -251,8 +272,7 @@ export default {
                 return '...begin';
             }
             var msday = 24 * 3600 * 1000;
-            var begin = new Date(this.asset.begin);
-            var d = Math.round((t-begin.getTime()) / msday);
+            var d = Math.round((t-this.asset.begin.getTime()) / msday);
             if (Math.abs(d) < 365) {
                 return `begin + ${d} days`;
             }
@@ -260,6 +280,16 @@ export default {
                 return `${t.toLocaleDateString()}`;
             }
             return '';
+        },
+        dateDisplay(t) {
+            var date = t && (typeof t === 'date' ? t : new Date(t));
+            if (date == null) {
+                return '--';
+            }
+            if (date.getTime() === RETROACTIVE.getTime()) {
+                return '__begin__';
+            }
+            return date.toLocaleString();
         },
         deleteEvent(tv) {
             console.log('delete', tv.t, tv.tag);
@@ -282,6 +312,7 @@ export default {
             return [
                 { text: 'Date', align: 'right', value: 't' },
                 { text: 'Event', align: 'left', value: 'tag' },
+                { text: 'Value', align: 'left', value: 'value' },
             ];
         },
         navItems() {
