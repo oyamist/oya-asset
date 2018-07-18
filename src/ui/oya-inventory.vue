@@ -15,7 +15,10 @@
             <v-text-field append-icon="search" label="Search" single-line clearable
                 :change="searchChanged()" hide-details v-model="search" ></v-text-field>
             <v-spacer/>
-            <v-btn color='primary' @click="addAsset()">Add</v-btn>
+            <v-btn absolute small fab right icon 
+                color="primary" @click="addAsset()">
+                <v-icon  >add</v-icon>
+            </v-btn>
         </v-card-title>
         <v-data-table v-bind:headers="headers" :items="assets" hide-actions 
             :custom-filter="assetFilter"

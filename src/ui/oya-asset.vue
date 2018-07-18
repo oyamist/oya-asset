@@ -19,6 +19,7 @@
                     <div class="subheading" > {{ item.text }} </div>
                 </v-breadcrumbs-item>
             </v-breadcrumbs>
+            <v-spacer/>
           </v-toolbar>
           <v-tabs-bar class="grey lighten-4" >
             <v-tabs-slider color="grey darken-4"></v-tabs-slider>
@@ -31,6 +32,13 @@
           </v-tabs-bar>
           <v-tabs-items>
             <v-tabs-content :id='tabs[0]'>
+              <div style="margin-top:0.2em; ">
+                <v-btn absolute fab right icon small
+                    @click="addAttribute()"
+                    color='primary' >
+                    <v-icon >add</v-icon>
+                </v-btn>
+              </div>
               <v-card flat>
                 <v-data-table v-bind:headers="headers" :items="attrs" 
                     v-model="attrs"
@@ -48,6 +56,14 @@
             </v-tabs-content>
             <v-tabs-content :id='tabs[1]'>
               <v-card flat>
+                <div style="margin-top:0.2em; ">
+                  <v-btn absolute fab right icon small
+                      @click="addEvent()"
+                      color='primary'
+                      >
+                      <v-icon >add</v-icon>
+                  </v-btn>
+                </div>
                 <v-data-table :headers="historyHeaders" :items="eventAttrs" 
                     item-key="tag"
                     :custom-sort="eventAttrSort"
@@ -247,6 +263,12 @@ export default {
         },
         deleteEvent(tv) {
             console.log('delete', tv.t, tv.tag);
+        },
+        addEvent() {
+            console.log('addEvent', this.asset);
+        },
+        addAttribute() {
+            console.log('addAttribute', this.asset);
         },
     },
     computed: {
