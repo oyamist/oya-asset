@@ -84,8 +84,8 @@
                         <v-card flat color="grey lighten-3">
                             <v-card-text class="pl-5">
                                  <div class='oya-asset-event' v-for="tv in attrHistory(cursor.item.tag)">
-                                    <div style='width:12em'>{{dateDisplay(tv.t)}}</div>
-                                    <div style='width:14em'>{{tv.value}}</div>
+                                    <div style='width:14em'>{{dateDisplay(tv.t)}}</div>
+                                    <div style='width:14em;'>{{tv.value}}</div>
                                     <div>
                                         <v-btn icon small @click="deleteEvent(cursor.item)"
                                             >
@@ -152,7 +152,11 @@ export default {
 
                 this.attrs = [];
                 Object.keys(asset).forEach(key => {
-                    if (key !== 'tvalues') {
+                    if (key === 'tvalues') {
+                        // skip
+                    } else if (key === 'begin' || key === 'end') {
+                        // skip
+                    } else {
                         var value = asset[key];
                         var t = value && new Date(value);
                         var attr = {
@@ -368,7 +372,7 @@ td.attr-header-empty {
 .oya-asset-event {
     margin-left: 13em;
     display: flex;
-    justify-content: space-between;
+    justify-content: begin;
     align-items: center;
 }
 </style>
