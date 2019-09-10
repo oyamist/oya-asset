@@ -1,6 +1,6 @@
 {
   "name": "oya-asset",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "OyaMist asset management",
   "main": "index.js",
   "directories": {
@@ -12,8 +12,8 @@
     "cryptico": "^1.0.2",
     "jsrsasign": "^8.0.6",
     "merkle-json": "^1.1.2",
-    "npm": "^5.8.0",
-    "rest-bundle": "^0.35.2",
+    "npm": "^6.11.3",
+    "rest-bundle": "^0.40.7",
     "uuid": "^3.1.0",
     "winston": "^2.4.1"
   },
@@ -31,12 +31,12 @@
     "babel-register": "^6.22.0",
     "concurrently": "^3.2.0",
     "cross-env": "^3.0.0",
-    "css-loader": "^0.28.0",
+    "css-loader": "^3.2.0",
     "mocha": "^5.2.0",
     "should": "^11.2.0",
     "supertest": "^3.0.0",
     "webpack": "^3.6.0",
-    "webpack-dev-server": "^2.2.0"
+    "webpack-dev-server": "^2.11.5"
   },
   "scripts": {
     "build": "bash scripts/build",
