@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "cryptico": "^1.0.2",
-    "jsrsasign": "^8.0.20",
+    "jsrsasign": "^10.2.0",
     "merkle-json": "^1.1.2",
     "npm": "^6.14.6",
     "rest-bundle": "^0.40.7",
